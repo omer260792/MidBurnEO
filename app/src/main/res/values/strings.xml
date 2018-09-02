@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">MidBurnEO</string>
+
+
+    <string name="get_date">Get date</string>
+    <string name="notifications_admin_channel_name">omer_name</string>
+    <string name="notifications_admin_channel_descripti">omer_desc</string>
+    <string name="msg_subscribed">msg_subscribed</string>
+    <string name="msg_subscribe_failed">msg_subscribe_failed</string>
+
+
+    <string-array name="android_dropdown_arrays">
+
+
+</string-array>
+</resources>

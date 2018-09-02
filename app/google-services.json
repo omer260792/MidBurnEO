@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "741316798950",
+    "firebase_url": "https://midburneo-6d072.firebaseio.com",
+    "project_id": "midburneo-6d072",
+    "storage_bucket": "midburneo-6d072.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:741316798950:android:55536fa6df8ca4f2",
+        "android_client_info": {
+          "package_name": "com.example.omer.midburneo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "741316798950-hfmfbeptp9i5616hbbjgqbkodnt1umsb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.omer.midburneo",
+            "certificate_hash": "e7dfd4e5709db07645fa60af84df9ec837902183"
+          }
+        },
+        {
+          "client_id": "741316798950-qsptflpi9jif2qbqfib00279i6q1e3qp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsYvy_Ycs2DLw6T_77-ddtJ_sXzVGg0EY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "741316798950-qsptflpi9jif2qbqfib00279i6q1e3qp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

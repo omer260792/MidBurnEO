@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+    <LinearLayout
+        android:id="@+id/linearLayoutChat"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:background="#ffdddddd"
+        android:padding="5dp">
+
+        <TextView
+            android:id="@+id/statusFriendUser"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="לא מחובר"
+            />
+
+        <TextView
+            android:id="@+id/tvFriendUser"
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:layout_weight="3"
+            android:gravity="center"
+            android:hint="name"
+            android:textSize="30dp" />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/imgUser"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:paddingTop="2dp"
+            android:src="@drawable/ic_launcher_background" />
+
+
+
+    </LinearLayout>
+
+
+    <RelativeLayout
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+<FrameLayout
+    android:id="@+id/farmelayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true">
+
+    <LinearLayout
+        android:id="@+id/send_message_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#ffdddddd"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/btnCamera"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:alpha=".5"
+            android:background="@drawable/ic_insert_photo"
+            android:contentDescription="@string/app_name"
+            android:onClick="loadImagebtn"
+            android:padding="2dp" />
+
+        <EditText
+            android:id="@+id/edittxtMsg"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Write a message"
+            android:inputType="text"
+            android:textAlignment="center" />
+
+        <Button
+            android:id="@+id/imgBtnSendMsg"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/ic_send"
+            />
+
+
+
+    </LinearLayout>
+
+</FrameLayout>
+
+
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_above="@+id/farmelayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"
+            android:paddingTop="8dp" />
+
+
+
+    </RelativeLayout>
+
+
+
+
+
+
+</LinearLayout>
+
+

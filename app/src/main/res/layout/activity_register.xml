@@ -1,0 +1,96 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
+
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/buttonImageRegister"
+        android:background="@drawable/midburn_logo"
+        android:layout_marginTop="60dp"
+        android:layout_marginBottom="30dp"
+        android:onClick="onImg"
+        android:layout_width="120dp"
+        android:layout_height="120dp" />
+
+    <TextView
+        android:layout_marginTop="-33dp"
+        android:text="הוסף תמונה"
+        android:layout_width="80dp"
+        android:layout_height="20dp" />
+
+    <GridLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:rowCount="4">
+
+        <EditText
+            android:id="@+id/nameField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:ems="10"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="שם מלא:" />
+
+        <EditText
+            android:id="@+id/emailFieldReg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="textEmailAddress"
+            android:ems="10"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="מייל:" />
+
+        <EditText
+            android:id="@+id/textPasswordReg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:ems="10"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="סיסמא:" />
+
+        <EditText
+            android:id="@+id/textNumReg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:ems="10"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="טלפון:" />
+
+
+
+    </GridLayout>
+
+    <LinearLayout
+        android:layout_width="150dp"
+        android:layout_height="100dp">
+
+        <Button
+            android:id="@+id/registerButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:text="הירשם"
+            android:onClick="RegisterBtn"/>
+
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/txtViewNote"
+                android:text="הוסף מטלה"
+                android:textColor="@color/colorAccent"
+                android:textAlignment="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:id="@+id/editTextNote"
+                android:layout_marginTop="25dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:background="#000000"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:textColor="#ffffff"
+                android:ems="10"
+                android:textSize="12dp"
+                android:inputType="textMultiLine"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true" />
+
+            <Button
+                android:id="@+id/saveButtonNote"
+                android:layout_centerHorizontal="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/editTextNote"
+                android:textColor="@color/colorPrimaryDark"
+                android:layout_marginTop="15dp"
+                android:text="שמור" />
+
+        </RelativeLayout>
+
+
+    </LinearLayout>
+</ScrollView>

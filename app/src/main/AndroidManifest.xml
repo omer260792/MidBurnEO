@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.omer.midburneo">
+
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+
+    <uses-permission android:name="android.permission.WRITE_CALENDAR"/>
+    <uses-permission android:name="android.permission.READ_CALENDAR"/>
+
+    <uses-feature
+        android:name="android.hardware.camera2"
+        android:required="true" />
+
+    <!--<meta-data-->
+        <!--android:name="com.google.firebase.messaging.default_notification_icon"-->
+        <!--android:resource="@mipmap/ic_launcher" />-->
+    <!--<meta-data-->
+        <!--android:name="com.google.firebase.messaging.default_notification_color"-->
+        <!--android:resource="@color/colorTransparent" />-->
+    <!--<meta-data android:name="com.google.android.gms.version"-->
+        <!--android:value="@integer/google_play_services_version" />-->
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".LoginAc">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".RegisterAc">
+            <intent-filter>
+                <action android:name="RegisterAc" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".CampsAc">
+            <intent-filter>
+                <action android:name="CampsAc" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".CreateCampAc">
+            <intent-filter>
+                <action android:name="CreateCampAc" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".Tabs.AdminAc">
+            <intent-filter>
+                <action android:name="AdminAc" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".Tabs.MainPageAc">
+            <intent-filter>
+                <action android:name="MainPageAc" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".Tabs.ScheduleAc">
+            <intent-filter>
+                <action android:name="ScheduleAc" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+
+        <activity android:name=".Tabs.ChatAc">
+            <intent-filter>
+                <action android:name="ChatAc" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".Tabs.EquipmentAc">
+            <intent-filter>
+                <action android:name="AdminAc" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".Tabs.NotesAc">
+            <intent-filter>
+                <action android:name="AdminAc" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".Tabs.ProfileAc">
+            <intent-filter>
+                <action android:name="AdminAc" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".Tabs.ChatListAc">
+            <intent-filter>
+                <action android:name="AdminAc" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".Tabs.ScheduleAddEvent">
+            <intent-filter>
+                <action android:name="ScheduleAddEvent" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat" />
+
+
+        <activity android:name=".Tabs.AddEventActivity">
+            <intent-filter>
+                <action android:name="RegisterAc" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".Tabs.PreviewEventActivity">
+            <intent-filter>
+                <action android:name="RegisterAc" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".Service.MyFirebaseMessagingService"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
+        <service android:name=".Service.MyFirebaseInstanceIDService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+
+    </application>
+
+</manifest>
