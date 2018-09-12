@@ -71,7 +71,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".Tabs.ScheduleAc">
+        <activity android:name=".ScheduleAc">
             <intent-filter>
                 <action android:name="ScheduleAc" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -111,29 +111,19 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".Tabs.ScheduleAddEvent">
-            <intent-filter>
-                <action android:name="ScheduleAddEvent" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
 
 
-        <activity android:name=".Tabs.AddEventActivity">
-            <intent-filter>
-                <action android:name="RegisterAc" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <activity android:name=".Tabs.PreviewEventActivity">
-            <intent-filter>
-                <action android:name="RegisterAc" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
+        <activity
+            android:name=".AddNoteActivity"
+            android:label="Standard calendar" />
+
+        <activity
+            android:name=".NotePreviewActivity"
+            android:label="Standard calendar" />
+
 
         <service
             android:name=".Service.MyFirebaseMessagingService"

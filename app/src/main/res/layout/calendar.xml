@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Tabs.ScheduleAc">
+    tools:context=".ScheduleAc">
 
     <com.applandeo.materialcalendarview.CalendarView
         android:id="@+id/calendarView"

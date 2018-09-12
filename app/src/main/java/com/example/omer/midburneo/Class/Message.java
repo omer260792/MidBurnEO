@@ -58,10 +58,12 @@ public class Message {
 
 
     public String getTime() {
+
         return time;
     }
 
     public String setTime(String time) {
+        this.time = time;
         return time;
     }
 
@@ -97,8 +99,9 @@ public class Message {
         return name_sender;
     }
 
-    public void setName_sender(String name_sender) {
+    public String setName_sender(String name_sender) {
         this.name_sender = name_sender;
+        return name_sender;
     }
 
     public String getUidMsg() {

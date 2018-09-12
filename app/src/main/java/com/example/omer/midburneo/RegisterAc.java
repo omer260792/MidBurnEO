@@ -222,7 +222,7 @@ public class RegisterAc extends AppCompatActivity {
         }
     }
 
-    public void onImg(View view) {
+    public  void onImg(View view) {
 
         PermissionManager.check(RegisterAc.this, android.Manifest.permission.READ_EXTERNAL_STORAGE, GALLERY);
         PermissionManager.check(RegisterAc.this, android.Manifest.permission.CAMERA, CAMERA);

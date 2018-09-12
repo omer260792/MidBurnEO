@@ -1,12 +1,16 @@
 package com.example.omer.midburneo.Tabs;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import android.net.Uri;
 import android.os.Bundle;
-import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -27,10 +31,10 @@ import com.example.omer.midburneo.Adapters.MessageAdapter;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.Message;
 import com.example.omer.midburneo.DataBase.DBHelper;
+import com.example.omer.midburneo.PermissionManager;
 import com.example.omer.midburneo.R;
-import com.example.omer.midburneo.Service.Common;
-import com.example.omer.midburneo.Service.IRequestListener;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -38,11 +42,13 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -57,12 +63,15 @@ import java.util.UUID;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
-import static com.example.omer.midburneo.DataBase.DBHelper.TABLE_NAME_MESSAGE;
+import static com.example.omer.midburneo.DataBase.DBHelper.BoolRefresh;
+import static com.example.omer.midburneo.RegisterAc.CAMERA;
+import static com.example.omer.midburneo.RegisterAc.GALLERY;
 import static com.example.omer.midburneo.RegisterAc.SHPRF;
-import static com.example.omer.midburneo.Tabs.MainPageAc.current_uid_camp_static;
+import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
+import static com.example.omer.midburneo.Tabs.MainPageAc.TABLE_NAME_MESSAGE;
 
 
-public class ChatListAc extends AppCompatActivity implements IRequestListener {
+public class ChatListAc extends AppCompatActivity {
 
     private static final String TAG = "ChatListAc";
 
@@ -73,7 +82,8 @@ public class ChatListAc extends AppCompatActivity implements IRequestListener {
     public TextView tvFriendUser, statusFriendUser;
     public CircleImageView imgUser;
 
-    public String nameUserIntent, campUserIntent, uidUserIntent, imageUserIntent, statusUserIntent, current_image, UidRandom, current_uid, current_name, realTime, getMsgUid;
+
+    public String nameUserIntent, campUserIntent, uidUserIntent, imageUserIntent, statusUserIntent, countUserIntent, timeUserIntent, current_image, timeExitSP, current_uid, current_name, realTime, nameCampSP, childGroupName, TestStatuName, last_msg, stringUrl, StringCurrentMil;
     public String time = "time";
     public String image = "image";
     public String text = "text";
@@ -83,43 +93,43 @@ public class ChatListAc extends AppCompatActivity implements IRequestListener {
     public String get_msg_uid = "text";
     public String status = "false";
     public String TEST;
-
     public static final String setImgUrlDefault = "https://firebasestorage.googleapis.com/v0/b/midburneo-6d072.appspot.com/o/profile_images%2Fcropped5081028198796683166.jpg?alt=media&token=8c49a7b9-2ee5-4ea6-b7c2-52199ef167f8";
-
-    private String num = "1";
-    private long newRowId;
-
-    private long countSqlLite;
-
-
+    public int checkTablecount, countSqlLite;
     private long currentDateTime;
+
+    private Uri resultUri;
 
     private final List<Message> messageList = new ArrayList<>();
     RecyclerView.Adapter messageAdapter;
-    RecyclerView.LayoutManager layoutManager;
 
     private DatabaseReference mUserDatabase;
+    private StorageReference mImageStorage, filePath;
+
     public DBHelper dbHelper;
     public SQLiteDatabase db;
 
-    SharedPreferences prefs;
+    public SharedPreferences prefs;
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        Log.e("*******************", "OnCreate");
 
         nameUserIntent = getIntent().getStringExtra("nameUidFriend");
         campUserIntent = getIntent().getStringExtra("campUidFriend");
         uidUserIntent = getIntent().getStringExtra("receiverUidFriend");
         imageUserIntent = getIntent().getStringExtra("imageUidFriend");
         statusUserIntent = getIntent().getStringExtra("statusUidFriend");
+        countUserIntent = getIntent().getStringExtra("countUidFriend");
+        timeUserIntent = getIntent().getStringExtra("timeUidFriend");
 
         tvFriendUser = findViewById(R.id.tvFriendUser);
         tvFriendUser.setText(nameUserIntent);
 
         dbHelper = new DBHelper(getApplicationContext());
 
-        SaveUserTableSqlite();
+        mImageStorage = FirebaseStorage.getInstance().getReference();
 
 
         recyclerView = findViewById(R.id.recyclerView);
@@ -135,25 +145,10 @@ public class ChatListAc extends AppCompatActivity implements IRequestListener {
 
         prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
         current_image = prefs.getString("image", null);
-        String getStatus = prefs.getString("status", null);
         current_name = prefs.getString("name", null);
-        // current_uid_camp_static = prefs.getString("camp", null);
+        nameCampSP = prefs.getString("camps", null);
+        timeExitSP = prefs.getString("time_msg", null);
 
-
-        Common.current_token = FirebaseInstanceId.getInstance().getToken();
-
-        TABLE_NAME_MESSAGE = uidUserIntent + "";
-
-        SaveUserTableSqlite();
-
-        Log.d("MY TOKEN", Common.current_token);
-
-
-        if (getStatus.equals("true")) {
-            statusFriendUser.setText("מחובר");
-        } else {
-
-        }
 
         if (imageUserIntent == null || imageUserIntent == "default") {
 
@@ -164,31 +159,37 @@ public class ChatListAc extends AppCompatActivity implements IRequestListener {
 
         }
 
-        recyclerView.setHasFixedSize(true);
-        layoutManager = new LinearLayoutManager(ChatListAc.this);
-        recyclerView.setLayoutManager(layoutManager);
-
-        getmsg();
-        updateDBFireBaseToSqlLite();
-
-
         FirebaseAuth.getInstance();
 
         TEST = current_uid + uidUserIntent;
+
+        if (nameUserIntent.equals(nameCampSP)) {
+            TABLE_NAME_MESSAGE = current_uid;
+        } else {
+            TABLE_NAME_MESSAGE = uidUserIntent;
+
+        }
+
+        try {
+            CreateUserTableSqlite();
+
+            tableExists(db, TABLE_NAME_MESSAGE);
+            Log.e("*******************", "try-CheckifTableExsits:");
+        } catch (Exception e) {
+            Log.e("*******************", "CATCH-CheckifTableExsits:");
+
+        }
+
 
         imgBtnSendMsg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 text = edittxtMsg.getText().toString();
 
+
                 if (!text.equals("")) {
 
-                    currentDateTime = System.currentTimeMillis();
-                    time = String.valueOf(currentDateTime);
-                    DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm");
-                    DateFormat getTimeDmY = new SimpleDateFormat("dd:MM:yy:HH:mm:ss");
-
-                    realTime = getTimeHourMintus.format(currentDateTime);
+                    getRealTime();
 
                     get_msg_uid = UUID.randomUUID().toString();
 
@@ -197,22 +198,31 @@ public class ChatListAc extends AppCompatActivity implements IRequestListener {
                     }
 
                     messageList.add(new Message(current_image, text, realTime, current_uid, uidUserIntent, nameUserIntent, current_name, get_msg_uid, TEST));
-                    recyclerView.setHasFixedSize(true);
-                    layoutManager = new LinearLayoutManager(ChatListAc.this);
+
                     recyclerView.setLayoutManager(new LinearLayoutManager(ChatListAc.this));
                     messageAdapter = new MessageAdapter(ChatListAc.this, messageList);
                     recyclerView.setAdapter(messageAdapter);
-                    messageAdapter.notifyDataSetChanged();
-                    recyclerView.scrollToPosition(messageAdapter.getItemCount() - 1);
-                    messageAdapter.notifyItemInserted(messageList.size());
+
+                    Log.e("*******************", "BTN-Send MSG");
 
 
-                    num = "2";
+                    if (nameUserIntent.equals(nameCampSP)) {
+                        childGroupName = uidUserIntent;
 
-                    SaveDBFireBase();
+                        SaveDataToFireBase();
 
 
-                    dbHelper.SaveDBSqlitee(text, nameUserIntent, current_uid, current_name, realTime, current_image, get_msg_uid, TEST);
+                        dbHelper.SaveDBSqliteGroup(text, uidUserIntent, current_uid, current_name, StringCurrentMil, current_image, get_msg_uid, TEST, current_uid);
+
+
+                    } else {
+                        childGroupName = "default";
+
+                        SaveDataToFireBase();
+
+                        dbHelper.SaveDBSqliteUser(text, uidUserIntent, current_uid, current_name, StringCurrentMil, current_image, get_msg_uid, TEST, uidUserIntent);
+
+                    }
 
 
                 } else {
@@ -221,24 +231,42 @@ public class ChatListAc extends AppCompatActivity implements IRequestListener {
 
                 edittxtMsg.setText("");
 
-                String token = FirebaseInstanceId.getInstance().getToken();
-                Toast.makeText(ChatListAc.this, "", Toast.LENGTH_SHORT).show();
-
 
             }
         });
+
     }
 
-    public void SaveUserTableSqlite() {
+    @Override
+    protected void onStart() {
+        super.onStart();
 
-        db = dbHelper.getWritableDatabase();
-        db = dbHelper.getReadableDatabase();
+        Log.e("*******************", "onStart");
 
+        if (checkTablecount == 0) {
+            CreateUserTableSqlite();
+        } else {
+            getRawCountSql();
+            if (countSqlLite == 0) {
+                updateDBFireBaseToSqlLite();
+            } else {
+                getmsg();
+
+            }
+            CheckUserIfOnline();
+        }
+    }
+
+
+    public void CreateUserTableSqlite() {
         try {
+
+            Log.e("*******************", "CreateUserTableSqlite");
+
+
+            db = dbHelper.getWritableDatabase();
+            db = dbHelper.getReadableDatabase();
             dbHelper.onCreate(db);
-
-            // db.execSQL(TABLE_NAME_MESSAGE);
-
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -248,11 +276,14 @@ public class ChatListAc extends AppCompatActivity implements IRequestListener {
     }
 
 
-    public void SaveDBFireBase() {
+    public void SaveDataToFireBase() {
 
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("ChatRooms").child(current_uid_camp_static).child(get_msg_uid);
+        Log.e("*******************", "SaveDataToFireBase");
+
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("ChatRooms").child(childGroupName).child(get_msg_uid);
 
         Map<String, Object> stringObjectHashMap = new HashMap<>();
+
         stringObjectHashMap.put("message", text);
         stringObjectHashMap.put("image", current_image);
         stringObjectHashMap.put("time", time);
@@ -260,72 +291,240 @@ public class ChatListAc extends AppCompatActivity implements IRequestListener {
         stringObjectHashMap.put("sender", current_uid);
         stringObjectHashMap.put("nameSender", current_name);
         stringObjectHashMap.put("status", TEST);
+
         mUserDatabase.updateChildren(stringObjectHashMap);
 
     }
 
-
     public void getmsg() {
 
-
-        String TableName = uidUserIntent + "";
+        Log.e("*******************", "getmsg");
 
         try {
-            messageList.addAll(dbHelper.getAllMsg(TableName));
-
-            messageAdapter = new MessageAdapter(this, messageList);
-            RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
-            recyclerView.setLayoutManager(mLayoutManager);
-            recyclerView.setItemAnimator(new DefaultItemAnimator());
+            messageList.addAll(dbHelper.getAllMsg());
+            messageAdapter = new MessageAdapter(ChatListAc.this, messageList);
+            recyclerView.setLayoutManager(new LinearLayoutManager(ChatListAc.this));
             recyclerView.setAdapter(messageAdapter);
-
-            num = "2";
 
         } catch (Exception e) {
             e.printStackTrace();
+
+        }
+
+    }
+
+    public void updateDBFireBaseToSqlLite() {
+
+        long lastTimeUser = Long.parseLong(timeUserIntent);
+
+
+        if (nameUserIntent.equals(nameCampSP)) {
+
+
+            Log.e("*******************", "GroupCheckMsgFirebase - 1");
+            Log.e("*******************", "GroupCheckMsgFirebase - 1" + realTime);
+
+            mUserDatabase = FirebaseDatabase.getInstance().getReference().child("ChatRooms").child(uidUserIntent);
+            mUserDatabase.orderByChild("time").startAt(lastTimeUser).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    Log.d(TAG + "test", dataSnapshot.getChildren().toString());
+
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+
+
+                        image = ds.child("image").getValue(String.class);
+                        nameSender = ds.child("nameSender").getValue(String.class);
+                        sender = ds.child("sender").getValue(String.class);
+                        receiver = ds.child("receiver").getValue(String.class);
+                        text = ds.child("message").getValue(String.class);
+                        time = ds.child("time").getValue(String.class);
+                        get_msg_uid = ds.getKey();
+
+                        Log.e("*******************", "GroupCheckMsgFirebase - 2");
+
+                        TestStatuName = uidUserIntent + current_uid;
+
+                        dbHelper.SaveDBSqliteGroup(text, receiver, sender, nameSender, time, image, get_msg_uid, TestStatuName, current_uid);
+
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+
+        } else {
+
+
+            TestStatuName = uidUserIntent + current_uid;
+
+            Log.e("*******************", "DefaultCheckMsgFirebase - 1");
+
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("ChatRooms").child("default");
+            databaseReference.orderByChild("status").equalTo(TestStatuName).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+
+                        int FBCount = (int) dataSnapshot.getChildrenCount();
+                        Log.e("*******************", FBCount + "FBCount - 2");
+
+                        image = ds.child("image").getValue(String.class);
+                        text = ds.child("message").getValue(String.class);
+                        time = ds.child("time").getValue(String.class);
+                        get_msg_uid = ds.getKey();
+
+
+                        Log.e("*******************", "DefaultCheckMsgFirebase - 2");
+
+                        dbHelper.SaveDBSqliteUser(text, current_uid, uidUserIntent, nameUserIntent, time, image, get_msg_uid, TestStatuName, uidUserIntent);
+
+                        int test = countSqlLite + 1;
+                        Log.e("*******************1", String.valueOf(test));
+
+                        getRawCountSql();
+
+                        int lastCountSql = countSqlLite;
+                        Log.e("*******************2", String.valueOf(lastCountSql));
+
+
+                        BoolRefresh = false;
+
+                        tableExists(db, TABLE_NAME_MESSAGE);
+
+                        if (test == lastCountSql) {
+                            mUserDatabase = FirebaseDatabase.getInstance().getReference().child("ChatRooms").child("default").child(get_msg_uid);
+
+
+                            Log.e("*******************3", String.valueOf(get_msg_uid));
+
+                            Map<String, Object> stringObjectHashMap = new HashMap<>();
+
+                            stringObjectHashMap.put("status", "true");
+
+                            mUserDatabase.updateChildren(stringObjectHashMap);
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    BoolRefresh = true;
+
+                }
+            });
+
+        }
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        getLastMsg();
+
+    }
+
+
+    public void getLastMsg() {
+
+        try {
+
+            SQLiteDatabase dbr;
+            dbr = dbHelper.getWritableDatabase();
+
+            String countQuery = "SELECT  * FROM " + TABLE_NAME_MESSAGE;
+            Cursor cursor = dbr.rawQuery(countQuery, null);
+            cursor.moveToLast();
+            last_msg = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE));
+            time = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
+
+
+            Log.e("*******************", "onDestroy_lastMsg: " + last_msg);
+            Log.e("*******************", "onDestroy_lastMsg: " + time);
+            cursor.close();
+
+            int count = Integer.parseInt(countUserIntent);
+
+            ContentValues cv = new ContentValues();
+            cv.put("lastmsg", last_msg);
+            cv.put("time", time);
+
+            dbr.update(TABLE_NAME, cv, "_id=" + count, null);
+
+        } catch (Exception e) {
+            Log.e("*******************", "Exception - Error get_Last_msg");
+
         }
 
 
     }
 
 
-    public void updateDBFireBaseToSqlLite() {
+    public long getRawCountSql() {
+        SQLiteDatabase dbr;
+        dbr = dbHelper.getWritableDatabase();
 
-        //  getProfilesCount();
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("ChatRooms").child(current_uid_camp_static);
+        String countQuery = "SELECT  * FROM " + TABLE_NAME_MESSAGE;
+        Cursor cursor = dbr.rawQuery(countQuery, null);
+        cursor.moveToFirst();
+        long count = cursor.getCount();
 
-        String test = uidUserIntent + current_uid;
-        Log.d(TAG, "UpdateDfireBase" + campUserIntent);
+        Log.e("*******************", String.valueOf(count) + "getrawCount");
+        countSqlLite = (int) count;
+        cursor.close();
 
-        mUserDatabase.orderByChild("status").equalTo(test).addListenerForSingleValueEvent(new ValueEventListener() {
+        return countSqlLite;
+    }
+
+    public boolean tableExists(SQLiteDatabase db, String tableName) {
+        if (tableName == null || db == null || !db.isOpen()) {
+            return false;
+        }
+        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM sqlite_master WHERE type = ? AND name = ?", new String[]{"table", TABLE_NAME_MESSAGE});
+        if (!cursor.moveToFirst()) {
+            cursor.close();
+            return false;
+        }
+        checkTablecount = cursor.getInt(0);
+        cursor.close();
+        Log.e("*******************", String.valueOf(checkTablecount));
+
+        return checkTablecount > 0;
+    }
+
+
+    public void CheckUserIfOnline() {
+
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(uidUserIntent);
+        mUserDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.d(TAG, dataSnapshot.getChildren().toString());
 
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                String status = dataSnapshot.child("time").getValue().toString();
 
-//                    status = ds.child("status").getValue().toString();
+                if (!status.equals("default")) {
+                    DateFormat getTimeDmY = new SimpleDateFormat("dd:MM:yyyy:HH:mm");
+                    long timeMilLong = Long.parseLong(status);
 
-                    image = ds.child("image").getValue(String.class);
-                    nameSender = ds.child("nameSender").getValue(String.class);
-                    sender = ds.child("sender").getValue(String.class);
-                    receiver = ds.child("receiver").getValue(String.class);
-                    text = ds.child("message").getValue(String.class);
-                    time = ds.child("time").getValue(String.class);
-                    get_msg_uid = ds.getKey();
+                    String realTime = getTimeDmY.format(timeMilLong);
 
+                    if (status.equals("true")) {
+                        statusFriendUser.setText("מחובר");
+                    } else {
+                        statusFriendUser.setText("last seen:" + realTime);
 
-                    dbHelper.SaveDBSqlitee(text, current_uid, nameUserIntent, current_name, time, image, get_msg_uid, status);
-
-                    mUserDatabase = FirebaseDatabase.getInstance().getReference().child("ChatRooms").child(current_uid_camp_static).child(get_msg_uid);
-
-                    Map<String, Object> stringObjectHashMap = new HashMap<>();
-      ;
-                    stringObjectHashMap.put("status", "true");
-                    mUserDatabase.updateChildren(stringObjectHashMap);
+                    }
+                } else {
+                    statusFriendUser.setText("");
 
                 }
-
             }
 
             @Override
@@ -334,99 +533,139 @@ public class ChatListAc extends AppCompatActivity implements IRequestListener {
             }
         });
 
-
-//
-//        Query query = mUserDatabase.orderByChild("status").equalTo("false");
-//        ValueEventListener valueEventListener = new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-//                    long FBCount = dataSnapshot.getChildrenCount();
-//
-//                    status = ds.child("status").getValue(String.class);
-//
-//
-//                    if (status.equals(false)) {
-//                        image = ds.child("image").getValue(String.class);
-//                        nameSender = ds.child("nameSender").getValue(String.class);
-//                        sender = ds.child("sender").getValue(String.class);
-//                        receiver = ds.child("receiver").getValue(String.class);
-//                        text = ds.child("message").getValue(String.class);
-//                        time = ds.child("time").getValue(String.class);
-//                        get_msg_uid = ds.getKey();
-//
-//                        status.equals(true);
-//
-//
-//
-//                    }
-//
-//                    dbHelper.SaveDBSqlitee(text, current_uid, nameUserIntent, current_name, time, image, get_msg_uid, status);
-//
-//
-//                    Log.d(TAG, image);
-//                    Log.d(TAG, nameSender);
-//                    Log.d(TAG, sender);
-//                    Log.d(TAG, text);
-//                    Log.d(TAG, time);
-//                    Log.d(TAG, String.valueOf(FBCount));
-//                    Log.d("countSqlLite", String.valueOf(countSqlLite));
-//                    Log.d("FBCount", String.valueOf(FBCount));
-//
-//
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//                Log.d(TAG, "DBError");
-//
-//            }
-//        };
-//        query.addListenerForSingleValueEvent(valueEventListener);
-
     }
 
 
-    public void SendPushNotification() {
+    public void loadImagebtn(View view) {
 
-        FirebaseMessaging.getInstance().subscribeToTopic("news")
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
+        PermissionManager.check(ChatListAc.this, android.Manifest.permission.READ_EXTERNAL_STORAGE, GALLERY);
+        PermissionManager.check(ChatListAc.this, android.Manifest.permission.CAMERA, CAMERA);
+        PermissionManager.check(ChatListAc.this, Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
+
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+
+        alertDialog.setTitle("Profile Photo");
+        alertDialog.setMessage("Please Pick A Method");
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Gallery", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int id) {
+
+                gallery();
+
+            }
+        });
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int id) {
+
+                return;
+
+            }
+        });
+
+        alertDialog.show();
+    }
+
+    private void gallery() {
+        CropImage.activity()
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .start(this);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == GALLERY && resultCode == RESULT_OK) {
+            Uri imageUri = data.getData();
+
+            CropImage.activity(imageUri)
+                    .setAspectRatio(1, 1)
+                    .start(this);
+
+
+        }
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                resultUri = result.getUri();
+
+                filePath = mImageStorage.child("msg_images").child(resultUri.getLastPathSegment());
+
+                filePath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        String msg = getString(R.string.msg_subscribed);
-                        if (!task.isSuccessful()) {
-                            msg = getString(R.string.msg_subscribe_failed);
-                        }
-                        Log.d(TAG, msg);
-                        Toast.makeText(ChatListAc.this, msg, Toast.LENGTH_SHORT).show();
+                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+
+                        filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+
+                                stringUrl = String.valueOf(uri);
+
+                                if (stringUrl != null) {
+                                    //Picasso.get().load(stringUrl).error(R.drawable.admin_btn_logo).into(recyclerView);
+
+                                    getRealTime();
+                                    text = "image";
+                                    get_msg_uid = UUID.randomUUID().toString();
+                                    //  messageList.add(new Message(stringUrl, text, realTime, current_uid, uidUserIntent, nameUserIntent, current_name, get_msg_uid, TEST));
+
+                                    //         recyclerView.setLayoutManager(new LinearLayoutManager(ChatListAc.this));
+                                    //     messageAdapter = new MessageAdapter(ChatListAc.this, messageList);
+                                    //recyclerView.setAdapter(messageAdapter);
+
+
+                                    if (nameUserIntent.equals(nameCampSP)) {
+                                        childGroupName = uidUserIntent;
+
+                                        SaveDataToFireBase();
+
+
+                                        dbHelper.SaveDBSqliteGroup(text, uidUserIntent, current_uid, current_name, StringCurrentMil, stringUrl, get_msg_uid, TEST, current_uid);
+
+
+                                    } else {
+                                        childGroupName = "default";
+
+                                        SaveDataToFireBase();
+
+                                        dbHelper.SaveDBSqliteUser(text, uidUserIntent, current_uid, current_name, StringCurrentMil, stringUrl, get_msg_uid, TEST, uidUserIntent);
+
+                                    }
+
+
+                                }
+
+                            }
+                        });
                     }
                 });
 
+
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
+
+                Toast.makeText(ChatListAc.this, "error", Toast.LENGTH_LONG).show();
+
+            }
+        }
+
+
     }
 
-    @Override
-    public void onComplete() {
-        Log.d(TAG, "Token registered successfully in the DB");
+
+    public void getRealTime() {
+
+
+        currentDateTime = System.currentTimeMillis();
+        StringCurrentMil = String.valueOf(currentDateTime);
+        time = String.valueOf(currentDateTime);
+        DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm");
+        DateFormat getTimeDmY = new SimpleDateFormat("dd:MM:yy:HH:mm:ss");
+
+        realTime = getTimeHourMintus.format(currentDateTime);
 
     }
-
-    @Override
-    public void onError(String message) {
-        Log.d(TAG, "Error trying to register the token in the DB: " + message);
-    }
-
-    public long getProfilesCount() {
-        String countQuery = "SELECT  * FROM " + TABLE_NAME_MESSAGE;
-        SQLiteDatabase dbr = dbHelper.getReadableDatabase();
-        Cursor cursor = dbr.rawQuery(countQuery, null);
-        long count = cursor.getCount();
-        countSqlLite = (long) count;
-        cursor.close();
-
-        return countSqlLite;
-    }
-
 }
 
 

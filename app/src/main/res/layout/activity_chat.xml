@@ -15,9 +15,7 @@
         <TextView
             android:id="@+id/statusFriendUser"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:hint="לא מחובר"
-            />
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/tvFriendUser"

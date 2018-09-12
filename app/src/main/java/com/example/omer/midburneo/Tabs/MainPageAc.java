@@ -1,26 +1,18 @@
 package com.example.omer.midburneo.Tabs;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
 import com.example.omer.midburneo.Adapters.ImageAdapter;
-import com.example.omer.midburneo.Class.FeedReaderContract;
-import com.example.omer.midburneo.DataBase.DBHelper;
-import com.example.omer.midburneo.LoginAc;
 import com.example.omer.midburneo.R;
-import com.example.omer.midburneo.RegisterAc;
+import com.example.omer.midburneo.ScheduleAc;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -31,7 +23,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 import static com.example.omer.midburneo.RegisterAc.SHPRF;
 import static com.example.omer.midburneo.RegisterAc.prefs;
@@ -46,6 +37,8 @@ public class MainPageAc extends AppCompatActivity {
     public String current_uid, current_image, getNameSP, current_admin, current_name, image;
     public static String current_camp_static;
     public static String current_uid_camp_static;
+    public static String TABLE_NAME_MESSAGE = "test";
+
 
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -65,8 +58,6 @@ public class MainPageAc extends AppCompatActivity {
 
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        new Thread(new Runnable() {
-            public void run() {
 
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
         mUserDatabase.addValueEventListener(new ValueEventListener() {
@@ -78,7 +69,6 @@ public class MainPageAc extends AppCompatActivity {
                 current_name = dataSnapshot.child("name").getValue().toString();
                 current_camp_static = dataSnapshot.child("camps").getValue().toString();
                 current_uid_camp_static = dataSnapshot.child("chat").getValue().toString();
-
 
                 if(current_image.equals("default")){
                     image = setImgUrlDefault;
@@ -92,6 +82,7 @@ public class MainPageAc extends AppCompatActivity {
                 prefs.edit().putString("admin", current_admin).apply();
                 prefs.edit().putString("name", current_name).apply();
                 prefs.edit().putString("camps", current_camp_static).apply();
+                prefs.edit().putString("chat", current_uid_camp_static).apply();
 
             }
 
@@ -101,8 +92,7 @@ public class MainPageAc extends AppCompatActivity {
             }
         });
 
-                    }
-        }).start();
+
 
 
 

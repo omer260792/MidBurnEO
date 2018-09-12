@@ -38,8 +38,6 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     private FirebaseUser mCurrentUser;
 
 
-
-
     public FriendsAdapter(Context context, List personUtils) {
         this.context = context;
         this.personUtils = personUtils;
@@ -65,27 +63,23 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         Friend friend = personUtils.get(position);
 
         uidString = friend.uidReceiver;
-        if (uidString.equals(current_uid)){
+        if (uidString.equals(current_uid)) {
 
-        }else {
+        } else {
             holder.pName.setText(friend.getName());
             holder.pLastMsg.setText(friend.getLastMsg());
 
             urlString = friend.getImage();
 
 
-            if (urlString.equals("default") ){
+            if (urlString.equals("default")) {
                 Glide.with(context).load(R.drawable.midburn_logo).into(holder.pImage);
 
-            }else {
+            } else {
                 Glide.with(context).load(urlString).into(holder.pImage);
 
             }
         }
-
-
-
-
     }
 
     @Override
@@ -107,8 +101,6 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
             pImage = itemView.findViewById(R.id.imageFriendClass);
 
 
-
-
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -122,9 +114,9 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                     intent.putExtra("receiverUidFriend", friend.getUidReceiver());
                     intent.putExtra("campUidFriend", friend.getCamp());
                     intent.putExtra("statusUidFriend", friend.getStatus());
+                    intent.putExtra("countUidFriend", friend.getUidCount());
+                    intent.putExtra("timeUidFriend", friend.getTime());
                     context.startActivity(intent);
-
-
 
                 }
             });

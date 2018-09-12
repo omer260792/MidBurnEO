@@ -11,6 +11,7 @@ public final class FeedReaderContract {
     public static class FeedEntry implements BaseColumns {
 
         public static final String TABLE_NAME = "users";
+        public static final String TABLE_NAME_CALENDAR = "calendar";
 
         public static final String ADMIN = "admin";
         public static final String CAMPS = "camps";

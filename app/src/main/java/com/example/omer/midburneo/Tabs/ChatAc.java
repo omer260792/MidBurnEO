@@ -44,7 +44,7 @@ public class ChatAc extends AppCompatActivity {
     private TextView nameCampTv;
     private CircleImageView imageView;
 
-    public String current_uid, currentImageSP, currentNameSP,currentstatusSp, currentCampSP, getUid, getUidUsers, get_lastmsg, getNameReceiver, get_image, name;
+    public String current_uid, currentImageSP, currentNameSP,currentstatusSp, currentCampSP, getUid, getUidUsers, get_lastmsg, getNameReceiver, get_image, get_time , name;
     public long countSqlLite;
 
     RecyclerView.Adapter mAdapter;
@@ -143,12 +143,11 @@ public class ChatAc extends AppCompatActivity {
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     long FBCount = dataSnapshot.getChildrenCount();
 
-                    if (countSqlLite <= FBCount) {
+                    if (countSqlLite < FBCount) {
 
                         getNameReceiver = ds.child("name").getValue(String.class);
                         get_image = ds.child("image").getValue(String.class);
                         get_lastmsg = ds.child("lastmsg").getValue(String.class);
-                        //get_lastmsg = ds.child("lastmsg").getValue(String.class);
                         getUidUsers = ds.getKey();
 
                         Log.d("countSqlLite", String.valueOf(countSqlLite));
@@ -157,19 +156,14 @@ public class ChatAc extends AppCompatActivity {
 
                         db.SaveDBSqlite(getNameReceiver, currentCampSP, getUidUsers, get_image, get_lastmsg);
 
-
                     }
-
-
                 }
             }
-
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }
         };
         query.addListenerForSingleValueEvent(valueEventListener);
-
 
     }
 

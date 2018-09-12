@@ -4,46 +4,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.omer.midburneo.Tabs.ScheduleAc">
-
+    tools:context=".ScheduleAc">
     <com.applandeo.materialcalendarview.CalendarView
         android:id="@+id/calendarView"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:abbreviationsBarColor="#303F9F"
-        app:abbreviationsLabelsColor="@android:color/white"
-        app:daysLabelsColor="@android:color/white"
-        app:headerColor="#1A237E"
+        android:layout_height="0dp"
+        app:headerColor="@color/colorPrimary"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:pagesColor="#3F51B5"
-        app:selectionColor="@android:color/white"
-        app:selectionLabelColor="#3F51B5"
-        app:anotherMonthsDaysLabelsColor="#3F51B5"
-        app:todayLabelColor="#AEEA00"
-        app:type="many_days_picker" />
-
-    <Button
-        android:id="@+id/getDateButton"
+        />
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/floatingActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Get date"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/calendarView" />
-
-    <EditText
-        android:id="@+id/editTextTabSchedule"
-        android:layout_below="@+id/getDateButton"
-        android:layout_centerHorizontal="true"
-        android:textColor="@color/colorAccent"
-        android:textAlignment="center"
-        android:textSize="20sp"
-        android:hint="00:00:0000"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/getDateButton"/>
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_send"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

@@ -2,40 +2,40 @@ package com.example.omer.midburneo.DataBase;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.net.Uri;
-import android.nfc.Tag;
 import android.provider.BaseColumns;
 import android.util.Log;
 
+import com.applandeo.materialcalendarview.EventDay;
+import com.example.omer.midburneo.Class.Calendar;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.Friend;
-import com.example.omer.midburneo.Class.ListCampAc;
 import com.example.omer.midburneo.Class.Message;
-import com.example.omer.midburneo.Tabs.ChatListAc;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.ADMIN;
-import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.CAMPS;
-import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.IMAGE;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
 //import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_MESSAGE;
-import static com.example.omer.midburneo.RegisterAc.SHPRF;
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR;
+import static com.example.omer.midburneo.RegisterAc.prefs;
+import static com.example.omer.midburneo.Tabs.MainPageAc.TABLE_NAME_MESSAGE;
 
 
 public class DBHelper extends SQLiteOpenHelper {
 
     public Context context;
     private static final String TAG = "DBHelper";
-    public static String TABLE_NAME_MESSAGE = "test";
-    public String currentTable;
+    public static Boolean BoolRefresh = true;
+    public SQLiteDatabase db;
+    public String checkid;
 
 
     private static final String SQL_CREATE_ENTRIES_USERS =
@@ -50,7 +50,6 @@ public class DBHelper extends SQLiteOpenHelper {
                     FeedReaderContract.FeedEntry.PASSWORD + " TEXT," +
                     FeedReaderContract.FeedEntry.STATUS + " TEXT," +
                     FeedReaderContract.FeedEntry.TIME + " TEXT," +
-                    FeedReaderContract.FeedEntry.UID_id + " TEXT," +
                     FeedReaderContract.FeedEntry.UID + " TEXT," +
                     FeedReaderContract.FeedEntry.LASTMSG + " TEXT)";
 
@@ -59,8 +58,7 @@ public class DBHelper extends SQLiteOpenHelper {
             "DROP TABLE IF EXISTS " + TABLE_NAME;
 
 
-
-    private String SQL_CREATE_ENTRIES_USERS_MESSAGE =
+    public String SQL_CREATE_ENTRIES_USERS_MESSAGE =
             "CREATE TABLE IF NOT EXISTS " + TABLE_NAME_MESSAGE + " (" + FeedReaderContract.FeedEntry._ID + " INTEGER PRIMARY KEY," +
                     FeedReaderContract.FeedEntry.MESSAGE + " TEXT," +
                     FeedReaderContract.FeedEntry.MESSAGE_RECEIVER + " TEXT," +
@@ -72,7 +70,16 @@ public class DBHelper extends SQLiteOpenHelper {
                     FeedReaderContract.FeedEntry.STATUS + " TEXT)";
 
 
-    private String SQL_DELETE_ENTRIESs =
+    public String SQL_CREATE_ENTRIES_USERS_CALENDAR =
+            "CREATE TABLE IF NOT EXISTS " + TABLE_NAME_CALENDAR + " (" + FeedReaderContract.FeedEntry._ID + " INTEGER PRIMARY KEY," +
+                    FeedReaderContract.FeedEntry.MESSAGE + " TEXT," +
+                    FeedReaderContract.FeedEntry.MESSAGE_SENDER + " TEXT," +
+                    FeedReaderContract.FeedEntry.TIME + " TEXT," +
+                    FeedReaderContract.FeedEntry.MESSAGE_UID + " TEXT)";
+
+
+
+    private String SQL_DELETE_ENTRIES_CALENDAR =
             "DROP TABLE IF EXISTS " + TABLE_NAME_MESSAGE;
 
     public static final int DATABASE_VERSION = 1;
@@ -90,15 +97,21 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(SQL_CREATE_ENTRIES_USERS);
         db.execSQL(SQL_CREATE_ENTRIES_USERS_MESSAGE);
+        db.execSQL(SQL_CREATE_ENTRIES_USERS_CALENDAR);
+
+        Log.e("*******************", "DB_OnCreate");
+
 
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL(SQL_DELETE_ENTRIES);
-        db.execSQL(SQL_DELETE_ENTRIESs);
+        db.execSQL(SQL_DELETE_ENTRIES_CALENDAR);
+        //db.execSQL(SQL_DELETE_ENTRIESs);
+        // onCreate(db);
+        Log.e("*******************", "DB_onUpgrade");
 
-        onCreate(db);
     }
 
     @Override
@@ -110,6 +123,9 @@ public class DBHelper extends SQLiteOpenHelper {
         List<Friend> notes = new ArrayList<>();
 
         // Select All Query
+
+        Log.e("*******************", "getAllFriend");
+
         String selectQuery = "SELECT  * FROM " + FeedReaderContract.FeedEntry.TABLE_NAME;
 
         SQLiteDatabase db = this.getWritableDatabase();
@@ -130,6 +146,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 String status = friend.setStatus(cursor.getString(cursor.getColumnIndex("status")));
                 String uid = friend.setUidReceiver(cursor.getString(cursor.getColumnIndex("uid")));
                 String lastmsg = friend.setLastMsg(cursor.getString(cursor.getColumnIndex("lastmsg")));
+                String uidcount = friend.setUidCount(cursor.getString(cursor.getColumnIndex("_id")));
+                String time = friend.setTime(cursor.getString(cursor.getColumnIndex("time")));
 
 
                 if (!uid.equals(current_uid)) {
@@ -146,36 +164,89 @@ public class DBHelper extends SQLiteOpenHelper {
         return notes;
     }
 
-    public List<Message> getAllMsg(String tableName) {
+    public List<Message> getAllMsg() {
         List<Message> msgList = new ArrayList<>();
 
         SQLiteDatabase db = this.getWritableDatabase();
         db = this.getReadableDatabase();
-        currentTable = tableName;
-        String selectQuery = "SELECT  * FROM " + tableName;
+        Log.e("*******************", "getAllMsg");
 
 
+        try {
+            String selectQuery = "SELECT  * FROM " + TABLE_NAME_MESSAGE;
+
+
+            Cursor cursor = db.rawQuery(selectQuery, null);
+
+            if (cursor.moveToFirst()) {
+                do {
+
+                    current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+                    Message message = new Message();
+
+                    String getTimeCursor = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
+                    long getTimeLong = Long.parseLong(getTimeCursor);
+
+                    DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm");
+                    String timeFormat = getTimeHourMintus.format(getTimeLong);
+
+                    String name_sender = message.setName_sender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.NAME)));
+                    String msg = message.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE)));
+                    String receiver = message.setReceiver(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_RECEIVER)));
+                    String sender = message.setSender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
+                    String time = message.setTime(timeFormat);
+                    String image = message.setImage(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.IMAGE)));
+                    String uidMsg = message.setUidMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
+                    String status = message.setStatus(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.STATUS)));
+
+
+                    msgList.add(message);
+
+
+                } while (cursor.moveToNext());
+
+            }
+            // close db connection
+            db.close();
+        } catch (Exception e) {
+        }
+
+
+        // return notes list
+
+        return msgList;
+    }
+
+    public List<Calendar> getAllCalendar() {
+        List<Calendar> calendarList = new ArrayList<>();
+
+        // Select All Query
+
+        Log.e("*******************", "getAllCalendar");
+
+        String selectQuery = "SELECT  * FROM " + FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR;
+
+        SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
 
-                current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+//                mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
+//                current_uid = mCurrentUser.getUid();
 
-                Message message = new Message();
+                Calendar calendar = new Calendar();
 
-                String name_receiver = message.setName_receiver(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.NAME)));
-                String msg = message.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE)));
-                String receiver = message.setReceiver(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_RECEIVER)));
-                String sender = message.setSender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
-                String timee = message.setTime(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME)));
-                String image = message.setImage(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.IMAGE)));
-                String uidMsg = message.setUidMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
-                String status = message.setStatus(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.STATUS)));
+                String msg = calendar.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE)));
+                String sender = calendar.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
+                String time = calendar.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME)));
+                String msgUid = calendar.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
 
 
-                msgList.add(message);
+                calendarList.add(calendar);
+
 
 
             } while (cursor.moveToNext());
@@ -184,8 +255,7 @@ public class DBHelper extends SQLiteOpenHelper {
         // close db connection
         db.close();
         // return notes list
-
-        return msgList;
+        return calendarList;
     }
 
     public void SaveDBSqlite(String Name, String Camp, String Uid, String image, String lstmsg) {
@@ -232,6 +302,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
             if (!nameCheck.equals(Name)) {
 
+                Log.e("*******************", "SaveDBSqlite_succ");
 
                 ContentValues values = new ContentValues();
                 values.put(FeedReaderContract.FeedEntry.ADMIN, "default");
@@ -244,7 +315,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 values.put(FeedReaderContract.FeedEntry.PASSWORD, "default");
                 values.put(FeedReaderContract.FeedEntry.STATUS, "default");
                 values.put(FeedReaderContract.FeedEntry.TIME, "default");
-                values.put(FeedReaderContract.FeedEntry.UID_id, "default");
                 values.put(FeedReaderContract.FeedEntry.UID, Uid);
                 values.put(FeedReaderContract.FeedEntry.LASTMSG, lstmsg);
 
@@ -254,6 +324,7 @@ public class DBHelper extends SQLiteOpenHelper {
             }
 
         } catch (Exception e) {
+            Log.e("*******************", "SaveDBSqlite_error");
 
             ContentValues values = new ContentValues();
             values.put(FeedReaderContract.FeedEntry.ADMIN, "default");
@@ -266,7 +337,6 @@ public class DBHelper extends SQLiteOpenHelper {
             values.put(FeedReaderContract.FeedEntry.PASSWORD, "default");
             values.put(FeedReaderContract.FeedEntry.STATUS, "default");
             values.put(FeedReaderContract.FeedEntry.TIME, "default");
-            values.put(FeedReaderContract.FeedEntry.UID_id, "default");
             values.put(FeedReaderContract.FeedEntry.UID, Uid);
             values.put(FeedReaderContract.FeedEntry.LASTMSG, lstmsg);
 
@@ -275,13 +345,47 @@ public class DBHelper extends SQLiteOpenHelper {
             long newRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
         }
 
+        db.close();
+
 
     }
 
-    public void SaveDBSqlitee(String msg, String msg_receiver, String msg_sender, String name, String time, String image, String uid_msg, String status) {
+    public void SaveDBSqliteUser(String msg, String msg_receiver, String msg_sender, String name, String time, String image, String uid_msg, String status, String table) {
+
+        TABLE_NAME_MESSAGE = table;
+
+        SQLiteDatabase db;
+
+        db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(FeedReaderContract.FeedEntry.MESSAGE, msg);
+        values.put(FeedReaderContract.FeedEntry.MESSAGE_RECEIVER, msg_receiver);
+        values.put(FeedReaderContract.FeedEntry.MESSAGE_SENDER, msg_sender);
+        values.put(FeedReaderContract.FeedEntry.NAME, name);
+        values.put(FeedReaderContract.FeedEntry.TIME, time);
+        values.put(FeedReaderContract.FeedEntry.IMAGE, image);
+        values.put(FeedReaderContract.FeedEntry.MESSAGE_UID, uid_msg);
+        values.put(FeedReaderContract.FeedEntry.STATUS, status);
+
+        prefs.edit().putString("time_msg", time);
 
 
-        TABLE_NAME_MESSAGE = currentTable + "";
+        // Insert the new row, returning the primary key value of the new row
+        long newRowId = db.insert(TABLE_NAME_MESSAGE, null, values);
+
+        Log.e("*******************", String.valueOf(newRowId) + " SaveDBSqliteUserrrrrrrr");
+
+
+        db.close();
+
+    }
+
+
+    public void SaveDBSqliteGroup(String msg, String msg_receiver, String msg_sender, String name, String time, String image, String uid_msg, String status, String table) {
+
+
+        TABLE_NAME_MESSAGE = table;
 
         SQLiteDatabase db = this.getReadableDatabase();
         db = this.getWritableDatabase();
@@ -296,9 +400,34 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(FeedReaderContract.FeedEntry.MESSAGE_UID, uid_msg);
         values.put(FeedReaderContract.FeedEntry.STATUS, status);
 
+        prefs.edit().putString("time_msg", time);
+
+
         // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert(TABLE_NAME_MESSAGE, null, values);
 
+        db.close();
 
+
+    }
+
+    public void SaveDBSqliteToCalendar(String msg, String msg_sender, String time, String uid_msg){
+
+        SQLiteDatabase db;
+
+        db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(FeedReaderContract.FeedEntry.MESSAGE, msg);
+        values.put(FeedReaderContract.FeedEntry.MESSAGE_SENDER, msg_sender);
+        values.put(FeedReaderContract.FeedEntry.TIME, time);
+        values.put(FeedReaderContract.FeedEntry.MESSAGE_UID, uid_msg);
+
+        // Insert the new row, returning the primary key value of the new row
+        long newRowId = db.insert(TABLE_NAME_CALENDAR, null, values);
+
+        Log.e("*******************", String.valueOf(newRowId) + " SaveDBSqliteToCalendar");
+
+        db.close();
     }
 }

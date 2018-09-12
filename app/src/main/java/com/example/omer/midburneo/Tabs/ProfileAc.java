@@ -86,7 +86,6 @@ public class ProfileAc extends AppCompatActivity {
         mImageStorage = FirebaseStorage.getInstance().getReference();
 
 
-
         signOutBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -340,19 +339,18 @@ public class ProfileAc extends AppCompatActivity {
     }
 
     public void SignOutProfile() {
-        new Thread(new Runnable() {
-            public void run() {
 
-                mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
-
-                Map<String, Object> mapCampsUpdates = new HashMap<>();
-                mapCampsUpdates.put("status", "false");
-
-                mUserDatabase.updateChildren(mapCampsUpdates);
+        long currentDateTime = System.currentTimeMillis();
+        String timeString = String.valueOf(currentDateTime);
 
 
-            }
-        }).start();
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+
+        Map<String, Object> mapCampsUpdates = new HashMap<>();
+        mapCampsUpdates.put("time", timeString);
+
+        mUserDatabase.updateChildren(mapCampsUpdates);
+
 
         FirebaseAuth.getInstance().signOut();
         startActivity(new Intent(ProfileAc.this, LoginAc.class));
