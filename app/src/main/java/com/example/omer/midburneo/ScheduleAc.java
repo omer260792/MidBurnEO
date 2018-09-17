@@ -25,6 +25,9 @@ import com.example.omer.midburneo.NotePreviewActivity;
 import com.example.omer.midburneo.R;
 import com.example.omer.midburneo.Tabs.ChatListAc;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -32,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR;
+import static com.example.omer.midburneo.NotePreviewActivity.getFormattedDate;
 
 public class ScheduleAc extends AppCompatActivity {
     public static final String RESULT = "result";
@@ -45,13 +49,13 @@ public class ScheduleAc extends AppCompatActivity {
     public String msg, sender, time, msgUid;
     public Calendar calendar;
     public int mDay;
+    public MyEventDay myEventDay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tab_schedule);
         mCalendarView = (CalendarView) findViewById(R.id.calendarView);
-
 
         db = new DBHelper(getApplicationContext());
 
@@ -72,19 +76,27 @@ public class ScheduleAc extends AppCompatActivity {
                 Log.e("*******************", "ScheduleAc: " + msg);
                 Log.e("*******************", "ScheduleAc: " + time);
 
-                long timeMill = Long.parseLong(time);
-                int idx = Integer.parseInt(index);
-                Log.e("*******************", "ScheduleAc: " + idx);
+                //long timeMill = Long.parseLong(time);
+                // int idx = Integer.parseInt(index);
+                //Log.e("*******************", "ScheduleAc: " + idx);
 
-                getCalendar(timeMill);
+               // getCalendar(timeMill);
 
-                //mCalendarView.setEvents(db.getAllCalendar());
 
-                MyEventDay myEventDay = new MyEventDay(calendar,R.drawable.ic_send,msg);
 
-                //mEventDaysCalendar = (Collection) new MyEventDay(calendar,R.drawable.ic_send,msg);
+                Calendar cal = Calendar.getInstance();
+                SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
                 try {
-                    mCalendarView.setDate(calendar);
+                    cal.setTime(sdf.parse(time));// all done
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                //mCalendarView.setEvents(db.getAllCalendar());"dd MMMM yyyy"
+
+                myEventDay = new MyEventDay(cal, R.drawable.ic_send, msg);
+
+                try {
+                    mCalendarView.setDate(cal);
 
                 } catch (OutOfDateRangeException e) {
                     e.printStackTrace();
@@ -95,31 +107,11 @@ public class ScheduleAc extends AppCompatActivity {
                 mCalendarView.setEvents(mEventDays);
 
 
-
-
-
             } while (cursor.moveToNext());
 
         }
         // close db connection
         dbr.close();
-
-
-        //  MyEventDay myEventDay = new MyEventDay()
-//        mEventDaysCalendar.addAll(db.getAllCalendar());
-
-//        messageList.addAll(dbHelper.getAllMsg());
-//        messageAdapter = new MessageAdapter(ChatListAc.this, messageList);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(ChatListAc.this));
-//        recyclerView.setAdapter(messageAdapter);
-
-//
-//        Intent returnIntent = new Intent();
-//        MyEventDay myEventDay = new MyEventDay()
-//
-//        returnIntent.putExtra(ScheduleAc.RESULT, myEventDay);
-//        setResult(Activity.RESULT_OK, returnIntent);
-//        //finish();
 
 
         FloatingActionButton floatingActionButton = (FloatingActionButton) findViewById(R.id.floatingActionButton);
@@ -159,7 +151,15 @@ public class ScheduleAc extends AppCompatActivity {
     private void addNote() {
         Log.i("ssssssssssss", "addNote");
 
+
+        long currentDateTime = System.currentTimeMillis();
+        DateFormat getTimeHourMintus = new SimpleDateFormat("dd MMMM yyyy");
+
+        String realTime = getTimeHourMintus.format(currentDateTime);
+
         Intent intent = new Intent(this, AddNoteActivity.class);
+        intent.putExtra("currentDate",realTime);
+
         startActivityForResult(intent, ADD_NOTE);
 
     }
