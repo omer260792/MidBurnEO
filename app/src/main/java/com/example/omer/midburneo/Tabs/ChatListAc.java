@@ -83,7 +83,7 @@ public class ChatListAc extends AppCompatActivity {
     public CircleImageView imgUser;
 
 
-    public String nameUserIntent, campUserIntent, uidUserIntent, imageUserIntent, statusUserIntent, countUserIntent, timeUserIntent, current_image, timeExitSP, current_uid, current_name, realTime, nameCampSP, childGroupName, TestStatuName, last_msg, stringUrl, StringCurrentMil;
+    public String nameUserIntent, campUserIntent, uidUserIntent, imageUserIntent, statusUserIntent, countUserIntent, timeUserIntent, current_image, timeExitSP, current_uid, current_name, realTime, nameCampSP, childGroupName, TestStatuName, last_msg, stringUrl, StringCurrentMil, currentTime;
     public String time = "time";
     public String image = "image";
     public String text = "text";
@@ -315,17 +315,41 @@ public class ChatListAc extends AppCompatActivity {
 
     public void updateDBFireBaseToSqlLite() {
 
-        long lastTimeUser = Long.parseLong(timeUserIntent);
 
 
         if (nameUserIntent.equals(nameCampSP)) {
 
+            if (timeUserIntent.equals("default")){
 
+                getRawCountSql();
+                if (countSqlLite==0){
+
+                    long currentDateTime = System.currentTimeMillis();
+                    currentTime = String.valueOf(currentDateTime);
+
+                }else {
+
+                    SQLiteDatabase dbr;
+                    dbr = dbHelper.getWritableDatabase();
+
+                    String countQuery = "SELECT  * FROM " + current_uid;
+                    Cursor cursor = dbr.rawQuery(countQuery, null);
+                    cursor.moveToLast();
+//        last_msg = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE));
+                    time = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
+
+                    long lastTimeUser = Long.parseLong(time);
+                    currentTime = String.valueOf(lastTimeUser);
+
+                }
+
+
+            }
             Log.e("*******************", "GroupCheckMsgFirebase - 1");
             Log.e("*******************", "GroupCheckMsgFirebase - 1" + realTime);
 
             mUserDatabase = FirebaseDatabase.getInstance().getReference().child("ChatRooms").child(uidUserIntent);
-            mUserDatabase.orderByChild("time").startAt(lastTimeUser).addListenerForSingleValueEvent(new ValueEventListener() {
+            mUserDatabase.orderByChild("time").endAt(currentTime).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     Log.d(TAG + "test", dataSnapshot.getChildren().toString());

@@ -348,6 +348,7 @@ public class ProfileAc extends AppCompatActivity {
 
         Map<String, Object> mapCampsUpdates = new HashMap<>();
         mapCampsUpdates.put("time", timeString);
+        mapCampsUpdates.put("status", "false");
 
         mUserDatabase.updateChildren(mapCampsUpdates);
 

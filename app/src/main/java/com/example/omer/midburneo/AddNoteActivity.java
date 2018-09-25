@@ -14,14 +14,21 @@ import com.applandeo.materialcalendarview.CalendarView;
 import com.applandeo.materialcalendarview.exceptions.OutOfDateRangeException;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.example.omer.midburneo.NotePreviewActivity.getFormattedDate;
+import static com.example.omer.midburneo.RegisterAc.SHPRF;
+import static com.example.omer.midburneo.RegisterAc.prefs;
+import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
 
 public class AddNoteActivity extends AppCompatActivity {
 
@@ -29,6 +36,7 @@ public class AddNoteActivity extends AppCompatActivity {
     public String current_uid, get_msg_uid;
     public String msg = "hello";
     public MyEventDay myEventDay;
+    private DatabaseReference mUserDatabase;
 
 
     @Override
@@ -39,6 +47,7 @@ public class AddNoteActivity extends AppCompatActivity {
         get_msg_uid = UUID.randomUUID().toString();
         db = new DBHelper(getApplicationContext());
         Log.i("ssssssssssss", "AddNoteActivity");
+
 
         final CalendarView datePicker = (CalendarView) findViewById(R.id.datePicker);
         Button button = (Button) findViewById(R.id.addNoteButton);
@@ -82,6 +91,10 @@ public class AddNoteActivity extends AppCompatActivity {
 
 
                 db.SaveDBSqliteToCalendar(msg, current_uid, calendar, get_msg_uid);
+                SaveInFireBase(msg,current_uid,calendar,get_msg_uid);
+
+                prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
+                prefs.edit().putString("time_calendar", calendar).apply();
 
                 setResult(Activity.RESULT_OK, returnIntent);
                 finish();
@@ -89,5 +102,21 @@ public class AddNoteActivity extends AppCompatActivity {
         });
     }
 
+    public void SaveInFireBase(String msg, String sender, String time, String msguid) {
+
+        try {
+            mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(current_camp_static).child("Calendar").child(msguid);
+
+            Map<String, Object> mapCampsUpdates = new HashMap<>();
+            mapCampsUpdates.put("message", msg);
+            mapCampsUpdates.put("message_sender", sender);
+            mapCampsUpdates.put("time", time);
+
+            mUserDatabase.updateChildren(mapCampsUpdates);
+        } catch (Exception e) {
+
+        }
+
+    }
 
 }

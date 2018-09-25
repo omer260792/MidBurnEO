@@ -36,7 +36,10 @@ public class MainPageAc extends AppCompatActivity {
     private FirebaseUser mCurrentUser;
     public String current_uid, current_image, getNameSP, current_admin, current_name, image;
     public static String current_camp_static;
+    public static String current_admin_static;
     public static String current_uid_camp_static;
+    public static String current_time_static;
+    public static String current_time_calendar_static;
     public static String TABLE_NAME_MESSAGE = "test";
 
 
@@ -69,6 +72,7 @@ public class MainPageAc extends AppCompatActivity {
                 current_name = dataSnapshot.child("name").getValue().toString();
                 current_camp_static = dataSnapshot.child("camps").getValue().toString();
                 current_uid_camp_static = dataSnapshot.child("chat").getValue().toString();
+                //current_time_static = dataSnapshot.child("time").getValue().toString();
 
                 if(current_image.equals("default")){
                     image = setImgUrlDefault;
@@ -83,6 +87,7 @@ public class MainPageAc extends AppCompatActivity {
                 prefs.edit().putString("name", current_name).apply();
                 prefs.edit().putString("camps", current_camp_static).apply();
                 prefs.edit().putString("chat", current_uid_camp_static).apply();
+                //prefs.edit().putString("time", current_time_static).apply();
 
             }
 

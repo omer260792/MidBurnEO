@@ -123,7 +123,13 @@
         <activity
             android:name=".NotePreviewActivity"
             android:label="Standard calendar" />
+        <activity
+            android:name=".Tabs.EquipmentPreviewAc"
+            android:label="Standard calendar" />
 
+        <activity
+            android:name=".Tabs.EquipmentEditAc"
+            android:label="Standard calendar" />
 
         <service
             android:name=".Service.MyFirebaseMessagingService"

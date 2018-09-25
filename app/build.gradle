@@ -4,7 +4,7 @@ android {
     compileSdkVersion 27
     defaultConfig {
         applicationId "com.example.omer.midburneo"
-        minSdkVersion 23
+        minSdkVersion 17
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
@@ -75,6 +75,9 @@ dependencies {
 
     implementation 'com.android.volley:volley:1.0.0'
     implementation 'com.google.android.gms:play-services-auth:16.0.0'
+
+    implementation 'com.ajts.androidmads.SQLite2Excel:library:1.0.2'
+
 
 
 }

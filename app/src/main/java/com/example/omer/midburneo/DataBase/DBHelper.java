@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.applandeo.materialcalendarview.EventDay;
 import com.example.omer.midburneo.Class.Calendar;
+import com.example.omer.midburneo.Class.Equipment;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.Class.Message;
@@ -25,6 +26,7 @@ import java.util.List;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
 //import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_MESSAGE;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR;
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
 import static com.example.omer.midburneo.RegisterAc.prefs;
 import static com.example.omer.midburneo.Tabs.MainPageAc.TABLE_NAME_MESSAGE;
 
@@ -77,6 +79,16 @@ public class DBHelper extends SQLiteOpenHelper {
                     FeedReaderContract.FeedEntry.TIME + " TEXT," +
                     FeedReaderContract.FeedEntry.MESSAGE_UID + " TEXT)";
 
+//    public String SQL_CREATE_ENTRIES_USERS_EQUIPMENT =
+//            "CREATE TABLE IF NOT EXISTS " + TABLE_NAME_EQUIPMENT + " (" + FeedReaderContract.FeedEntry._ID + " INTEGER PRIMARY KEY," +
+//                    FeedReaderContract.FeedEntry.NAME_EQUIPMENT + " TEXT," +
+//                    FeedReaderContract.FeedEntry.CONTENT + " TEXT," +
+//                    FeedReaderContract.FeedEntry.MOUNT + " TEXT," +
+//                    FeedReaderContract.FeedEntry.MOUNT_CURRENT + " TEXT," +
+//                    FeedReaderContract.FeedEntry.TIME + " TEXT," +
+//                    FeedReaderContract.FeedEntry.IMAGE + " TEXT," +
+//                    FeedReaderContract.FeedEntry.MESSAGE_SENDER + " TEXT," +
+//                    FeedReaderContract.FeedEntry.MESSAGE_UID + " TEXT)";
 
 
     private String SQL_DELETE_ENTRIES_CALENDAR =
@@ -98,6 +110,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_ENTRIES_USERS);
         db.execSQL(SQL_CREATE_ENTRIES_USERS_MESSAGE);
         db.execSQL(SQL_CREATE_ENTRIES_USERS_CALENDAR);
+        //db.execSQL(SQL_CREATE_ENTRIES_USERS_EQUIPMENT);
 
         Log.e("*******************", "DB_OnCreate");
 
@@ -248,7 +261,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 calendarList.add(calendar);
 
 
-
             } while (cursor.moveToNext());
 
         }
@@ -257,6 +269,8 @@ public class DBHelper extends SQLiteOpenHelper {
         // return notes list
         return calendarList;
     }
+
+
 
     public void SaveDBSqlite(String Name, String Camp, String Uid, String image, String lstmsg) {
 
@@ -411,7 +425,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    public void SaveDBSqliteToCalendar(String msg, String msg_sender, String time, String uid_msg){
+    public void SaveDBSqliteToCalendar(String msg, String msg_sender, String time, String uid_msg) {
 
         SQLiteDatabase db;
 
@@ -426,8 +440,13 @@ public class DBHelper extends SQLiteOpenHelper {
         // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert(TABLE_NAME_CALENDAR, null, values);
 
-        Log.e("*******************", String.valueOf(newRowId) + " SaveDBSqliteToCalendar");
+        prefs.edit().putString("time_calendar", time);
+
+
+        Log.e("*******************", String.valueOf(time) + " time_calendar");
 
         db.close();
     }
+
+
 }
