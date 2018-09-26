@@ -13,6 +13,7 @@ public final class FeedReaderContract {
         public static final String TABLE_NAME = "users";
         public static final String TABLE_NAME_CALENDAR = "calendar";
         public static final String TABLE_NAME_EQUIPMENT = "equipment";
+        public static final String TABLE_NAME_EQUIPMENT_FILE = "equipment";
 
         public static final String ADMIN = "admin";
         public static final String CAMPS = "camps";
@@ -34,7 +35,7 @@ public final class FeedReaderContract {
         public static final String MESSAGE_RECEIVER = "message_receiver";
         public static final String MESSAGE_UID = "message_uid";
         public static final String CONTENT = "content";
-        public static final String NAME_EQUIPMENT = "יכיכיכ";
+        public static final String NAME_EQUIPMENT = "name_equipment";
         public static final String MOUNT = "mount";
         public static final String MOUNT_CURRENT = "mount_current";
 

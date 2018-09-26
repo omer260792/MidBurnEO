@@ -1,11 +1,8 @@
 package com.example.omer.midburneo.Tabs;
 
-
 import android.Manifest;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -37,14 +34,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
 import static com.example.omer.midburneo.DataBase.DBEquipment.DATABASE_NAME_EQUIPMENT;
-import static com.example.omer.midburneo.DataBase.DBHelper.DATABASE_NAME;
 import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
 import static com.example.omer.midburneo.RegisterAc.prefs;
 import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
+import static com.example.omer.midburneo.Tabs.MainPageAc.current_name_static;
 
 public class EquipmentEditAc extends AppCompatActivity {
+
+    private static final String TAG = "EquipmentEditAc";
+
 
     private Button addEquipmentBtnPre;
     private EditText etNameProdPre, etContentPre, etMountPre;
@@ -56,7 +55,7 @@ public class EquipmentEditAc extends AppCompatActivity {
     public DBHelper dbHelper;
     public DBEquipment dbEquipment;
 
-     String directory_path = Environment.getExternalStoragePublicDirectory(
+    public static String  directory_path = Environment.getExternalStoragePublicDirectory(
             Environment.DIRECTORY_PICTURES).getAbsolutePath();
 
 
@@ -74,7 +73,15 @@ public class EquipmentEditAc extends AppCompatActivity {
         mprogress = new ProgressDialog(this);
         dbHelper = new DBHelper(getApplicationContext());
         dbEquipment = new DBEquipment(getApplicationContext());
-        current_camp_static = prefs.getString("camps", null);
+
+
+        try {
+            current_camp_static = prefs.getString("camps", null);
+            current_name_static = prefs.getString("name", null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         current_uid = getIntent().getStringExtra("UidEquipment");
         PermissionManager.check(EquipmentEditAc.this, Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
 
@@ -97,7 +104,6 @@ public class EquipmentEditAc extends AppCompatActivity {
             return ;
         }
         getUserCamp();
-        checkForUpdate();
 
 
         addEquipmentBtnPre.setOnClickListener(new View.OnClickListener() {
@@ -119,33 +125,10 @@ public class EquipmentEditAc extends AppCompatActivity {
                     timePre = String.valueOf(currentDateTime);
 
                     SaveDataToFireBaseEquipment();
-                    dbEquipment.SaveDBSqliteToEquipment(nameProdPre, contentPre, mountPre, "0", timePre, imgPre, current_uid, get_msg_uid);
+                    dbHelper.SaveDBSqliteToEquipment(nameProdPre, contentPre, mountPre, "0", timePre, imgPre, current_uid, get_msg_uid);
+                    dbEquipment.SaveDBSqliteToEquipmentExcel(nameProdPre, contentPre, mountPre, "0", timePre, imgPre, current_name_static);
 
-
-                    //#######################
-
-
-                    dbEquipment.open();
-                    SQLiteToExcel sqLiteToExcel = new SQLiteToExcel(getApplicationContext(), DATABASE_NAME_EQUIPMENT, directory_path);
-
-                    sqLiteToExcel.exportAllTables("equipmentsDoc.xls", new SQLiteToExcel.ExportListener() {
-                        @Override
-                        public void onStart() {
-
-                        }
-
-                        @Override
-                        public void onCompleted(String filePath) {
-                            Log.e("Successfully Exported", filePath);
-                        }
-
-                        @Override
-                        public void onError(Exception e) {
-
-                        }
-                    });
-
-                    //#######################
+                    SQLiteToExcel();
 
                     Intent i = new Intent(EquipmentEditAc.this, EquipmentAc.class);
                     startActivity(i);
@@ -166,7 +149,7 @@ public class EquipmentEditAc extends AppCompatActivity {
 
     public void SaveDataToFireBaseEquipment() {
 
-        Log.e("*******************", "SaveDataToFireBaseEquipment");
+        Log.e(TAG, "SaveDataToFireBaseEquipment");
 
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(current_camp_static).child("Equipment").child(get_msg_uid);
 
@@ -207,35 +190,35 @@ public class EquipmentEditAc extends AppCompatActivity {
         });
     }
 
-  public void checkForUpdate(){
 
-      File file = new File(directory_path, "/users.xls");
-      if (!file.exists()) {
-          Toast.makeText(EquipmentEditAc.this,
-                  "אין תיקייה ", //ADD THIS
-                  Toast.LENGTH_SHORT).show();          return;
-      }
+
+  public void SQLiteToExcel(){
+
       dbEquipment.open();
+      SQLiteToExcel sqLiteToExcel = new SQLiteToExcel(getApplicationContext(), DATABASE_NAME_EQUIPMENT, directory_path);
 
-      ExcelToSQLite excelToSQLite = new ExcelToSQLite(getApplicationContext(), DATABASE_NAME_EQUIPMENT, true);
-      // Import EXCEL FILE to SQLite
-      excelToSQLite.importFromFile(directory_path+"/users.xls", new ExcelToSQLite.ImportListener() {
+      sqLiteToExcel.exportAllTables(current_camp_static+".xls", new SQLiteToExcel.ExportListener() {
           @Override
           public void onStart() {
 
           }
 
           @Override
-          public void onCompleted(String dbName) {
+          public void onCompleted(String filePath) {
+              Log.e("Successfully Exported", filePath);
           }
 
           @Override
           public void onError(Exception e) {
-              //Log.i("exr",e.st);
+
           }
       });
 
+      Log.v(TAG, "SQLiteToExcel");
   }
+
+
+
 
 
 }

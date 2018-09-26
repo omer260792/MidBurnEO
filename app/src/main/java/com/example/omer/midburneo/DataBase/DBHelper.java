@@ -3,8 +3,10 @@ package com.example.omer.midburneo.DataBase;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.nfc.Tag;
 import android.provider.BaseColumns;
 import android.util.Log;
 
@@ -79,20 +81,25 @@ public class DBHelper extends SQLiteOpenHelper {
                     FeedReaderContract.FeedEntry.TIME + " TEXT," +
                     FeedReaderContract.FeedEntry.MESSAGE_UID + " TEXT)";
 
-//    public String SQL_CREATE_ENTRIES_USERS_EQUIPMENT =
-//            "CREATE TABLE IF NOT EXISTS " + TABLE_NAME_EQUIPMENT + " (" + FeedReaderContract.FeedEntry._ID + " INTEGER PRIMARY KEY," +
-//                    FeedReaderContract.FeedEntry.NAME_EQUIPMENT + " TEXT," +
-//                    FeedReaderContract.FeedEntry.CONTENT + " TEXT," +
-//                    FeedReaderContract.FeedEntry.MOUNT + " TEXT," +
-//                    FeedReaderContract.FeedEntry.MOUNT_CURRENT + " TEXT," +
-//                    FeedReaderContract.FeedEntry.TIME + " TEXT," +
-//                    FeedReaderContract.FeedEntry.IMAGE + " TEXT," +
-//                    FeedReaderContract.FeedEntry.MESSAGE_SENDER + " TEXT," +
-//                    FeedReaderContract.FeedEntry.MESSAGE_UID + " TEXT)";
+    public String SQL_CREATE_ENTRIES_USERS_EQUIPMENT =
+            "CREATE TABLE IF NOT EXISTS " + TABLE_NAME_EQUIPMENT + " (" + FeedReaderContract.FeedEntry._ID + " INTEGER PRIMARY KEY," +
+                    FeedReaderContract.FeedEntry.NAME_EQUIPMENT + " TEXT," +
+                    FeedReaderContract.FeedEntry.CONTENT + " TEXT," +
+                    FeedReaderContract.FeedEntry.MOUNT + " TEXT," +
+                    FeedReaderContract.FeedEntry.MOUNT_CURRENT + " TEXT," +
+                    FeedReaderContract.FeedEntry.TIME + " TEXT," +
+                    FeedReaderContract.FeedEntry.IMAGE + " TEXT," +
+                    FeedReaderContract.FeedEntry.MESSAGE_SENDER + " TEXT," +
+                    FeedReaderContract.FeedEntry.MESSAGE_UID + " TEXT)";
 
 
     private String SQL_DELETE_ENTRIES_CALENDAR =
             "DROP TABLE IF EXISTS " + TABLE_NAME_MESSAGE;
+
+    public DBHelper open() throws SQLException {
+        db = this.getWritableDatabase();
+        return this;
+    }
 
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "Usres.db";
@@ -110,9 +117,9 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_ENTRIES_USERS);
         db.execSQL(SQL_CREATE_ENTRIES_USERS_MESSAGE);
         db.execSQL(SQL_CREATE_ENTRIES_USERS_CALENDAR);
-        //db.execSQL(SQL_CREATE_ENTRIES_USERS_EQUIPMENT);
+        db.execSQL(SQL_CREATE_ENTRIES_USERS_EQUIPMENT);
 
-        Log.e("*******************", "DB_OnCreate");
+        Log.e(TAG, "DB_OnCreate");
 
 
     }
@@ -123,7 +130,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_DELETE_ENTRIES_CALENDAR);
         //db.execSQL(SQL_DELETE_ENTRIESs);
         // onCreate(db);
-        Log.e("*******************", "DB_onUpgrade");
+        Log.e(TAG, "DB_onUpgrade");
 
     }
 
@@ -137,11 +144,11 @@ public class DBHelper extends SQLiteOpenHelper {
 
         // Select All Query
 
-        Log.e("*******************", "getAllFriend");
+        Log.e(TAG, "getAllFriend");
 
         String selectQuery = "SELECT  * FROM " + FeedReaderContract.FeedEntry.TABLE_NAME;
 
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         // looping through all rows and adding to list
@@ -180,9 +187,8 @@ public class DBHelper extends SQLiteOpenHelper {
     public List<Message> getAllMsg() {
         List<Message> msgList = new ArrayList<>();
 
-        SQLiteDatabase db = this.getWritableDatabase();
         db = this.getReadableDatabase();
-        Log.e("*******************", "getAllMsg");
+        Log.e(TAG, "getAllMsg");
 
 
         try {
@@ -270,94 +276,172 @@ public class DBHelper extends SQLiteOpenHelper {
         return calendarList;
     }
 
+    public List<Equipment> getAllEquipment() {
+        List<Equipment> equipment = new ArrayList<>();
+
+        // Select All Query
+
+        Log.e(TAG, "getAllEquipment");
+
+        String selectQuery = "SELECT  * FROM " + FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+
+                mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
+                current_uid = mCurrentUser.getUid();
+
+                Equipment equipments = new Equipment();
+
+
+                String getTimeCursor = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
+                long getTimeLong = Long.parseLong(getTimeCursor);
+
+                DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm");
+                String timeFormat = getTimeHourMintus.format(getTimeLong);
+
+                String name = equipments.setNameProd(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.NAME_EQUIPMENT)));
+                String content =equipments.setContent(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.CONTENT)));
+                String mount = equipments.setMount(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MOUNT)));
+                String mountCurrent = equipments.setMountCurrent(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MOUNT_CURRENT)));
+                String time = equipments.setTime(timeFormat);
+                String image = equipments.setImage(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.IMAGE)));
+                String sender = equipments.setSender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
+                String msg_uid = equipments.setUid(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
+
+                Log.e("nanananannana",content);
+                Log.e("nanananannana",mount);
+                Log.e("nanananannana",mountCurrent);
+                Log.e("nanananannana",image);
+                Log.e("nanananannana",sender);
+                Log.e("nanananannana",time);
+                Log.e("nanananannana",msg_uid);
+                Log.e("nanananannana",name);
+
+
+
+                equipment.add(equipments);
+
+
+
+            } while (cursor.moveToNext());
+
+        }
+        // close db connection
+        db.close();
+        // return notes list
+        return equipment;
+    }
+
 
 
     public void SaveDBSqlite(String Name, String Camp, String Uid, String image, String lstmsg) {
 
+        SQLiteDatabase db;
 
-        SQLiteDatabase db = this.getReadableDatabase();
         db = this.getWritableDatabase();
 
-
-        try {
-
-
-            String[] projection = {
-                    BaseColumns._ID,
-                    FeedReaderContract.FeedEntry.NAME,
-                    FeedReaderContract.FeedEntry.CAMPS,
-                    FeedReaderContract.FeedEntry.ADMIN,
-                    FeedReaderContract.FeedEntry.IMAGE,
-                    FeedReaderContract.FeedEntry.UID,
-                    FeedReaderContract.FeedEntry.UID_id
-            };
-
-            String selection = FeedReaderContract.FeedEntry.NAME + " = ?";
-            String[] selectionArgs = {Name};
-
-            String sortOrder =
-                    FeedReaderContract.FeedEntry.UID + " DESC";
-
-            Cursor cursor = db.query(
-                    FeedReaderContract.FeedEntry.TABLE_NAME,   // The table to query
-                    projection,             // The array of columns to return (pass null to get all)
-                    selection,              // The columns for the WHERE clause
-                    selectionArgs,          // The values for the WHERE clause
-                    null,                   // don't group the rows
-                    null,                   // don't filter by row groups
-                    sortOrder               // The sort order
-            );
+        ContentValues values = new ContentValues();
+        values.put(FeedReaderContract.FeedEntry.ADMIN, "default");
+        values.put(FeedReaderContract.FeedEntry.CAMPS, Camp);
+        values.put(FeedReaderContract.FeedEntry.CHAT, "default");
+        values.put(FeedReaderContract.FeedEntry.EMAIL, "default");
+        values.put(FeedReaderContract.FeedEntry.IMAGE, image);
+        values.put(FeedReaderContract.FeedEntry.NAME, Name);
+        values.put(FeedReaderContract.FeedEntry.NUMBER, "default");
+        values.put(FeedReaderContract.FeedEntry.PASSWORD, "default");
+        values.put(FeedReaderContract.FeedEntry.STATUS, "default");
+        values.put(FeedReaderContract.FeedEntry.TIME, "default");
+        values.put(FeedReaderContract.FeedEntry.UID, Uid);
+        values.put(FeedReaderContract.FeedEntry.LASTMSG, lstmsg);
 
 
-            cursor.moveToNext();
+        // Insert the new row, returning the primary key value of the new row
+        long newRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
 
-            String nameCheck = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.NAME));
-
-
-            if (!nameCheck.equals(Name)) {
-
-                Log.e("*******************", "SaveDBSqlite_succ");
-
-                ContentValues values = new ContentValues();
-                values.put(FeedReaderContract.FeedEntry.ADMIN, "default");
-                values.put(FeedReaderContract.FeedEntry.CAMPS, Camp);
-                values.put(FeedReaderContract.FeedEntry.CHAT, "default");
-                values.put(FeedReaderContract.FeedEntry.EMAIL, "default");
-                values.put(FeedReaderContract.FeedEntry.IMAGE, image);
-                values.put(FeedReaderContract.FeedEntry.NAME, Name);
-                values.put(FeedReaderContract.FeedEntry.NUMBER, "default");
-                values.put(FeedReaderContract.FeedEntry.PASSWORD, "default");
-                values.put(FeedReaderContract.FeedEntry.STATUS, "default");
-                values.put(FeedReaderContract.FeedEntry.TIME, "default");
-                values.put(FeedReaderContract.FeedEntry.UID, Uid);
-                values.put(FeedReaderContract.FeedEntry.LASTMSG, lstmsg);
-
-
-                // Insert the new row, returning the primary key value of the new row
-                long newRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
-            }
-
-        } catch (Exception e) {
-            Log.e("*******************", "SaveDBSqlite_error");
-
-            ContentValues values = new ContentValues();
-            values.put(FeedReaderContract.FeedEntry.ADMIN, "default");
-            values.put(FeedReaderContract.FeedEntry.CAMPS, Camp);
-            values.put(FeedReaderContract.FeedEntry.CHAT, "default");
-            values.put(FeedReaderContract.FeedEntry.EMAIL, "default");
-            values.put(FeedReaderContract.FeedEntry.IMAGE, image);
-            values.put(FeedReaderContract.FeedEntry.NAME, Name);
-            values.put(FeedReaderContract.FeedEntry.NUMBER, "default");
-            values.put(FeedReaderContract.FeedEntry.PASSWORD, "default");
-            values.put(FeedReaderContract.FeedEntry.STATUS, "default");
-            values.put(FeedReaderContract.FeedEntry.TIME, "default");
-            values.put(FeedReaderContract.FeedEntry.UID, Uid);
-            values.put(FeedReaderContract.FeedEntry.LASTMSG, lstmsg);
-
-
-            // Insert the new row, returning the primary key value of the new row
-            long newRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
-        }
+//        try {
+//
+//
+//            String[] projection = {
+//                    BaseColumns._ID,
+//                    FeedReaderContract.FeedEntry.NAME,
+//                    FeedReaderContract.FeedEntry.CAMPS,
+//                    FeedReaderContract.FeedEntry.ADMIN,
+//                    FeedReaderContract.FeedEntry.IMAGE,
+//                    FeedReaderContract.FeedEntry.UID,
+//                    FeedReaderContract.FeedEntry.UID_id
+//            };
+//
+//            String selection = FeedReaderContract.FeedEntry.NAME + " = ?";
+//            String[] selectionArgs = {Name};
+//
+//            String sortOrder =
+//                    FeedReaderContract.FeedEntry.UID + " DESC";
+//
+//            Cursor cursor = db.query(
+//                    FeedReaderContract.FeedEntry.TABLE_NAME,   // The table to query
+//                    projection,             // The array of columns to return (pass null to get all)
+//                    selection,              // The columns for the WHERE clause
+//                    selectionArgs,          // The values for the WHERE clause
+//                    null,                   // don't group the rows
+//                    null,                   // don't filter by row groups
+//                    sortOrder               // The sort order
+//            );
+//
+//
+//            cursor.moveToNext();
+//
+//            String nameCheck = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.NAME));
+//
+//
+//            if (!nameCheck.equals(Name)) {
+//
+//                Log.e("*******************", "SaveDBSqlite_succ");
+//
+//                ContentValues values = new ContentValues();
+//                values.put(FeedReaderContract.FeedEntry.ADMIN, "default");
+//                values.put(FeedReaderContract.FeedEntry.CAMPS, Camp);
+//                values.put(FeedReaderContract.FeedEntry.CHAT, "default");
+//                values.put(FeedReaderContract.FeedEntry.EMAIL, "default");
+//                values.put(FeedReaderContract.FeedEntry.IMAGE, image);
+//                values.put(FeedReaderContract.FeedEntry.NAME, Name);
+//                values.put(FeedReaderContract.FeedEntry.NUMBER, "default");
+//                values.put(FeedReaderContract.FeedEntry.PASSWORD, "default");
+//                values.put(FeedReaderContract.FeedEntry.STATUS, "default");
+//                values.put(FeedReaderContract.FeedEntry.TIME, "default");
+//                values.put(FeedReaderContract.FeedEntry.UID, Uid);
+//                values.put(FeedReaderContract.FeedEntry.LASTMSG, lstmsg);
+//
+//
+//                // Insert the new row, returning the primary key value of the new row
+//                long newRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
+//            }
+//
+//        } catch (Exception e) {
+//            Log.e("*******************", "SaveDBSqlite_error");
+//
+//            ContentValues values = new ContentValues();
+//            values.put(FeedReaderContract.FeedEntry.ADMIN, "default");
+//            values.put(FeedReaderContract.FeedEntry.CAMPS, Camp);
+//            values.put(FeedReaderContract.FeedEntry.CHAT, "default");
+//            values.put(FeedReaderContract.FeedEntry.EMAIL, "default");
+//            values.put(FeedReaderContract.FeedEntry.IMAGE, image);
+//            values.put(FeedReaderContract.FeedEntry.NAME, Name);
+//            values.put(FeedReaderContract.FeedEntry.NUMBER, "default");
+//            values.put(FeedReaderContract.FeedEntry.PASSWORD, "default");
+//            values.put(FeedReaderContract.FeedEntry.STATUS, "default");
+//            values.put(FeedReaderContract.FeedEntry.TIME, "default");
+//            values.put(FeedReaderContract.FeedEntry.UID, Uid);
+//            values.put(FeedReaderContract.FeedEntry.LASTMSG, lstmsg);
+//
+//
+//            // Insert the new row, returning the primary key value of the new row
+//            long newRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
+//        }
 
         db.close();
 
@@ -388,7 +472,7 @@ public class DBHelper extends SQLiteOpenHelper {
         // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert(TABLE_NAME_MESSAGE, null, values);
 
-        Log.e("*******************", String.valueOf(newRowId) + " SaveDBSqliteUserrrrrrrr");
+        Log.e(TAG, String.valueOf(newRowId) + " SaveDBSqliteUserrrrrrrr");
 
 
         db.close();
@@ -443,7 +527,34 @@ public class DBHelper extends SQLiteOpenHelper {
         prefs.edit().putString("time_calendar", time);
 
 
-        Log.e("*******************", String.valueOf(time) + " time_calendar");
+        Log.e(TAG, String.valueOf(time) + " time_calendar");
+
+        db.close();
+    }
+
+    public void SaveDBSqliteToEquipment(String nameProd, String content, String mount, String mountCurrent, String time, String image, String sender, String uid_msg) {
+
+        SQLiteDatabase db;
+
+        db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(FeedReaderContract.FeedEntry.NAME_EQUIPMENT, nameProd);
+        values.put(FeedReaderContract.FeedEntry.CONTENT, content);
+        values.put(FeedReaderContract.FeedEntry.MOUNT, mount);
+        values.put(FeedReaderContract.FeedEntry.MOUNT_CURRENT, mountCurrent);
+        values.put(FeedReaderContract.FeedEntry.TIME, time);
+        values.put(FeedReaderContract.FeedEntry.IMAGE, image);
+        values.put(FeedReaderContract.FeedEntry.MESSAGE_SENDER, sender);
+        values.put(FeedReaderContract.FeedEntry.MESSAGE_UID, uid_msg);
+
+        // Insert the new row, returning the primary key value of the new row
+        long newRowId = db.insert(TABLE_NAME_EQUIPMENT, null, values);
+
+        prefs.edit().putString("time_equipment", time);
+
+
+        Log.e(TAG, String.valueOf(time) + " time_equipment");
 
         db.close();
     }

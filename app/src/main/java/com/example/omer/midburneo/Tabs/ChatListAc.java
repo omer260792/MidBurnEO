@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -82,7 +83,6 @@ public class ChatListAc extends AppCompatActivity {
     public TextView tvFriendUser, statusFriendUser;
     public CircleImageView imgUser;
 
-
     public String nameUserIntent, campUserIntent, uidUserIntent, imageUserIntent, statusUserIntent, countUserIntent, timeUserIntent, current_image, timeExitSP, current_uid, current_name, realTime, nameCampSP, childGroupName, TestStatuName, last_msg, stringUrl, StringCurrentMil, currentTime;
     public String time = "time";
     public String image = "image";
@@ -95,26 +95,21 @@ public class ChatListAc extends AppCompatActivity {
     public String TEST;
     public static final String setImgUrlDefault = "https://firebasestorage.googleapis.com/v0/b/midburneo-6d072.appspot.com/o/profile_images%2Fcropped5081028198796683166.jpg?alt=media&token=8c49a7b9-2ee5-4ea6-b7c2-52199ef167f8";
     public int checkTablecount, countSqlLite;
+    public int num = 1;
     private long currentDateTime;
-
     private Uri resultUri;
 
     private final List<Message> messageList = new ArrayList<>();
     RecyclerView.Adapter messageAdapter;
-
     private DatabaseReference mUserDatabase;
     private StorageReference mImageStorage, filePath;
-
     public DBHelper dbHelper;
     public SQLiteDatabase db;
-
     public SharedPreferences prefs;
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-
-        Log.e("*******************", "OnCreate");
 
         nameUserIntent = getIntent().getStringExtra("nameUidFriend");
         campUserIntent = getIntent().getStringExtra("campUidFriend");
@@ -124,13 +119,10 @@ public class ChatListAc extends AppCompatActivity {
         countUserIntent = getIntent().getStringExtra("countUidFriend");
         timeUserIntent = getIntent().getStringExtra("timeUidFriend");
 
-        tvFriendUser = findViewById(R.id.tvFriendUser);
-        tvFriendUser.setText(nameUserIntent);
-
         dbHelper = new DBHelper(getApplicationContext());
-
         mImageStorage = FirebaseStorage.getInstance().getReference();
-
+        current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        //FirebaseAuth.getInstance();
 
         recyclerView = findViewById(R.id.recyclerView);
         imgBtnSendMsg = findViewById(R.id.imgBtnSendMsg);
@@ -138,9 +130,8 @@ public class ChatListAc extends AppCompatActivity {
         edittxtMsg = findViewById(R.id.edittxtMsg);
         imgUser = findViewById(R.id.imgUser);
         statusFriendUser = findViewById(R.id.statusFriendUser);
-
-
-        current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        tvFriendUser = findViewById(R.id.tvFriendUser);
+        tvFriendUser.setText(nameUserIntent);
 
 
         prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
@@ -149,37 +140,50 @@ public class ChatListAc extends AppCompatActivity {
         nameCampSP = prefs.getString("camps", null);
         timeExitSP = prefs.getString("time_msg", null);
 
+        getRawCountSql();
+        TEST = current_uid + uidUserIntent;
 
         if (imageUserIntent == null || imageUserIntent == "default") {
-
             Picasso.get().load(R.drawable.midburn_logo).error(R.drawable.midburn_logo).into(imgUser);
-
         } else {
             Picasso.get().load(imageUserIntent).error(R.drawable.midburn_logo).into(imgUser);
-
         }
-
-        FirebaseAuth.getInstance();
-
-        TEST = current_uid + uidUserIntent;
 
         if (nameUserIntent.equals(nameCampSP)) {
             TABLE_NAME_MESSAGE = current_uid;
         } else {
             TABLE_NAME_MESSAGE = uidUserIntent;
-
         }
 
         try {
             CreateUserTableSqlite();
-
             tableExists(db, TABLE_NAME_MESSAGE);
-            Log.e("*******************", "try-CheckifTableExsits:");
+            Log.e(TAG, "try-CheckifTableExsits:");
         } catch (Exception e) {
-            Log.e("*******************", "CATCH-CheckifTableExsits:");
+            Log.e(TAG, "CATCH-CheckifTableExsits:");
 
         }
 
+        if (checkTablecount == 0) {
+            Log.e(TAG, "1");
+            num = 2;
+            CreateUserTableSqlite();
+
+            if (checkTablecount != 0) {
+                Log.e(TAG, "1+2");
+                updateDBFireBaseToSqlLite();
+            }
+        } else {
+            if (countSqlLite == 0) {
+                Log.e(TAG, "2");
+                num = 2;
+                updateDBFireBaseToSqlLite();
+
+            } else {
+                Log.e(TAG, "2+1");
+                getmsg();
+            }
+        }
 
         imgBtnSendMsg.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -235,44 +239,55 @@ public class ChatListAc extends AppCompatActivity {
             }
         });
 
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        Log.e(TAG, "onStart");
 
-        Log.e("*******************", "onStart");
 
         if (checkTablecount == 0) {
-            CreateUserTableSqlite();
-        } else {
-            getRawCountSql();
-            if (countSqlLite == 0) {
-                updateDBFireBaseToSqlLite();
-            } else {
-                getmsg();
 
+            Log.e(TAG, "onStart:" + 1);
+
+            num = 2;
+            CreateUserTableSqlite();
+            if (checkTablecount != 0) {
+                Log.e(TAG, "onStart:" + 2);
+
+                updateDBFireBaseToSqlLite();
             }
-            CheckUserIfOnline();
+
+        } else {
+
         }
+
+        CheckUserIfOnline();
+
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        getLastMsg();
+
+    }
+
 
 
     public void CreateUserTableSqlite() {
         try {
 
-            Log.e("*******************", "CreateUserTableSqlite");
-
+            Log.e(TAG, "CreateUserTableSqlite Funk ");
 
             db = dbHelper.getWritableDatabase();
-            db = dbHelper.getReadableDatabase();
             dbHelper.onCreate(db);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
     }
 
 
@@ -315,79 +330,114 @@ public class ChatListAc extends AppCompatActivity {
 
     public void updateDBFireBaseToSqlLite() {
 
-
-
         if (nameUserIntent.equals(nameCampSP)) {
 
-            if (timeUserIntent.equals("default")){
+            if (timeUserIntent.equals("default")) {
 
-                getRawCountSql();
-                if (countSqlLite==0){
+                if (countSqlLite == 0) {
+
+                    num = 2;
 
                     long currentDateTime = System.currentTimeMillis();
                     currentTime = String.valueOf(currentDateTime);
+                    mUserDatabase = FirebaseDatabase.getInstance().getReference().child("ChatRooms").child(uidUserIntent);
+                    mUserDatabase.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                }else {
+                            for (DataSnapshot ds : dataSnapshot.getChildren()) {
 
-                    SQLiteDatabase dbr;
-                    dbr = dbHelper.getWritableDatabase();
+
+                                image = ds.child("image").getValue(String.class);
+                                nameSender = ds.child("nameSender").getValue(String.class);
+                                sender = ds.child("sender").getValue(String.class);
+                                receiver = ds.child("receiver").getValue(String.class);
+                                text = ds.child("message").getValue(String.class);
+                                time = ds.child("time").getValue(String.class);
+                                get_msg_uid = ds.getKey();
+
+
+                                TestStatuName = uidUserIntent + current_uid;
+
+                                dbHelper.SaveDBSqliteGroup(text, receiver, sender, nameSender, time, image, get_msg_uid, TestStatuName, current_uid);
+
+                            }
+                            if (num == 2) {
+                                getmsg();
+                                num = 1;
+
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+
+                } else {
+
+
+                    db = dbHelper.getWritableDatabase();
 
                     String countQuery = "SELECT  * FROM " + current_uid;
-                    Cursor cursor = dbr.rawQuery(countQuery, null);
+                    Cursor cursor = db.rawQuery(countQuery, null);
                     cursor.moveToLast();
-//        last_msg = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE));
+
                     time = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
 
                     long lastTimeUser = Long.parseLong(time);
                     currentTime = String.valueOf(lastTimeUser);
 
+                    Log.e("*******************", "GroupCheckMsgFirebase - 1");
+                    Log.e(TAG, "GroupCheckMsgFirebase - 1" + realTime);
+
+                    mUserDatabase = FirebaseDatabase.getInstance().getReference().child("ChatRooms").child(uidUserIntent);
+                    mUserDatabase.orderByChild("time").startAt(currentTime).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            Log.d(TAG + "test", dataSnapshot.getChildren().toString());
+
+                            int FBCount = (int) dataSnapshot.getChildrenCount();
+
+                            if (FBCount > countSqlLite) {
+
+                                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+
+                                    image = ds.child("image").getValue(String.class);
+                                    nameSender = ds.child("nameSender").getValue(String.class);
+                                    sender = ds.child("sender").getValue(String.class);
+                                    receiver = ds.child("receiver").getValue(String.class);
+                                    text = ds.child("message").getValue(String.class);
+                                    time = ds.child("time").getValue(String.class);
+                                    get_msg_uid = ds.getKey();
+
+                                    Log.e(TAG, "GroupCheckMsgFirebase - 2");
+
+                                    TestStatuName = uidUserIntent + current_uid;
+
+                                    dbHelper.SaveDBSqliteGroup(text, receiver, sender, nameSender, time, image, get_msg_uid, TestStatuName, current_uid);
+
+                                }
+                            }
+
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+
                 }
-
-
             }
-            Log.e("*******************", "GroupCheckMsgFirebase - 1");
-            Log.e("*******************", "GroupCheckMsgFirebase - 1" + realTime);
-
-            mUserDatabase = FirebaseDatabase.getInstance().getReference().child("ChatRooms").child(uidUserIntent);
-            mUserDatabase.orderByChild("time").endAt(currentTime).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    Log.d(TAG + "test", dataSnapshot.getChildren().toString());
-
-                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
-
-
-                        image = ds.child("image").getValue(String.class);
-                        nameSender = ds.child("nameSender").getValue(String.class);
-                        sender = ds.child("sender").getValue(String.class);
-                        receiver = ds.child("receiver").getValue(String.class);
-                        text = ds.child("message").getValue(String.class);
-                        time = ds.child("time").getValue(String.class);
-                        get_msg_uid = ds.getKey();
-
-                        Log.e("*******************", "GroupCheckMsgFirebase - 2");
-
-                        TestStatuName = uidUserIntent + current_uid;
-
-                        dbHelper.SaveDBSqliteGroup(text, receiver, sender, nameSender, time, image, get_msg_uid, TestStatuName, current_uid);
-
-                    }
-
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
-
 
         } else {
 
 
             TestStatuName = uidUserIntent + current_uid;
 
-            Log.e("*******************", "DefaultCheckMsgFirebase - 1");
+            Log.e(TAG, "DefaultCheckMsgFirebase - 1");
 
             DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("ChatRooms").child("default");
             databaseReference.orderByChild("status").equalTo(TestStatuName).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -397,7 +447,7 @@ public class ChatListAc extends AppCompatActivity {
                     for (DataSnapshot ds : dataSnapshot.getChildren()) {
 
                         int FBCount = (int) dataSnapshot.getChildrenCount();
-                        Log.e("*******************", FBCount + "FBCount - 2");
+                        Log.e(TAG, FBCount + "FBCount - 2");
 
                         image = ds.child("image").getValue(String.class);
                         text = ds.child("message").getValue(String.class);
@@ -405,20 +455,17 @@ public class ChatListAc extends AppCompatActivity {
                         get_msg_uid = ds.getKey();
 
 
-                        Log.e("*******************", "DefaultCheckMsgFirebase - 2");
+                        Log.e(TAG, "DefaultCheckMsgFirebase - 2");
 
                         dbHelper.SaveDBSqliteUser(text, current_uid, uidUserIntent, nameUserIntent, time, image, get_msg_uid, TestStatuName, uidUserIntent);
 
                         int test = countSqlLite + 1;
-                        Log.e("*******************1", String.valueOf(test));
+                        Log.e(TAG, String.valueOf(test));
 
-                        getRawCountSql();
 
                         int lastCountSql = countSqlLite;
-                        Log.e("*******************2", String.valueOf(lastCountSql));
+                        Log.e(TAG, String.valueOf(lastCountSql));
 
-
-                        BoolRefresh = false;
 
                         tableExists(db, TABLE_NAME_MESSAGE);
 
@@ -426,7 +473,7 @@ public class ChatListAc extends AppCompatActivity {
                             mUserDatabase = FirebaseDatabase.getInstance().getReference().child("ChatRooms").child("default").child(get_msg_uid);
 
 
-                            Log.e("*******************3", String.valueOf(get_msg_uid));
+                            Log.e(TAG, String.valueOf(get_msg_uid));
 
                             Map<String, Object> stringObjectHashMap = new HashMap<>();
 
@@ -439,7 +486,6 @@ public class ChatListAc extends AppCompatActivity {
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-                    BoolRefresh = true;
 
                 }
             });
@@ -448,30 +494,23 @@ public class ChatListAc extends AppCompatActivity {
 
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        getLastMsg();
-
-    }
 
 
     public void getLastMsg() {
 
         try {
 
-            SQLiteDatabase dbr;
-            dbr = dbHelper.getWritableDatabase();
+            db = dbHelper.getWritableDatabase();
 
             String countQuery = "SELECT  * FROM " + TABLE_NAME_MESSAGE;
-            Cursor cursor = dbr.rawQuery(countQuery, null);
+            Cursor cursor = db.rawQuery(countQuery, null);
             cursor.moveToLast();
             last_msg = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE));
             time = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
 
 
-            Log.e("*******************", "onDestroy_lastMsg: " + last_msg);
-            Log.e("*******************", "onDestroy_lastMsg: " + time);
+            Log.e(TAG, "onDestroy_lastMsg: " + last_msg);
+            Log.e(TAG, "onDestroy_lastMsg: " + time);
             cursor.close();
 
             int count = Integer.parseInt(countUserIntent);
@@ -480,10 +519,10 @@ public class ChatListAc extends AppCompatActivity {
             cv.put("lastmsg", last_msg);
             cv.put("time", time);
 
-            dbr.update(TABLE_NAME, cv, "_id=" + count, null);
+            db.update(TABLE_NAME, cv, "_id=" + count, null);
 
         } catch (Exception e) {
-            Log.e("*******************", "Exception - Error get_Last_msg");
+            Log.e(TAG, "Exception - Error get_Last_msg");
 
         }
 
@@ -492,17 +531,22 @@ public class ChatListAc extends AppCompatActivity {
 
 
     public long getRawCountSql() {
-        SQLiteDatabase dbr;
-        dbr = dbHelper.getWritableDatabase();
+        db = dbHelper.getWritableDatabase();
 
-        String countQuery = "SELECT  * FROM " + TABLE_NAME_MESSAGE;
-        Cursor cursor = dbr.rawQuery(countQuery, null);
-        cursor.moveToFirst();
-        long count = cursor.getCount();
 
-        Log.e("*******************", String.valueOf(count) + "getrawCount");
-        countSqlLite = (int) count;
-        cursor.close();
+        try {
+            String countQuery = "SELECT  * FROM " + TABLE_NAME_MESSAGE;
+            Cursor cursor = db.rawQuery(countQuery, null);
+            cursor.moveToFirst();
+            long count = cursor.getCount();
+
+            Log.e(TAG, "getrawCount:" + String.valueOf(count));
+            countSqlLite = (int) count;
+            cursor.close();
+
+        } catch (Exception e) {
+
+        }
 
         return countSqlLite;
     }
@@ -518,7 +562,7 @@ public class ChatListAc extends AppCompatActivity {
         }
         checkTablecount = cursor.getInt(0);
         cursor.close();
-        Log.e("*******************", String.valueOf(checkTablecount));
+        Log.e(TAG, "tableExists" + String.valueOf(checkTablecount));
 
         return checkTablecount > 0;
     }
@@ -627,16 +671,10 @@ public class ChatListAc extends AppCompatActivity {
                                 stringUrl = String.valueOf(uri);
 
                                 if (stringUrl != null) {
-                                    //Picasso.get().load(stringUrl).error(R.drawable.admin_btn_logo).into(recyclerView);
 
                                     getRealTime();
                                     text = "image";
                                     get_msg_uid = UUID.randomUUID().toString();
-                                    //  messageList.add(new Message(stringUrl, text, realTime, current_uid, uidUserIntent, nameUserIntent, current_name, get_msg_uid, TEST));
-
-                                    //         recyclerView.setLayoutManager(new LinearLayoutManager(ChatListAc.this));
-                                    //     messageAdapter = new MessageAdapter(ChatListAc.this, messageList);
-                                    //recyclerView.setAdapter(messageAdapter);
 
 
                                     if (nameUserIntent.equals(nameCampSP)) {
@@ -680,7 +718,6 @@ public class ChatListAc extends AppCompatActivity {
 
     public void getRealTime() {
 
-
         currentDateTime = System.currentTimeMillis();
         StringCurrentMil = String.valueOf(currentDateTime);
         time = String.valueOf(currentDateTime);
@@ -688,7 +725,6 @@ public class ChatListAc extends AppCompatActivity {
         DateFormat getTimeDmY = new SimpleDateFormat("dd:MM:yy:HH:mm:ss");
 
         realTime = getTimeHourMintus.format(currentDateTime);
-
     }
 }
 

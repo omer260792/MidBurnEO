@@ -14,11 +14,13 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.example.omer.midburneo.Adapters.EquipmentAdapter;
 import com.example.omer.midburneo.Adapters.FriendsAdapter;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.R;
+import com.example.omer.midburneo.Utils.UtilHelper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -43,9 +45,11 @@ public class ChatAc extends AppCompatActivity {
     private RecyclerView recyclerView;
     private TextView nameCampTv;
     private CircleImageView imageView;
+    private UtilHelper utilHelper;
 
-    public String current_uid, currentImageSP, currentNameSP,currentstatusSp, currentCampSP, getUid, getUidUsers, get_lastmsg, getNameReceiver, get_image, get_time , name;
+    public String current_uid, currentImageSP, currentNameSP, currentstatusSp, currentCampSP, getUid, getUidUsers, get_lastmsg, getNameReceiver, get_image, get_time, name;
     public long countSqlLite;
+    public int num = 1;
 
     RecyclerView.Adapter mAdapter;
     RecyclerView.LayoutManager layoutManager;
@@ -75,6 +79,7 @@ public class ChatAc extends AppCompatActivity {
         nameCampTv.setText(currentCampSP);
 
         db = new DBHelper(getApplicationContext());
+        //utilHelper = new UtilHelper();
 
         try {
             Picasso.get().load(currentImageSP).error(R.drawable.midburn_logo).into(imageView);
@@ -89,31 +94,34 @@ public class ChatAc extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         personUtilsList = new ArrayList<>();
 
-        getmsg();
+        getProfilesCount();
 
+        if (countSqlLite == 0) {
+            num = 2;
+            UpdateSqliteFromFireBase();
+            Log.d("onStrartCahtAc", String.valueOf(num));
+
+
+        } else {
+            num = 1;
+            getmsg();
+            UpdateSqliteFromFireBase();
+            Log.d("onStrartCahtAc", String.valueOf(num));
+
+        }
 
     }
-
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        UpdateSqliteFromFireBase();
-
-    }
-
 
 
     public void getmsg() {
 
         personUtilsList.addAll(db.getAllFriend());
-
         mAdapter = new FriendsAdapter(this, personUtilsList);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(mAdapter);
+
+        getProfilesCount();
 
     }
 
@@ -124,6 +132,8 @@ public class ChatAc extends AppCompatActivity {
         long count = cursor.getCount();
         countSqlLite = (long) count;
         cursor.close();
+        Log.d("getProfilesCount", String.valueOf(countSqlLite));
+
 
         return countSqlLite;
     }
@@ -131,39 +141,51 @@ public class ChatAc extends AppCompatActivity {
 
     public void UpdateSqliteFromFireBase() {
 
-        getProfilesCount();
 
-        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference discussionRoomsRef = rootRef.child("Users");
+        if (currentCampSP.equals(null)) {
+            return;
+        } else {
+            DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+            DatabaseReference discussionRoomsRef = rootRef.child("Users");
 
-        Query query = discussionRoomsRef.orderByChild("camps").equalTo(currentCampSP);
-        ValueEventListener valueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    long FBCount = dataSnapshot.getChildrenCount();
+            Query query = discussionRoomsRef.orderByChild("camps").equalTo(currentCampSP);
+            ValueEventListener valueEventListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        long FBCount = dataSnapshot.getChildrenCount();
 
-                    if (countSqlLite < FBCount) {
+                        if (countSqlLite < FBCount) {
 
-                        getNameReceiver = ds.child("name").getValue(String.class);
-                        get_image = ds.child("image").getValue(String.class);
-                        get_lastmsg = ds.child("lastmsg").getValue(String.class);
-                        getUidUsers = ds.getKey();
+                            getNameReceiver = ds.child("name").getValue(String.class);
+                            get_image = ds.child("image").getValue(String.class);
+                            get_lastmsg = ds.child("lastmsg").getValue(String.class);
+                            getUidUsers = ds.getKey();
 
-                        Log.d("countSqlLite", String.valueOf(countSqlLite));
-                        Log.d("FBCount", String.valueOf(FBCount));
+                            Log.d("countSqlLite", String.valueOf(countSqlLite));
+                            Log.d("FBCount", String.valueOf(FBCount));
 
+                            db.SaveDBSqlite(getNameReceiver, currentCampSP, getUidUsers, get_image, get_lastmsg);
 
-                        db.SaveDBSqlite(getNameReceiver, currentCampSP, getUidUsers, get_image, get_lastmsg);
+                        }
+                    }
+                    if (num == 2) {
+                        getmsg();
+                        num = 1;
 
                     }
+
                 }
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        };
-        query.addListenerForSingleValueEvent(valueEventListener);
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            };
+            query.addValueEventListener(valueEventListener);
+
+
+        }
+
 
     }
 

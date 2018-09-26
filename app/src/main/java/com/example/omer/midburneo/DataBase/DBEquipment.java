@@ -30,7 +30,7 @@ public class DBEquipment extends SQLiteOpenHelper {
     private DBEquipment dbEquipment;
 
 
-    public String SQL_CREATE_ENTRIES_USERS_EQUIPMENT =
+    public String SQL_CREATE_ENTRIES_USERS_EQUIPMENT_FORM =
             "CREATE TABLE IF NOT EXISTS " + TABLE_NAME_EQUIPMENT + " (" + FeedReaderContract.FeedEntry._ID + " INTEGER PRIMARY KEY," +
                     FeedReaderContract.FeedEntry.NAME_EQUIPMENT + " TEXT," +
                     FeedReaderContract.FeedEntry.CONTENT + " TEXT," +
@@ -38,8 +38,7 @@ public class DBEquipment extends SQLiteOpenHelper {
                     FeedReaderContract.FeedEntry.MOUNT_CURRENT + " TEXT," +
                     FeedReaderContract.FeedEntry.TIME + " TEXT," +
                     FeedReaderContract.FeedEntry.IMAGE + " TEXT," +
-                    FeedReaderContract.FeedEntry.MESSAGE_SENDER + " TEXT," +
-                    FeedReaderContract.FeedEntry.MESSAGE_UID + " TEXT)";
+                    FeedReaderContract.FeedEntry.MESSAGE_SENDER + " TEXT)";
 
 
     private String SQL_DELETE_ENTRIES_EQUIPMENT =
@@ -70,7 +69,7 @@ public class DBEquipment extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(SQL_CREATE_ENTRIES_USERS_EQUIPMENT);
+        db.execSQL(SQL_CREATE_ENTRIES_USERS_EQUIPMENT_FORM);
 
     }
 
@@ -80,7 +79,7 @@ public class DBEquipment extends SQLiteOpenHelper {
 
     }
 
-    public void SaveDBSqliteToEquipment(String nameProd, String content, String mount, String mountCurrent, String time, String image, String sender, String uid_msg) {
+    public void SaveDBSqliteToEquipmentExcel(String nameProd, String content, String mount, String mountCurrent, String time, String image, String sender) {
 
         SQLiteDatabase db;
 
@@ -94,7 +93,6 @@ public class DBEquipment extends SQLiteOpenHelper {
         values.put(FeedReaderContract.FeedEntry.TIME, time);
         values.put(FeedReaderContract.FeedEntry.IMAGE, image);
         values.put(FeedReaderContract.FeedEntry.MESSAGE_SENDER, sender);
-        values.put(FeedReaderContract.FeedEntry.MESSAGE_UID, uid_msg);
 
         // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert(TABLE_NAME_EQUIPMENT, null, values);
@@ -102,68 +100,68 @@ public class DBEquipment extends SQLiteOpenHelper {
         prefs.edit().putString("time_equipment", time);
 
 
-        Log.e("*******************", String.valueOf(time) + " time_equipment");
+        Log.e(TAG, String.valueOf(time) + " time_equipment");
 
         db.close();
     }
-    public List<Equipment> getAllEquipment() {
-        List<Equipment> equipment = new ArrayList<>();
-
-        // Select All Query
-
-        Log.e("*******************", "getAllEquipment");
-
-        String selectQuery = "SELECT  * FROM " + FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
-
-        // looping through all rows and adding to list
-        if (cursor.moveToFirst()) {
-            do {
-
-                mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
-                current_uid = mCurrentUser.getUid();
-
-                Equipment equipments = new Equipment();
-
-
-                String getTimeCursor = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
-                long getTimeLong = Long.parseLong(getTimeCursor);
-
-                DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm");
-                String timeFormat = getTimeHourMintus.format(getTimeLong);
-
-                String name = equipments.setNameProd(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.NAME_EQUIPMENT)));
-                String content =equipments.setContent(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.CONTENT)));
-                String mount = equipments.setMount(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MOUNT)));
-                String mountCurrent = equipments.setMountCurrent(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MOUNT_CURRENT)));
-                String time = equipments.setTime(timeFormat);
-                String image = equipments.setImage(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.IMAGE)));
-                String sender = equipments.setSender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
-                String msg_uid = equipments.setUid(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
-
-                Log.e("nanananannana",content);
-                Log.e("nanananannana",mount);
-                Log.e("nanananannana",mountCurrent);
-                Log.e("nanananannana",image);
-                Log.e("nanananannana",sender);
-                Log.e("nanananannana",time);
-                Log.e("nanananannana",msg_uid);
-                Log.e("nanananannana",name);
-
-
-
-                equipment.add(equipments);
-
-
-
-            } while (cursor.moveToNext());
-
-        }
-        // close db connection
-        db.close();
-        // return notes list
-        return equipment;
-    }
+//    public List<Equipment> getAllEquipment() {
+//        List<Equipment> equipment = new ArrayList<>();
+//
+//        // Select All Query
+//
+//        Log.e(TAG, "getAllEquipment");
+//
+//        String selectQuery = "SELECT  * FROM " + FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
+//
+//        SQLiteDatabase db = this.getReadableDatabase();
+//        Cursor cursor = db.rawQuery(selectQuery, null);
+//
+//        // looping through all rows and adding to list
+//        if (cursor.moveToFirst()) {
+//            do {
+//
+//                mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
+//                current_uid = mCurrentUser.getUid();
+//
+//                Equipment equipments = new Equipment();
+//
+//
+//                String getTimeCursor = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
+//                long getTimeLong = Long.parseLong(getTimeCursor);
+//
+//                DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm");
+//                String timeFormat = getTimeHourMintus.format(getTimeLong);
+//
+//                String name = equipments.setNameProd(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.NAME_EQUIPMENT)));
+//                String content =equipments.setContent(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.CONTENT)));
+//                String mount = equipments.setMount(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MOUNT)));
+//                String mountCurrent = equipments.setMountCurrent(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MOUNT_CURRENT)));
+//                String time = equipments.setTime(timeFormat);
+//                String image = equipments.setImage(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.IMAGE)));
+//                String sender = equipments.setSender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
+//                String msg_uid = equipments.setUid(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
+//
+//                Log.e("nanananannana",content);
+//                Log.e("nanananannana",mount);
+//                Log.e("nanananannana",mountCurrent);
+//                Log.e("nanananannana",image);
+//                Log.e("nanananannana",sender);
+//                Log.e("nanananannana",time);
+//                Log.e("nanananannana",msg_uid);
+//                Log.e("nanananannana",name);
+//
+//
+//
+//                equipment.add(equipments);
+//
+//
+//
+//            } while (cursor.moveToNext());
+//
+//        }
+//        // close db connection
+//        db.close();
+//        // return notes list
+//        return equipment;
+//    }
 }

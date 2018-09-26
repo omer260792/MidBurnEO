@@ -11,6 +11,15 @@
         android:background="#ffdddddd"
         android:padding="5dp">
 
+        <Button
+            android:id="@+id/excelEquipmentButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorAccent"
+            android:text="פתח אקסל"
+            android:textSize="20dp"
+            android:textAlignment="center"/>
+
         <TextView
             android:id="@+id/tvNameEquipment"
             android:layout_width="300dp"

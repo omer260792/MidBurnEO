@@ -34,14 +34,14 @@ public class MainPageAc extends AppCompatActivity {
 
     private DatabaseReference mUserDatabase;
     private FirebaseUser mCurrentUser;
-    public String current_uid, current_image, getNameSP, current_admin, current_name, image;
+    public String current_uid, current_image, current_admin, current_name, image;
     public static String current_camp_static;
     public static String current_admin_static;
     public static String current_uid_camp_static;
     public static String current_time_static;
     public static String current_time_calendar_static;
-    public static String TABLE_NAME_MESSAGE = "test";
-
+    public static String current_name_static;
+    public static String TABLE_NAME_MESSAGE = "message";
 
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -52,54 +52,19 @@ public class MainPageAc extends AppCompatActivity {
         prefs.edit().putString("email", "main").apply();
         prefs.edit().putString("status", "true").apply();
         current_camp_static = prefs.getString("camp", null);
-        getNameSP = prefs.getString("name", null);
+        current_name_static = prefs.getString("name", null);
+
+
+        current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        TABLE_NAME_MESSAGE = current_uid;
+
+
+        getUserDBFromFireBase();
+        UpdateUserOnline();
 
 
         GridView gridView = findViewById(R.id.grid_view);
         gridView.setAdapter(new ImageAdapter(this));
-
-
-        current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
-        mUserDatabase.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                current_image = dataSnapshot.child("image").getValue().toString();
-                current_admin = dataSnapshot.child("admin").getValue().toString();
-                current_name = dataSnapshot.child("name").getValue().toString();
-                current_camp_static = dataSnapshot.child("camps").getValue().toString();
-                current_uid_camp_static = dataSnapshot.child("chat").getValue().toString();
-                //current_time_static = dataSnapshot.child("time").getValue().toString();
-
-                if(current_image.equals("default")){
-                    image = setImgUrlDefault;
-
-                }else {
-                    image = current_image;
-
-                }
-
-                prefs.edit().putString("image",image).apply();
-                prefs.edit().putString("admin", current_admin).apply();
-                prefs.edit().putString("name", current_name).apply();
-                prefs.edit().putString("camps", current_camp_static).apply();
-                prefs.edit().putString("chat", current_uid_camp_static).apply();
-                //prefs.edit().putString("time", current_time_static).apply();
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-
-
-
 
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -142,22 +107,71 @@ public class MainPageAc extends AppCompatActivity {
             }
         });
 
-        new Thread(new Runnable() {
-            public void run() {
-
-                mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
-
-                Map<String, Object> mapCampsUpdates = new HashMap<>();
-                mapCampsUpdates.put("status", "true");
-
-                mUserDatabase.updateChildren(mapCampsUpdates);
-
-
-            }
-        }).start();
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+    }
+
+    public void getUserDBFromFireBase() {
+//        new Thread(new Runnable() {
+//            public void run() {
+
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+        mUserDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                current_image = dataSnapshot.child("image").getValue().toString();
+                current_admin = dataSnapshot.child("admin").getValue().toString();
+                current_name = dataSnapshot.child("name").getValue().toString();
+                current_camp_static = dataSnapshot.child("camps").getValue().toString();
+                current_uid_camp_static = dataSnapshot.child("chat").getValue().toString();
+                //current_time_static = dataSnapshot.child("time").getValue().toString();
+
+                if (current_image.equals("default")) {
+                    image = setImgUrlDefault;
+
+                } else {
+                    image = current_image;
+
+                }
+
+                prefs.edit().putString("image", image).apply();
+                prefs.edit().putString("admin", current_admin).apply();
+                prefs.edit().putString("name", current_name).apply();
+                prefs.edit().putString("camps", current_camp_static).apply();
+                prefs.edit().putString("chat", current_uid_camp_static).apply();
+                //prefs.edit().putString("time", current_time_static).apply();
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+//            }
+//        }).start();
+
+    }
+
+    public void UpdateUserOnline() {
+
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+
+        Map<String, Object> mapCampsUpdates = new HashMap<>();
+        mapCampsUpdates.put("status", "true");
+
+        mUserDatabase.updateChildren(mapCampsUpdates);
+
+
+    }
 
 
 }
