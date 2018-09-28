@@ -40,13 +40,21 @@
             android:textAlignment="center"/>
 
 
-
     </LinearLayout>
+
+    <EditText
+        android:id="@+id/etSearchEquipment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawableLeft="@android:drawable/ic_menu_search"
+        android:layout_margin="10dp"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_Equipment"
         android:layout_width="match_parent"
-        android:layout_height="fill_parent" />
+        android:layout_height="fill_parent"
+        android:padding="4dp"
+        android:scrollbars="vertical"/>
 
 
 </LinearLayout>

@@ -21,16 +21,17 @@ import com.example.omer.midburneo.Tabs.ChatListAc;
 import com.example.omer.midburneo.Tabs.EquipmentPreviewAc;
 import com.google.firebase.database.DatabaseReference;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.ViewHolder> {
 
     private Context context;
-    private final List<Equipment> EquipmentNoteList;
+    private ArrayList<Equipment> EquipmentNoteList;
     public String imageString, uidMsgString, campString;
     private DatabaseReference mUserDatabase;
 
-    public EquipmentAdapter(Context context, List<Equipment> EquipmentNoteList) {
+    public EquipmentAdapter(Context context, ArrayList<Equipment> EquipmentNoteList) {
         this.context = context;
         this.EquipmentNoteList = EquipmentNoteList;
     }
@@ -149,5 +150,10 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.View
             });
 
         }
+    }
+
+    public void filterList(ArrayList<Equipment> filteredList) {
+        EquipmentNoteList = filteredList;
+        notifyDataSetChanged();
     }
 }
