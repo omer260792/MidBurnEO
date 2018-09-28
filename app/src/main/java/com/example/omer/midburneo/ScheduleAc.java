@@ -9,7 +9,6 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -19,7 +18,6 @@ import com.applandeo.materialcalendarview.EventDay;
 import com.applandeo.materialcalendarview.exceptions.OutOfDateRangeException;
 import com.applandeo.materialcalendarview.listeners.OnCalendarPageChangeListener;
 import com.applandeo.materialcalendarview.listeners.OnDayClickListener;
-import com.example.omer.midburneo.Adapters.MessageAdapter;
 import com.example.omer.midburneo.AddNoteActivity;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.DataBase.DBHelper;
@@ -49,7 +47,7 @@ import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABL
 import static com.example.omer.midburneo.NotePreviewActivity.getFormattedDate;
 import static com.example.omer.midburneo.RegisterAc.prefs;
 import static com.example.omer.midburneo.Tabs.ChatListAc.setImgUrlDefault;
-import static com.example.omer.midburneo.Tabs.MainPageAc.TABLE_NAME_MESSAGE;
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_MESSAGE;
 import static com.example.omer.midburneo.Tabs.MainPageAc.current_admin_static;
 import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
 import static com.example.omer.midburneo.Tabs.MainPageAc.current_time_calendar_static;
@@ -81,6 +79,28 @@ public class ScheduleAc extends AppCompatActivity {
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
 
+        getRawCountSql();
+        if (countSqlLite == 0) {
+            getUserTime();
+
+        } else {
+
+            try {
+                current_camp_static = prefs.getString("camps", null);
+                current_time_calendar_static = prefs.getString("time_calendar", null);
+                current_time_static = prefs.getString("time", null);
+
+                getCalendarPickerView();
+
+                UpdateSqliteFromFireBaseCalendar();
+
+            } catch (NullPointerException e) {
+
+            }
+
+        }
+
+
         FloatingActionButton floatingActionButton = (FloatingActionButton) findViewById(R.id.floatingActionButton);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,32 +126,14 @@ public class ScheduleAc extends AppCompatActivity {
             }
         });
 
+
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        getRawCountSql();
-        if (countSqlLite == 0) {
-            getUserTime();
-
-        } else {
-
-            try {
-                current_camp_static = prefs.getString("camps", null);
-                current_time_calendar_static = prefs.getString("time_calendar", null);
-                current_time_static = prefs.getString("time", null);
-
-                getCalendarPickerView();
-
-                UpdateSqliteFromFireBaseCalendar();
-
-            } catch (NullPointerException e) {
-
-            }
-
-        }
 
     }
 
@@ -184,8 +186,7 @@ public class ScheduleAc extends AppCompatActivity {
         calendar = Calendar.getInstance();
         calendar.setTimeInMillis(time);
 
-//        int mYear = calendar.get(Calendar.YEAR);
-//        int mMonth = calendar.get(Calendar.MONTH);
+
         mDay = calendar.get(Calendar.DAY_OF_MONTH);
         return calendar;
 

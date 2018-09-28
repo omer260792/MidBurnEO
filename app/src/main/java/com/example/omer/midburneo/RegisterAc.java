@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.DataBase.DBHelper;
+import com.example.omer.midburneo.Tabs.ProfileAc;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -46,7 +47,7 @@ public class RegisterAc extends AppCompatActivity {
     private Button registerButton;
     private CircleImageView imageView;
 
-    public String getName, getEmail, getPass, getNum, stringUrl, current_uid, image;
+    public String getName, getEmail, getPass, getNum, stringUrl, current_uid, image, timeString;
 
     private FirebaseAuth mAuth;
     private ProgressDialog mprogress;
@@ -59,7 +60,7 @@ public class RegisterAc extends AppCompatActivity {
     public static SharedPreferences prefs;
     public static String SHPRF = "User";
 
-    public static final int CAMERA = 1, GALLERY = 2, WRITE_STORAGE = 3;
+    public static final int CAMERA = 1, GALLERY = 2, WRITE_STORAGE = 3, REQUEST_PHONE_CALL = 4;
 
 
     @Override
@@ -83,6 +84,9 @@ public class RegisterAc extends AppCompatActivity {
 
         mprogress = new ProgressDialog(this);
 
+        long currentDateTime = System.currentTimeMillis();
+        timeString = String.valueOf(currentDateTime);
+
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -102,7 +106,7 @@ public class RegisterAc extends AppCompatActivity {
         prefs.edit().putString("email", "register").apply();
 
 
-        if (!TextUtils.isEmpty(getName) && !TextUtils.isEmpty(getEmail) && !TextUtils.isEmpty(getPass)) {
+        if (!TextUtils.isEmpty(getName) && !TextUtils.isEmpty(getEmail) && !TextUtils.isEmpty(getPass) && getNum.trim().length()>123456789) {
 
 
             mprogress.setMessage("Signing Up");
@@ -130,20 +134,21 @@ public class RegisterAc extends AppCompatActivity {
 
                                 HashMap<String, String> userMap = new HashMap<>();
 
-                                userMap.put("name", getName);
-                                userMap.put("email", getEmail);
-                                userMap.put("password", getPass);
-                                userMap.put("number", getNum);
-                                userMap.put("image", image);
-                                userMap.put("admin", "default");
-                                userMap.put("chat", "default");
-                                userMap.put("camps", "default");
-                                userMap.put("status", "status");
-                                userMap.put("time", "default");
-                                userMap.put("lastmsg", "default");
-                                userMap.put("uid", current_uid);
-
-
+                                userMap.put(FeedReaderContract.FeedEntry.NAME, getName);
+                                userMap.put(FeedReaderContract.FeedEntry.EMAIL, getEmail);
+                                userMap.put(FeedReaderContract.FeedEntry.PASSWORD, getPass);
+                                userMap.put(FeedReaderContract.FeedEntry.NUMBER, "default");
+                                userMap.put(FeedReaderContract.FeedEntry.IMAGE, image);
+                                userMap.put(FeedReaderContract.FeedEntry.ADMIN, "default");
+                                userMap.put(FeedReaderContract.FeedEntry.CHAT, "default");
+                                userMap.put(FeedReaderContract.FeedEntry.CAMPS, "default");
+                                userMap.put(FeedReaderContract.FeedEntry.STATUS, "status");
+                                userMap.put(FeedReaderContract.FeedEntry.TIME, timeString);
+                                userMap.put(FeedReaderContract.FeedEntry.LASTMSG, "default");
+                                userMap.put(FeedReaderContract.FeedEntry.UID, current_uid);
+                                userMap.put(FeedReaderContract.FeedEntry.ROLE, "אין תפקיד");
+                                userMap.put(FeedReaderContract.FeedEntry.ONLINE, "true");
+                                userMap.put(FeedReaderContract.FeedEntry.PHONE, getNum);
 
                                 mDatabase.setValue(userMap);
 
@@ -156,13 +161,15 @@ public class RegisterAc extends AppCompatActivity {
                                 values.put(FeedReaderContract.FeedEntry.EMAIL, getEmail);
                                 values.put(FeedReaderContract.FeedEntry.IMAGE, image);
                                 values.put(FeedReaderContract.FeedEntry.NAME, getName);
-                                values.put(FeedReaderContract.FeedEntry.NUMBER, getNum);
+                                values.put(FeedReaderContract.FeedEntry.NUMBER, "default");
                                 values.put(FeedReaderContract.FeedEntry.PASSWORD, getPass);
                                 values.put(FeedReaderContract.FeedEntry.STATUS, "default");
-                                values.put(FeedReaderContract.FeedEntry.TIME, "default");
+                                values.put(FeedReaderContract.FeedEntry.TIME, timeString);
                                 values.put(FeedReaderContract.FeedEntry.UID_id, "1");
                                 values.put(FeedReaderContract.FeedEntry.UID, current_uid);
                                 values.put(FeedReaderContract.FeedEntry.LASTMSG, "default");
+                                values.put(FeedReaderContract.FeedEntry.ROLE, "אין תפקיד");
+                                values.put(FeedReaderContract.FeedEntry.PHONE, getNum);
 
 
 
@@ -172,51 +179,23 @@ public class RegisterAc extends AppCompatActivity {
                                 prefs.edit().putString("image", image).apply();
 
 
-                                if (resultUri != null) {
-                                    mDatabase.child("url").setValue(stringUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-
-                                            if (task.isSuccessful()) {
 
 
-                                                mDatabase.child("image").setValue(stringUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-
-                                                        if (task.isSuccessful()) {
-
-                                                            mprogress.dismiss();
-
-                                                        } else {
-
-                                                            Toast.makeText(RegisterAc.this, "Somesing Wrong Happend", Toast.LENGTH_LONG).show();
-
-                                                        }
-
-                                                    }
-                                                });
-
-
-                                            } else {
-
-                                                Toast.makeText(RegisterAc.this, "Somesing Wrong Happend", Toast.LENGTH_LONG).show();
-
-                                            }
-                                        }
-                                    });
-                                }
-
-                            } else {
-
-                                Toast.makeText(RegisterAc.this,
-                                        "Login unsuccessful: " + task.getException().getMessage(), //ADD THIS
-                                        Toast.LENGTH_SHORT).show();
-                                mprogress.dismiss();
                             }
 
                         }
                     });
+
+
+        }else {
+            if (getNum.trim().length()>123456789){
+                Toast.makeText(RegisterAc.this, "הכנס מספר פלאפון תקין", Toast.LENGTH_LONG).show();
+
+            }else {
+                Toast.makeText(RegisterAc.this, "מלא את השדות החסרים", Toast.LENGTH_LONG).show();
+
+            }
+
 
 
         }
@@ -291,9 +270,14 @@ public class RegisterAc extends AppCompatActivity {
                                 stringUrl = String.valueOf(uri);
 
                                 if (stringUrl == null) {
+                                    mprogress.dismiss();
+                                    return;
 
                                 } else {
                                     Picasso.get().load(stringUrl).error(R.drawable.admin_btn_logo).into(imageView);
+                                    mprogress.dismiss();
+                                    Toast.makeText(RegisterAc.this, "Success", Toast.LENGTH_LONG).show();
+
 
                                 }
 

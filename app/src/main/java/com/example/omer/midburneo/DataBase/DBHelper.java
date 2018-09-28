@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.nfc.Tag;
 import android.provider.BaseColumns;
+import android.provider.ContactsContract;
 import android.util.Log;
 
 import com.applandeo.materialcalendarview.EventDay;
@@ -16,6 +17,7 @@ import com.example.omer.midburneo.Class.Equipment;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.Class.Message;
+import com.example.omer.midburneo.Class.MessageNote;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -25,12 +27,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.ROLE;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
-//import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_MESSAGE;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_NOTE;
 import static com.example.omer.midburneo.RegisterAc.prefs;
-import static com.example.omer.midburneo.Tabs.MainPageAc.TABLE_NAME_MESSAGE;
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_MESSAGE;
 
 
 public class DBHelper extends SQLiteOpenHelper {
@@ -55,7 +58,9 @@ public class DBHelper extends SQLiteOpenHelper {
                     FeedReaderContract.FeedEntry.STATUS + " TEXT," +
                     FeedReaderContract.FeedEntry.TIME + " TEXT," +
                     FeedReaderContract.FeedEntry.UID + " TEXT," +
-                    FeedReaderContract.FeedEntry.LASTMSG + " TEXT)";
+                    FeedReaderContract.FeedEntry.LASTMSG + " TEXT," +
+                    FeedReaderContract.FeedEntry.ROLE + " TEXT," +
+                    FeedReaderContract.FeedEntry.PHONE + " TEXT)";
 
 
     private static final String SQL_DELETE_ENTRIES =
@@ -93,6 +98,18 @@ public class DBHelper extends SQLiteOpenHelper {
                     FeedReaderContract.FeedEntry.MESSAGE_UID + " TEXT)";
 
 
+    public String SQL_CREATE_ENTRIES_USERS_NOTE =
+            "CREATE TABLE IF NOT EXISTS " + TABLE_NAME_NOTE + " (" + FeedReaderContract.FeedEntry._ID + " INTEGER PRIMARY KEY," +
+                    FeedReaderContract.FeedEntry.TITLE + " TEXT," +
+                    FeedReaderContract.FeedEntry.CONTENT + " TEXT," +
+                    FeedReaderContract.FeedEntry.DATE + " TEXT," +
+                    FeedReaderContract.FeedEntry.DATE_END + " TEXT," +
+                    FeedReaderContract.FeedEntry.DATE_BOOL + " TEXT," +
+                    FeedReaderContract.FeedEntry.MESSAGE_SENDER + " TEXT," +
+                    FeedReaderContract.FeedEntry.CAMPS + " TEXT," +
+                    FeedReaderContract.FeedEntry.MESSAGE_UID + " TEXT)";
+
+
     private String SQL_DELETE_ENTRIES_CALENDAR =
             "DROP TABLE IF EXISTS " + TABLE_NAME_MESSAGE;
 
@@ -118,6 +135,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_ENTRIES_USERS_MESSAGE);
         db.execSQL(SQL_CREATE_ENTRIES_USERS_CALENDAR);
         db.execSQL(SQL_CREATE_ENTRIES_USERS_EQUIPMENT);
+        db.execSQL(SQL_CREATE_ENTRIES_USERS_NOTE);
 
         Log.e(TAG, "DB_OnCreate");
 
@@ -168,6 +186,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 String lastmsg = friend.setLastMsg(cursor.getString(cursor.getColumnIndex("lastmsg")));
                 String uidcount = friend.setUidCount(cursor.getString(cursor.getColumnIndex("_id")));
                 String time = friend.setTime(cursor.getString(cursor.getColumnIndex("time")));
+                String role = friend.setRole(cursor.getString(cursor.getColumnIndex("role")));
+                String phone = friend.setPhone(cursor.getString(cursor.getColumnIndex("phone")));
 
 
                 if (!uid.equals(current_uid)) {
@@ -218,6 +238,15 @@ public class DBHelper extends SQLiteOpenHelper {
                     String image = message.setImage(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.IMAGE)));
                     String uidMsg = message.setUidMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
                     String status = message.setStatus(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.STATUS)));
+                    String uidcount = message.setUidCounts(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID)));
+
+                    Log.e((TAG), "getAllMsg" + msg);
+                    Log.e((TAG), "getAllMsg" + status);
+                    Log.e((TAG), "getAllMsg" + sender);
+                    Log.e((TAG), "getAllMsg" + receiver);
+                    Log.e((TAG), "getAllMsg" + name_sender);
+                    Log.e((TAG), "getAllMsg" + time);
+                    Log.e((TAG), "getAllMsg" + uidcount);
 
 
                     msgList.add(message);
@@ -305,7 +334,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 String timeFormat = getTimeHourMintus.format(getTimeLong);
 
                 String name = equipments.setNameProd(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.NAME_EQUIPMENT)));
-                String content =equipments.setContent(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.CONTENT)));
+                String content = equipments.setContent(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.CONTENT)));
                 String mount = equipments.setMount(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MOUNT)));
                 String mountCurrent = equipments.setMountCurrent(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MOUNT_CURRENT)));
                 String time = equipments.setTime(timeFormat);
@@ -313,19 +342,17 @@ public class DBHelper extends SQLiteOpenHelper {
                 String sender = equipments.setSender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
                 String msg_uid = equipments.setUid(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
 
-                Log.e("nanananannana",content);
-                Log.e("nanananannana",mount);
-                Log.e("nanananannana",mountCurrent);
-                Log.e("nanananannana",image);
-                Log.e("nanananannana",sender);
-                Log.e("nanananannana",time);
-                Log.e("nanananannana",msg_uid);
-                Log.e("nanananannana",name);
-
+                Log.e("nanananannana", content);
+                Log.e("nanananannana", mount);
+                Log.e("nanananannana", mountCurrent);
+                Log.e("nanananannana", image);
+                Log.e("nanananannana", sender);
+                Log.e("nanananannana", time);
+                Log.e("nanananannana", msg_uid);
+                Log.e("nanananannana", name);
 
 
                 equipment.add(equipments);
-
 
 
             } while (cursor.moveToNext());
@@ -338,8 +365,65 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
+    public List<MessageNote> getAllNote() {
+        List<MessageNote> msgNoteList = new ArrayList<>();
 
-    public void SaveDBSqlite(String Name, String Camp, String Uid, String image, String lstmsg) {
+        db = this.getReadableDatabase();
+        Log.e(TAG, "getAllMsg");
+
+
+        try {
+            String selectQuery = "SELECT  * FROM " + TABLE_NAME_NOTE;
+
+
+            Cursor cursor = db.rawQuery(selectQuery, null);
+
+            if (cursor.moveToFirst()) {
+                do {
+
+                    current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+                    MessageNote messageNote = new MessageNote();
+
+                    String getTimeCursor = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE));
+                    String getTimeCursorEnd = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE_END));
+                    long getTimeLong = Long.parseLong(getTimeCursor);
+
+                    DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm");
+                    String timeFormat = getTimeHourMintus.format(getTimeLong);
+
+                    String title = messageNote.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TITLE)));
+                    String content = messageNote.setContent(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.CONTENT)));
+                    String date = messageNote.setDate(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE)));
+                    String dateEnd = messageNote.setDateEnd(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE_END)));
+                    String dateBool = messageNote.setDateBool(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE_BOOL)));
+                    // String time = messageNote.setDateBool(timeFormat);
+                    String sender = messageNote.setSender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
+                    String camp = messageNote.setCamp(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.CAMPS)));
+                    String msgUid = messageNote.setUidMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
+                    String uidcount = messageNote.setCount(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID)));
+
+                    Log.e((TAG), "msgNoteList" + title);
+                    Log.e((TAG), "msgNoteList" + content);
+
+
+                    msgNoteList.add(messageNote);
+
+
+                } while (cursor.moveToNext());
+
+            }
+            // close db connection
+            db.close();
+        } catch (Exception e) {
+        }
+
+
+        return msgNoteList;
+    }
+
+
+    public void SaveDBSqliteUser(String Name, String Camp, String Uid, String image, String lstmsg, String phone) {
 
         SQLiteDatabase db;
 
@@ -358,6 +442,9 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(FeedReaderContract.FeedEntry.TIME, "default");
         values.put(FeedReaderContract.FeedEntry.UID, Uid);
         values.put(FeedReaderContract.FeedEntry.LASTMSG, lstmsg);
+        values.put(FeedReaderContract.FeedEntry.ROLE, "אין תפקיד");
+        values.put(FeedReaderContract.FeedEntry.PHONE, phone);
+
 
 
         // Insert the new row, returning the primary key value of the new row
@@ -448,7 +535,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    public void SaveDBSqliteUser(String msg, String msg_receiver, String msg_sender, String name, String time, String image, String uid_msg, String status, String table) {
+    public void SaveDBSqliteMsgUser(String msg, String msg_receiver, String msg_sender, String name, String time, String image, String uid_msg, String status, String table) {
 
         TABLE_NAME_MESSAGE = table;
 
@@ -534,7 +621,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public void SaveDBSqliteToEquipment(String nameProd, String content, String mount, String mountCurrent, String time, String image, String sender, String uid_msg) {
 
-        SQLiteDatabase db;
 
         db = this.getWritableDatabase();
 
@@ -557,6 +643,48 @@ public class DBHelper extends SQLiteOpenHelper {
         Log.e(TAG, String.valueOf(time) + " time_equipment");
 
         db.close();
+    }
+
+    public void SaveDBSqliteToNote(String title, String content, String date, String dateEnd, String dateBool, String sender, String camp, String uid_msg) {
+
+        db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(FeedReaderContract.FeedEntry.TITLE, title);
+        values.put(FeedReaderContract.FeedEntry.CONTENT, content);
+        values.put(FeedReaderContract.FeedEntry.DATE, date);
+        values.put(FeedReaderContract.FeedEntry.DATE_END, dateEnd);
+        values.put(FeedReaderContract.FeedEntry.DATE_BOOL, dateBool);
+        values.put(FeedReaderContract.FeedEntry.MESSAGE_SENDER, sender);
+        values.put(FeedReaderContract.FeedEntry.CAMPS, camp);
+        values.put(FeedReaderContract.FeedEntry.MESSAGE_UID, uid_msg);
+
+        // Insert the new row, returning the primary key value of the new row
+        long newRowId = db.insert(TABLE_NAME_NOTE, null, values);
+
+        db.close();
+
+    }
+
+
+    public void DeleteTableSqliteDB(String tableName) {
+
+        db = this.getWritableDatabase();
+        db.execSQL("delete from " + tableName);
+        db.close();
+
+
+    }
+
+    public void DeleteMsgSqliteDB(String tableName, String id) {
+
+        db = this.getWritableDatabase();
+
+        db.delete(tableName, FeedReaderContract.FeedEntry._ID + " = ?",
+                new String[]{String.valueOf(id)});
+        db.close();
+
+
     }
 
 

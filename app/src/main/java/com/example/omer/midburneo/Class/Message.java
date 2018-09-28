@@ -15,6 +15,7 @@ public class Message {
     public String name_sender;
     public String uidMsg;
     public String status;
+    public String uidCounts;
 
 
 
@@ -34,6 +35,15 @@ public class Message {
 
     public Message() {
 
+    }
+
+    public String getUidCounts() {
+        return uidCounts;
+    }
+
+    public String setUidCounts(String uidCounts) {
+        this.uidCounts = uidCounts;
+        return uidCounts;
     }
 
     public String getImage() {

@@ -9,6 +9,9 @@ public class Friend {
     public String status;
     public String image;
     public String uidCount;
+    public String role;
+    public String online;
+    public String phone;
 
     public String time;
 
@@ -18,7 +21,16 @@ public class Friend {
     }
 
 
-    public Friend(String name, String camp, String uidReceiver, String image, String lastMsg, String status, String uidCount) {
+    public String getPhone() {
+        return phone;
+    }
+
+    public String setPhone(String phone) {
+        this.phone = phone;
+        return phone;
+    }
+
+    public Friend(String name, String camp, String uidReceiver, String image, String lastMsg, String status, String uidCount, String role, String online, String phone) {
         this.name = name;
         this.camp = camp;
         this.uidReceiver = uidReceiver;
@@ -26,8 +38,29 @@ public class Friend {
         this.lastMsg = lastMsg;
         this.status = status;
         this.uidCount = uidCount;
+        this.role = role;
+        this.online = online;
+        this.phone = phone;
 
 
+    }
+
+    public String getOnline() {
+        return online;
+    }
+
+    public void setOnline(String online) {
+        this.online = online;
+    }
+
+
+    public String getRole() {
+        return role;
+    }
+
+    public String setRole(String role) {
+        this.role = role;
+        return role;
     }
 
     public String setUidCount(String uidCount) {
@@ -106,7 +139,6 @@ public class Friend {
         this.time = time;
         return time;
     }
-
 
 
 }

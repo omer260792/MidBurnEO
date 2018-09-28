@@ -203,6 +203,8 @@ public class CreateCampAc extends AppCompatActivity {
                 createGroup.put("time", "default");
                 createGroup.put("image", "default");
                 createGroup.put("lastmsg", "default");
+                createGroup.put("online", "default");
+                createGroup.put("phone", "default");
 
                 mUserDatabase.updateChildren(createGroup);
 

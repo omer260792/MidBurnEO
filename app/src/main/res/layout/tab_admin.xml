@@ -1,51 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <LinearLayout
+
+    <RelativeLayout
+        android:id="@+id/linearLayoutTopAdmin"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="50dp"
+        android:background="@color/colorAccent"
+        android:orientation="horizontal">
 
-        <RelativeLayout
+        <Button
+            android:id="@+id/saveBtnAdmin"
+            android:layout_width="80dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="שמור"
+            android:textAlignment="center" />
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/linearLayoutTopAdmin">
+
+
+        <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/imageProfileAdmin"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="41dp"
+            android:onClick="changePicAdmin"
+            android:src="@drawable/ic_launcher_background"
+            app:civ_border_color="#FF000000"
+            app:civ_border_width="2dp" />
+
+
+        <TextView
+            android:id="@+id/tvNameAdmin"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/imageProfileAdmin"
+            android:layout_marginTop="20dp"
+            android:hint="שם"
+            android:onClick="onClickNameUserAdmin"
+            android:textAlignment="center" />
 
-            <TextView
-                android:id="@+id/txtViewNote"
-                android:text="הוסף מטלה"
-                android:textColor="@color/colorAccent"
-                android:textAlignment="center"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
 
-            <EditText
-                android:id="@+id/editTextNote"
-                android:layout_marginTop="25dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:background="#000000"
-                android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:textColor="#ffffff"
-                android:ems="10"
-                android:textSize="12dp"
-                android:inputType="textMultiLine"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentEnd="true" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvNameAdmin"
+            android:gravity="center_horizontal">
 
-            <Button
-                android:id="@+id/saveButtonNote"
-                android:layout_centerHorizontal="true"
+            <GridLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/editTextNote"
-                android:textColor="@color/colorPrimaryDark"
-                android:layout_marginTop="15dp"
-                android:text="שמור" />
+                android:layout_centerHorizontal="true"
+                android:columnCount="2"
+                android:rowCount="2">
 
-        </RelativeLayout>
+                <EditText
+                    android:id="@+id/statusFieldAdmin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:gravity="center"
+                    android:inputType="textEmailAddress" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="החלף סטטוס:" />
+            </GridLayout>
+
+        </LinearLayout>
 
 
-    </LinearLayout>
-</ScrollView>
+    </RelativeLayout>
+
+
+</RelativeLayout>

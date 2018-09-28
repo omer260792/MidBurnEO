@@ -1,14 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:background="#ffdddddd"
+        android:padding="5dp">
+
+
+
+        <TextView
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:layout_weight="3"
+            android:gravity="center"
+            android:hint="רשימת מטלות"
+            android:textSize="30dp" />
+
+
+        <Button
+            android:id="@+id/addNoteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="הוסף מטלה"
+            android:textAlignment="center"
+            android:textColor="@color/colorAccent"
+            android:textSize="20dp" />
+
+
+    </LinearLayout>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerViewNote"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars="vertical"
-        android:paddingTop="8dp" />
+        android:paddingTop="8dp"
+        android:scrollbars="vertical" />
 
-</RelativeLayout>
+
+</LinearLayout>
+
+

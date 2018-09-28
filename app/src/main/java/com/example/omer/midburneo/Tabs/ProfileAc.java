@@ -12,9 +12,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,8 +52,13 @@ import static com.example.omer.midburneo.RegisterAc.CAMERA;
 import static com.example.omer.midburneo.RegisterAc.GALLERY;
 import static com.example.omer.midburneo.RegisterAc.SHPRF;
 import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
+import static com.example.omer.midburneo.RegisterAc.prefs;
+import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
 
 public class ProfileAc extends AppCompatActivity {
+
+    private static final String TAG = "ProfileAc";
+
 
     private DatabaseReference mUserDatabase;
 
@@ -60,9 +67,9 @@ public class ProfileAc extends AppCompatActivity {
     private StorageReference filrpath;
 
     private String image = "imageDefault";
-    private String name, camp, status, stringUrl, current_uid;
+    private String name, role, status, stringUrl, current_uid;
     private TextView txtViewName;
-    private EditText editTxtCamp, editTxtStatus;
+    private EditText editTxtRole, editTxtStatus;
     private Button signOutBtn, saveBtn;
     private CircleImageView imageView;
 
@@ -75,9 +82,20 @@ public class ProfileAc extends AppCompatActivity {
         setContentView(R.layout.tab_profile);
 
 
+        try {
+
+            String test = getIntent().getStringExtra("test");
+            Log.e(TAG, test);
+
+
+        }catch (Exception e){
+
+        }
+
+
         txtViewName = (TextView) findViewById(R.id.txtViewName);
         editTxtStatus = (EditText) findViewById(R.id.statusFieldProfile);
-        editTxtCamp = (EditText) findViewById(R.id.campFieldProfile);
+        editTxtRole = (EditText) findViewById(R.id.roleFieldProfile);
         signOutBtn = (Button) findViewById(R.id.signOutBtn);
         saveBtn = (Button) findViewById(R.id.saveBtnProfile);
         imageView = (CircleImageView) findViewById(R.id.profile_image);
@@ -120,11 +138,11 @@ public class ProfileAc extends AppCompatActivity {
 
                 name = dataSnapshot.child("name").getValue().toString();
                 image = dataSnapshot.child("image").getValue().toString();
-                camp = dataSnapshot.child("camps").getValue().toString();
+                role = dataSnapshot.child("role").getValue().toString();
                 status = dataSnapshot.child("status").getValue().toString();
 
                 txtViewName.setText(name);
-                editTxtCamp.setText(camp);
+                editTxtRole.setText(role);
                 editTxtStatus.setText(status);
 
                 if (image.equals("default") || image == null) {
@@ -239,47 +257,11 @@ public class ProfileAc extends AppCompatActivity {
                                     stringUrl = String.valueOf(uri);
 
 
-                                    Picasso.get().load(stringUrl).error(R.drawable.admin_btn_logo).into(imageView);
+                                    Picasso.get().load(uri).error(R.drawable.admin_btn_logo).into(imageView);
 
+                                    mProgressDialog.dismiss();
+                                    Toast.makeText(ProfileAc.this, "Success", Toast.LENGTH_LONG).show();
 
-                                    mUserDatabase.child("url").setValue(stringUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-
-                                            if (task.isSuccessful()) {
-
-                                                mProgressDialog.dismiss();
-
-
-                                                mUserDatabase.child("image").setValue(stringUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-
-                                                        if (task.isSuccessful()) {
-
-                                                            mProgressDialog.dismiss();
-
-                                                            // mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(phoneNum);
-
-
-                                                        } else {
-
-                                                            Toast.makeText(ProfileAc.this, "Somesing Wrong Happend", Toast.LENGTH_LONG).show();
-
-                                                        }
-
-                                                    }
-                                                });
-
-
-                                            } else {
-
-                                                Toast.makeText(ProfileAc.this, "Somesing Wrong Happend", Toast.LENGTH_LONG).show();
-
-                                            }
-
-                                        }
-                                    });
 
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
@@ -320,21 +302,37 @@ public class ProfileAc extends AppCompatActivity {
     public void SaveProfile() {
 
         name = txtViewName.getText().toString();
-        camp = editTxtCamp.getText().toString();
+        role = editTxtRole.getText().toString();
         status = editTxtStatus.getText().toString();
 
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
 
-        Map<String, Object> mapUserUpdates = new HashMap<>();
-        mapUserUpdates.put("name", name);
-        mapUserUpdates.put("status", status);
-        mapUserUpdates.put("camps", camp);
+        if (!name.equals("") && !role.equals("") && !status.equals("")){
+
+            if (!stringUrl.equals(null)){
+                mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+
+                Map<String, Object> mapUserUpdates = new HashMap<>();
+                mapUserUpdates.put("name", name);
+                mapUserUpdates.put("status", status);
+                mapUserUpdates.put("role", role);
+                mapUserUpdates.put("image", stringUrl);
 
 
-        mUserDatabase.updateChildren(mapUserUpdates);
+                mUserDatabase.updateChildren(mapUserUpdates);
 
 
-        Toast.makeText(ProfileAc.this, "נשמר בהצלחה", Toast.LENGTH_LONG).show();
+                Toast.makeText(ProfileAc.this, "נשמר בהצלחה", Toast.LENGTH_LONG).show();
+            }else {
+                Toast.makeText(ProfileAc.this, "תעלה תמונה שוב", Toast.LENGTH_LONG).show();
+
+            }
+
+        }else {
+            Toast.makeText(ProfileAc.this, "מלא פרטים חסרים", Toast.LENGTH_LONG).show();
+
+        }
+
+
 
     }
 
@@ -348,7 +346,7 @@ public class ProfileAc extends AppCompatActivity {
 
         Map<String, Object> mapCampsUpdates = new HashMap<>();
         mapCampsUpdates.put("time", timeString);
-        mapCampsUpdates.put("status", "false");
+        mapCampsUpdates.put("online", "false");
 
         mUserDatabase.updateChildren(mapCampsUpdates);
 
@@ -356,6 +354,44 @@ public class ProfileAc extends AppCompatActivity {
         FirebaseAuth.getInstance().signOut();
         startActivity(new Intent(ProfileAc.this, LoginAc.class));
         finish();
+    }
+
+    public void onClickNameUser(View view) {
+
+
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+        final EditText input = new EditText(this);
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        input.setLayoutParams(lp);
+        alertDialog.setView(input);
+
+
+        alertDialog.setTitle("עריכת שם משתמש");
+
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "שמור שם ", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int id) {
+
+                String nameUser = input.getText().toString();
+                txtViewName.setText(nameUser);
+
+
+            }
+        });
+
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "חזור", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int id) {
+
+                return;
+
+            }
+        });
+
+        alertDialog.show();
     }
 }
 

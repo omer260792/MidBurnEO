@@ -146,7 +146,9 @@ public class EquipmentAc extends AppCompatActivity {
         try {
             equipmentUtilsList.addAll(dbHelper.getAllEquipment());
             mAdapter = new EquipmentAdapter(EquipmentAc.this, equipmentUtilsList);
-            recyclerView.setLayoutManager(new LinearLayoutManager(EquipmentAc.this));
+            LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
+            layoutManager.setStackFromEnd(true);
+            recyclerView.setLayoutManager(layoutManager);
             recyclerView.setAdapter(mAdapter);
             Log.e(TAG, "getEquipment() + try");
 
@@ -225,7 +227,7 @@ public class EquipmentAc extends AppCompatActivity {
 
     public void ExcelToSQLite() {
 
-        File file = new File(directory_path,"/"+current_camp_static+".xls"); //    "/users.xls"
+        File file = new File(directory_path, "/" + current_camp_static + ".xls"); //    "/users.xls"
         if (!file.exists()) {
             Toast.makeText(EquipmentAc.this,
                     "אין תיקייה ", //ADD THIS
@@ -244,7 +246,7 @@ public class EquipmentAc extends AppCompatActivity {
 
             @Override
             public void onCompleted(String dbName) {
-                Log.e(TAG,dbName);
+                Log.e(TAG, dbName);
             }
 
             @Override

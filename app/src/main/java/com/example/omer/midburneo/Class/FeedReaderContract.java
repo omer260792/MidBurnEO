@@ -14,6 +14,9 @@ public final class FeedReaderContract {
         public static final String TABLE_NAME_CALENDAR = "calendar";
         public static final String TABLE_NAME_EQUIPMENT = "equipment";
         public static final String TABLE_NAME_EQUIPMENT_FILE = "equipment";
+        public static final String TABLE_NAME_NOTE = "note";
+        public static String TABLE_NAME_MESSAGE = "message";
+
 
         public static final String ADMIN = "admin";
         public static final String CAMPS = "camps";
@@ -24,11 +27,11 @@ public final class FeedReaderContract {
         public static final String NUMBER = "number";
         public static final String PASSWORD = "password";
         public static final String STATUS = "status";
-        public static final String URL = "url";
+        public static final String TITLE = "title";
         public static final String UID = "uid";
         public static final String TIME = "time";
         public static final String UID_id = "id";
-        public static final String NUM = "num";
+        public static final String ROLE = "role";
         public static final String LASTMSG = "lastmsg";
         public static final String MESSAGE = "message";
         public static final String MESSAGE_SENDER = "message_sender";
@@ -38,6 +41,11 @@ public final class FeedReaderContract {
         public static final String NAME_EQUIPMENT = "name_equipment";
         public static final String MOUNT = "mount";
         public static final String MOUNT_CURRENT = "mount_current";
+        public static final String DATE = "date";
+        public static final String DATE_END = "date_end";
+        public static final String DATE_BOOL = "date_bool";
+        public static final String ONLINE = "onlie";
+        public static final String PHONE = "phone";
 
 
     }

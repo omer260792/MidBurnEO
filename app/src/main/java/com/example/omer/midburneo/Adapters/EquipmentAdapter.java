@@ -53,6 +53,8 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.View
         imageString = equipment.getImage();
 
 
+
+
         holder.pContent.setText(equipment.getContent());
             holder.pMount.setText(equipment.getMount());
             holder.pMountCurrnet.setText(equipment.getMountCurrent());

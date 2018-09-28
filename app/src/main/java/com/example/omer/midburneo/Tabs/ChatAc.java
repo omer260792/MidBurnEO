@@ -1,20 +1,26 @@
 package com.example.omer.midburneo.Tabs;
 
-import android.content.ContentValues;
+import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
-import android.provider.BaseColumns;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.example.omer.midburneo.Adapters.EquipmentAdapter;
 import com.example.omer.midburneo.Adapters.FriendsAdapter;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.Friend;
@@ -35,6 +41,7 @@ import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.example.omer.midburneo.RegisterAc.REQUEST_PHONE_CALL;
 import static com.example.omer.midburneo.RegisterAc.SHPRF;
 
 public class ChatAc extends AppCompatActivity {
@@ -47,7 +54,7 @@ public class ChatAc extends AppCompatActivity {
     private CircleImageView imageView;
     private UtilHelper utilHelper;
 
-    public String current_uid, currentImageSP, currentNameSP, currentstatusSp, currentCampSP, getUid, getUidUsers, get_lastmsg, getNameReceiver, get_image, get_time, name;
+    public String current_uid, currentImageSP, currentNameSP, currentstatusSp, currentCampSP, getUid, getUidUsers, get_lastmsg, get_phone, getNameReceiver, get_image, get_time, name;
     public long countSqlLite;
     public int num = 1;
 
@@ -120,6 +127,7 @@ public class ChatAc extends AppCompatActivity {
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setAdapter(mAdapter);
+        mAdapter.notifyDataSetChanged();
 
         getProfilesCount();
 
@@ -160,12 +168,13 @@ public class ChatAc extends AppCompatActivity {
                             getNameReceiver = ds.child("name").getValue(String.class);
                             get_image = ds.child("image").getValue(String.class);
                             get_lastmsg = ds.child("lastmsg").getValue(String.class);
+                            get_phone = ds.child("phone").getValue(String.class);
                             getUidUsers = ds.getKey();
 
                             Log.d("countSqlLite", String.valueOf(countSqlLite));
                             Log.d("FBCount", String.valueOf(FBCount));
 
-                            db.SaveDBSqlite(getNameReceiver, currentCampSP, getUidUsers, get_image, get_lastmsg);
+                            db.SaveDBSqliteUser(getNameReceiver, currentCampSP, getUidUsers, get_image, get_lastmsg,get_phone);
 
                         }
                     }
@@ -183,9 +192,27 @@ public class ChatAc extends AppCompatActivity {
             };
             query.addValueEventListener(valueEventListener);
 
-
         }
 
+
+    }
+
+
+
+    public static void callPhoneChatAc(String phone, Context context){
+
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.CALL_PHONE},REQUEST_PHONE_CALL);
+        }
+        else
+        {
+            String uri = "tel:" + phone.trim() ;
+            Intent intent = new Intent(Intent.ACTION_CALL);
+            intent.setData(Uri.parse(uri));
+            context.startActivity(intent);
+
+           // Toast.makeText(context,phone,Toast.LENGTH_SHORT).show();
+        }
 
     }
 

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/txtViewNote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="הוסף מטלה"
+                android:textAlignment="center"
+                android:textColor="@color/colorAccent" />
+
+
+            <RelativeLayout
+                android:id="@+id/relativeLayoutTop"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp">
+
+                <GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="2"
+                    android:rowCount="1">
+
+                    <EditText
+                        android:id="@+id/etTitleNote"
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/txtViewNote" />
+
+                    <TextView
+                        android:id="@+id/tvTitleNote"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=":כותרת למטלה" />
+
+
+                </GridLayout>
+            </RelativeLayout>
+
+            <EditText
+                android:id="@+id/etContentNote"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/relativeLayoutTop"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="25dp"
+                android:background="#000000"
+                android:ems="10"
+                android:inputType="textMultiLine"
+                android:textColor="#ffffff"
+                android:textSize="12dp" />
+
+
+            <RelativeLayout
+                android:id="@+id/relativeLayoutTop2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/etContentNote"
+                android:layout_marginTop="20dp">
+
+                <GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="2"
+                    android:rowCount="1">
+
+
+                    <Button
+                        android:id="@+id/TimeButtonNote"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/relativeLayoutTop2"
+                        android:layout_centerHorizontal="true"
+                        android:text="בחר תאריך"
+                        android:textColor="@color/colorPrimaryDark" />
+
+                    <TextView
+                        android:id="@+id/tvTitleDateNote"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=":תאריך סיום המטלה" />
+
+
+                </GridLayout>
+            </RelativeLayout>
+
+
+            <Button
+                android:id="@+id/saveButtonNote"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/relativeLayoutTop2"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="15dp"
+                android:text="שמור"
+                android:textColor="@color/colorPrimaryDark" />
+
+        </RelativeLayout>
+
+
+    </LinearLayout>
+</ScrollView>

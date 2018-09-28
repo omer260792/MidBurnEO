@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
@@ -127,6 +128,12 @@
             android:name=".Utils.UtilHelper"
             android:label="Standard calendar" />
 
+        <activity
+            android:name=".Utils.PopUpUser"
+            android:label="Standard calendar" />
+        <activity
+            android:name=".Tabs.NoteEditAc"
+            android:label="Standard calendar" />
 
 
     </application>

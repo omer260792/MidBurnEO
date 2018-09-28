@@ -10,12 +10,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -64,12 +62,11 @@ import java.util.UUID;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
-import static com.example.omer.midburneo.DataBase.DBHelper.BoolRefresh;
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_MESSAGE;
 import static com.example.omer.midburneo.RegisterAc.CAMERA;
 import static com.example.omer.midburneo.RegisterAc.GALLERY;
 import static com.example.omer.midburneo.RegisterAc.SHPRF;
 import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
-import static com.example.omer.midburneo.Tabs.MainPageAc.TABLE_NAME_MESSAGE;
 
 
 public class ChatListAc extends AppCompatActivity {
@@ -83,7 +80,7 @@ public class ChatListAc extends AppCompatActivity {
     public TextView tvFriendUser, statusFriendUser;
     public CircleImageView imgUser;
 
-    public String nameUserIntent, campUserIntent, uidUserIntent, imageUserIntent, statusUserIntent, countUserIntent, timeUserIntent, current_image, timeExitSP, current_uid, current_name, realTime, nameCampSP, childGroupName, TestStatuName, last_msg, stringUrl, StringCurrentMil, currentTime;
+    public String nameUserIntent, campUserIntent, uidUserIntent, imageUserIntent, statusUserIntent, countUserIntent, timeUserIntent, onilneUserIntent, current_image, timeExitSP, current_uid, current_name, realTime, nameCampSP, childGroupName, TestStatuName, last_msg, stringUrl, StringCurrentMil, currentTime;
     public String time = "time";
     public String image = "image";
     public String text = "text";
@@ -118,6 +115,7 @@ public class ChatListAc extends AppCompatActivity {
         statusUserIntent = getIntent().getStringExtra("statusUidFriend");
         countUserIntent = getIntent().getStringExtra("countUidFriend");
         timeUserIntent = getIntent().getStringExtra("timeUidFriend");
+        onilneUserIntent = getIntent().getStringExtra("onilneUidFriend");
 
         dbHelper = new DBHelper(getApplicationContext());
         mImageStorage = FirebaseStorage.getInstance().getReference();
@@ -175,7 +173,7 @@ public class ChatListAc extends AppCompatActivity {
             }
         } else {
             if (countSqlLite == 0) {
-                Log.e(TAG, "2");
+                Log.e(TAG, "2 oncreate");
                 num = 2;
                 updateDBFireBaseToSqlLite();
 
@@ -204,8 +202,11 @@ public class ChatListAc extends AppCompatActivity {
                     messageList.add(new Message(current_image, text, realTime, current_uid, uidUserIntent, nameUserIntent, current_name, get_msg_uid, TEST));
 
                     recyclerView.setLayoutManager(new LinearLayoutManager(ChatListAc.this));
-                    messageAdapter = new MessageAdapter(ChatListAc.this, messageList);
+                    LinearLayoutManager layoutManager = new LinearLayoutManager(ChatListAc.this);
+                    layoutManager.setStackFromEnd(true);
+                    recyclerView.setLayoutManager(layoutManager);
                     recyclerView.setAdapter(messageAdapter);
+
 
                     Log.e("*******************", "BTN-Send MSG");
 
@@ -224,7 +225,7 @@ public class ChatListAc extends AppCompatActivity {
 
                         SaveDataToFireBase();
 
-                        dbHelper.SaveDBSqliteUser(text, uidUserIntent, current_uid, current_name, StringCurrentMil, current_image, get_msg_uid, TEST, uidUserIntent);
+                        dbHelper.SaveDBSqliteMsgUser(text, uidUserIntent, current_uid, current_name, StringCurrentMil, current_image, get_msg_uid, TEST, uidUserIntent);
 
                     }
 
@@ -276,7 +277,6 @@ public class ChatListAc extends AppCompatActivity {
     }
 
 
-
     public void CreateUserTableSqlite() {
         try {
 
@@ -317,9 +317,14 @@ public class ChatListAc extends AppCompatActivity {
 
         try {
             messageList.addAll(dbHelper.getAllMsg());
-            messageAdapter = new MessageAdapter(ChatListAc.this, messageList);
-            recyclerView.setLayoutManager(new LinearLayoutManager(ChatListAc.this));
+            messageAdapter = new MessageAdapter(this, messageList);
+            //recyclerView.setLayoutManager(new LinearLayoutManager(ChatListAc.this));
+
+            LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+            layoutManager.setStackFromEnd(true);
+            recyclerView.setLayoutManager(layoutManager);
             recyclerView.setAdapter(messageAdapter);
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -457,7 +462,7 @@ public class ChatListAc extends AppCompatActivity {
 
                         Log.e(TAG, "DefaultCheckMsgFirebase - 2");
 
-                        dbHelper.SaveDBSqliteUser(text, current_uid, uidUserIntent, nameUserIntent, time, image, get_msg_uid, TestStatuName, uidUserIntent);
+                        dbHelper.SaveDBSqliteMsgUser(text, current_uid, uidUserIntent, nameUserIntent, time, image, get_msg_uid, TestStatuName, uidUserIntent);
 
                         int test = countSqlLite + 1;
                         Log.e(TAG, String.valueOf(test));
@@ -493,7 +498,6 @@ public class ChatListAc extends AppCompatActivity {
         }
 
     }
-
 
 
     public void getLastMsg() {
@@ -575,15 +579,16 @@ public class ChatListAc extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                String status = dataSnapshot.child("time").getValue().toString();
+                String time = dataSnapshot.child("time").getValue().toString();
+                String onilne = dataSnapshot.child("online").getValue().toString();
 
-                if (!status.equals("default")) {
+                if (!onilne.equals("default")) {
                     DateFormat getTimeDmY = new SimpleDateFormat("dd:MM:yyyy:HH:mm");
-                    long timeMilLong = Long.parseLong(status);
+                    long timeMilLong = Long.parseLong(time);
 
                     String realTime = getTimeDmY.format(timeMilLong);
 
-                    if (status.equals("true")) {
+                    if (onilne.equals("true")) {
                         statusFriendUser.setText("מחובר");
                     } else {
                         statusFriendUser.setText("last seen:" + realTime);
@@ -691,7 +696,7 @@ public class ChatListAc extends AppCompatActivity {
 
                                         SaveDataToFireBase();
 
-                                        dbHelper.SaveDBSqliteUser(text, uidUserIntent, current_uid, current_name, StringCurrentMil, stringUrl, get_msg_uid, TEST, uidUserIntent);
+                                        dbHelper.SaveDBSqliteMsgUser(text, uidUserIntent, current_uid, current_name, StringCurrentMil, stringUrl, get_msg_uid, TEST, uidUserIntent);
 
                                     }
 

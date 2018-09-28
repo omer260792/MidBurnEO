@@ -27,6 +27,7 @@ import java.util.Map;
 import static com.example.omer.midburneo.RegisterAc.SHPRF;
 import static com.example.omer.midburneo.RegisterAc.prefs;
 import static com.example.omer.midburneo.Tabs.ChatListAc.setImgUrlDefault;
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_MESSAGE;
 
 
 public class MainPageAc extends AppCompatActivity {
@@ -34,14 +35,14 @@ public class MainPageAc extends AppCompatActivity {
 
     private DatabaseReference mUserDatabase;
     private FirebaseUser mCurrentUser;
-    public String current_uid, current_image, current_admin, current_name, image;
+    public String current_uid, current_image, current_name, image;
     public static String current_camp_static;
     public static String current_admin_static;
     public static String current_uid_camp_static;
     public static String current_time_static;
     public static String current_time_calendar_static;
     public static String current_name_static;
-    public static String TABLE_NAME_MESSAGE = "message";
+    public static String current_onilne_static;
 
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,8 +51,9 @@ public class MainPageAc extends AppCompatActivity {
 
         prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
         prefs.edit().putString("email", "main").apply();
-        prefs.edit().putString("status", "true").apply();
-        current_camp_static = prefs.getString("camp", null);
+        prefs.edit().putString("status", "אין סטטוס").apply();
+        current_camp_static = prefs.getString("camps", null);
+        current_name_static = prefs.getString("name", null);
         current_name_static = prefs.getString("name", null);
 
 
@@ -74,9 +76,9 @@ public class MainPageAc extends AppCompatActivity {
 
                 switch (position) {
                     case 0:
-                        current_admin = prefs.getString("admin", null);
+                        current_admin_static = prefs.getString("admin", null);
 
-                        if (current_admin.equals("admin")) {
+                        if (current_admin_static.equals("admin")) {
                             startActivity(new Intent(MainPageAc.this, AdminAc.class));
 
                         } else {
@@ -126,7 +128,7 @@ public class MainPageAc extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                 current_image = dataSnapshot.child("image").getValue().toString();
-                current_admin = dataSnapshot.child("admin").getValue().toString();
+                current_admin_static = dataSnapshot.child("admin").getValue().toString();
                 current_name = dataSnapshot.child("name").getValue().toString();
                 current_camp_static = dataSnapshot.child("camps").getValue().toString();
                 current_uid_camp_static = dataSnapshot.child("chat").getValue().toString();
@@ -141,7 +143,7 @@ public class MainPageAc extends AppCompatActivity {
                 }
 
                 prefs.edit().putString("image", image).apply();
-                prefs.edit().putString("admin", current_admin).apply();
+                prefs.edit().putString("admin", current_admin_static).apply();
                 prefs.edit().putString("name", current_name).apply();
                 prefs.edit().putString("camps", current_camp_static).apply();
                 prefs.edit().putString("chat", current_uid_camp_static).apply();
@@ -166,7 +168,7 @@ public class MainPageAc extends AppCompatActivity {
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
 
         Map<String, Object> mapCampsUpdates = new HashMap<>();
-        mapCampsUpdates.put("status", "true");
+        mapCampsUpdates.put("online", "true");
 
         mUserDatabase.updateChildren(mapCampsUpdates);
 

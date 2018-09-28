@@ -1,7 +1,9 @@
 package com.example.omer.midburneo.Adapters;
 
+import android.app.AlertDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -12,14 +14,18 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.omer.midburneo.Class.Message;
+import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.R;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
 
 
 import java.util.List;
 
+import static com.example.omer.midburneo.RegisterAc.prefs;
+import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
 import static com.example.omer.midburneo.Tabs.MainPageAc.current_uid_camp_static;
 
 
@@ -28,6 +34,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MsgViewH
     private Context context;
     private final List<Message> msgList;
     public String current_uid, current_camp_static_get;
+    private DatabaseReference mUserDatabase;
+    private DBHelper dbHelper;
 
     private static final int VIEW_TYPE_MESSAGE_SENT = 1;
     private static final int VIEW_TYPE_MESSAGE_RECEIVED = 2;
@@ -43,10 +51,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MsgViewH
 
     }
 
-
+    @NonNull
     @Override
-    public MsgViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view;
+    public MessageAdapter.MsgViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = null;
+
 
 
         if (viewType == VIEW_TYPE_MESSAGE_SENT) {
@@ -120,6 +129,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MsgViewH
             }
         }
 
+       // return msgList.size();
+
 
     }
 
@@ -150,6 +161,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MsgViewH
                 holder.tvName.setText(message.getName_sender());
                 holder.tvTime.setText(message.getTime());
                 Glide.with(context).load(message.getImage()).into(holder.tvImage);
+
+
 
             case VIEW_TYPE_MESSAGE_IMAGE_SENT:
                 holder.tvTime.setText(message.getTime());
@@ -188,11 +201,74 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MsgViewH
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+//                    Message message = new Message();
+//                    message = (Message) view.getTag();
+//
+////                    Message message = (Message) view.getTag();
+//                    String name = message.getMsg();
+//                    Log.e("name",name);
 
-                    Message msg = (Message) view.getTag();
+
 
                 }
             });
+
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+
+//                    dbHelper = new DBHelper(context);
+//                    Message message = (Message) itemView.getTag();
+//
+//                    String name = message.getMsg();
+//                    Log.e("name",name);
+
+
+
+                    AlertDialog alertDialog = new AlertDialog.Builder(context).create();
+
+                    alertDialog.setTitle("עריכת הודעה");
+                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "מחק הודעה ", new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface dialog, int id) {
+
+
+                            current_camp_static = prefs.getString("camps", null);
+
+
+//                            if (name.equals(current_camp_static)) {
+//                                dbHelper.DeleteMsgSqliteDB(current_uid,message.getUidCounts());
+//
+//                            } else {
+//                                if (current_uid.equals(msg.sender)){
+//                                    dbHelper.DeleteMsgSqliteDB(message.getReceiver(),message.getUidCounts());
+//
+//                                }else {
+//                                    dbHelper.DeleteMsgSqliteDB(message.getSender(),message.getUidCounts());
+//
+//                                }
+//
+//                            }
+
+                        }
+                    });
+
+                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "חזור", new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface dialog, int id) {
+
+                            return;
+
+                        }
+                    });
+
+                    alertDialog.show();
+
+                    return true;
+                }
+            });
+
+
 
 
         }
