@@ -131,6 +131,7 @@ public class EquipmentEditAc extends AppCompatActivity {
                     SQLiteToExcel();
 
                     Intent i = new Intent(EquipmentEditAc.this, EquipmentAc.class);
+                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(i);
 
                 } else {

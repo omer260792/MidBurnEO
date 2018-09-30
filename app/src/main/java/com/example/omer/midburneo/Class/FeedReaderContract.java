@@ -46,6 +46,7 @@ public final class FeedReaderContract {
         public static final String DATE_BOOL = "date_bool";
         public static final String ONLINE = "onlie";
         public static final String PHONE = "phone";
+        public static final String TIME__SET = "timeSet";
 
 
     }

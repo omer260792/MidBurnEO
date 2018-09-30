@@ -84,7 +84,8 @@ public class DBHelper extends SQLiteOpenHelper {
                     FeedReaderContract.FeedEntry.MESSAGE + " TEXT," +
                     FeedReaderContract.FeedEntry.MESSAGE_SENDER + " TEXT," +
                     FeedReaderContract.FeedEntry.TIME + " TEXT," +
-                    FeedReaderContract.FeedEntry.MESSAGE_UID + " TEXT)";
+                    FeedReaderContract.FeedEntry.MESSAGE_UID + " TEXT," +
+                    FeedReaderContract.FeedEntry.TIME__SET + " TEXT)";
 
     public String SQL_CREATE_ENTRIES_USERS_EQUIPMENT =
             "CREATE TABLE IF NOT EXISTS " + TABLE_NAME_EQUIPMENT + " (" + FeedReaderContract.FeedEntry._ID + " INTEGER PRIMARY KEY," +
@@ -291,6 +292,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 String sender = calendar.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
                 String time = calendar.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME)));
                 String msgUid = calendar.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
+                String timeSet = calendar.setTimeSet(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME__SET)));
 
 
                 calendarList.add(calendar);
@@ -422,6 +424,82 @@ public class DBHelper extends SQLiteOpenHelper {
         return msgNoteList;
     }
 
+    public ArrayList<Calendar> getAllCalnderNotePreview(String time) {
+
+        ArrayList<Calendar> calendarArrayList = new ArrayList<>();
+
+
+        db = this.getReadableDatabase();
+
+        Calendar calendar = new Calendar();
+
+
+        String[] projection = {
+                BaseColumns._ID,
+                FeedReaderContract.FeedEntry.MESSAGE,
+                FeedReaderContract.FeedEntry.MESSAGE_SENDER,
+                FeedReaderContract.FeedEntry.TIME,
+                FeedReaderContract.FeedEntry.MESSAGE_UID,
+                FeedReaderContract.FeedEntry.TIME__SET
+
+        };
+
+        String selection = FeedReaderContract.FeedEntry.TIME + " = ?";
+        String[] selectionArgs = {time};
+
+        String sortOrder =
+                FeedReaderContract.FeedEntry.TIME__SET + " DESC";
+
+        Cursor cursor = db.query(
+                FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR,   // The table to query
+                projection,             // The array of columns to return (pass null to get all)
+                selection,              // The columns for the WHERE clause
+                selectionArgs,          // The values for the WHERE clause
+                null,                   // don't group the rows
+                null,                   // don't filter by row groups
+                sortOrder               // The sort order
+        );
+
+        Log.e(TAG + " Read", String.valueOf(cursor.getColumnCount()));
+        Log.e(TAG + " Read", String.valueOf(cursor.getColumnNames()));
+        Log.e(TAG + " Read", String.valueOf(cursor.getCount()));
+
+
+        if (cursor.moveToFirst()) {
+            do {
+
+                String msg = calendar.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE)));
+                String sender = calendar.setSender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
+                time = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
+                String timeSetString = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME__SET));
+
+                long timeSetLong = (Long.parseLong(timeSetString));
+                DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm");
+                timeSetString = getTimeHourMintus.format(timeSetLong);
+
+                String timeSet = calendar.setTimeSet(timeSetString);
+                String timeSets = calendar.setTime(time);
+
+                Log.e(TAG + "Read", msg);
+                Log.e(TAG + "sender", sender);
+                Log.e(TAG + "Read", time);
+                Log.e(TAG + "Read", timeSet);
+                Log.e(TAG + "Read", timeSets);
+
+
+                calendarArrayList.add(calendar);
+
+
+            } while (cursor.moveToNext());
+
+        }
+        // close db connection
+        db.close();
+
+        return calendarArrayList;
+
+    }
+
 
     public void SaveDBSqliteUser(String Name, String Camp, String Uid, String image, String lstmsg, String phone) {
 
@@ -444,7 +522,6 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(FeedReaderContract.FeedEntry.LASTMSG, lstmsg);
         values.put(FeedReaderContract.FeedEntry.ROLE, "אין תפקיד");
         values.put(FeedReaderContract.FeedEntry.PHONE, phone);
-
 
 
         // Insert the new row, returning the primary key value of the new row
@@ -596,7 +673,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    public void SaveDBSqliteToCalendar(String msg, String msg_sender, String time, String uid_msg) {
+    public void SaveDBSqliteToCalendar(String msg, String msg_sender, String time, String uid_msg, String setTime) {
 
         SQLiteDatabase db;
 
@@ -607,6 +684,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(FeedReaderContract.FeedEntry.MESSAGE_SENDER, msg_sender);
         values.put(FeedReaderContract.FeedEntry.TIME, time);
         values.put(FeedReaderContract.FeedEntry.MESSAGE_UID, uid_msg);
+        values.put(FeedReaderContract.FeedEntry.TIME__SET, setTime);
 
         // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert(TABLE_NAME_CALENDAR, null, values);

@@ -6,12 +6,15 @@ public class Calendar {
     public String sender;
     public String time;
     public String msguid;
+    public String timeSet;
 
-    public Calendar(String msg, String sender, String time, String msguid) {
+
+    public Calendar(String msg, String sender, String time, String msguid, String timeSet) {
         this.msg = msg;
         this.sender = sender;
         this.time = time;
         this.msguid = msguid;
+        this.timeSet = timeSet;
     }
 
     public Calendar(){
@@ -31,16 +34,18 @@ public class Calendar {
         return sender;
     }
 
-    public void setSender(String sender) {
+    public String setSender(String sender) {
         this.sender = sender;
+        return sender;
     }
 
     public String getTime() {
         return time;
     }
 
-    public void setTime(String time) {
+    public String setTime(String time) {
         this.time = time;
+        return time;
     }
 
     public String getMsguid() {
@@ -49,6 +54,16 @@ public class Calendar {
 
     public void setMsguid(String msguid) {
         this.msguid = msguid;
+    }
+
+
+    public String getTimeSet() {
+        return timeSet;
+    }
+
+    public String setTimeSet(String timeSet) {
+        this.timeSet = timeSet;
+        return timeSet;
     }
 
 }

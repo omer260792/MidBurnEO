@@ -106,7 +106,7 @@ public class RegisterAc extends AppCompatActivity {
         prefs.edit().putString("email", "register").apply();
 
 
-        if (!TextUtils.isEmpty(getName) && !TextUtils.isEmpty(getEmail) && !TextUtils.isEmpty(getPass) && getNum.trim().length()>123456789) {
+        if (!TextUtils.isEmpty(getName) && !TextUtils.isEmpty(getEmail) && !TextUtils.isEmpty(getPass) ) {//&& getNum.trim().length()>123456789
 
 
             mprogress.setMessage("Signing Up");

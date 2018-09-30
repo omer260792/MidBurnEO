@@ -174,7 +174,7 @@ public class ChatAc extends AppCompatActivity {
                             Log.d("countSqlLite", String.valueOf(countSqlLite));
                             Log.d("FBCount", String.valueOf(FBCount));
 
-                            db.SaveDBSqliteUser(getNameReceiver, currentCampSP, getUidUsers, get_image, get_lastmsg,get_phone);
+                            db.SaveDBSqliteUser(getNameReceiver, currentCampSP, getUidUsers, get_image, get_lastmsg, get_phone);
 
                         }
                     }
@@ -198,20 +198,16 @@ public class ChatAc extends AppCompatActivity {
     }
 
 
-
-    public static void callPhoneChatAc(String phone, Context context){
+    public static void callPhoneChatAc(String phone, Context context) {
 
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.CALL_PHONE},REQUEST_PHONE_CALL);
-        }
-        else
-        {
-            String uri = "tel:" + phone.trim() ;
+            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.CALL_PHONE}, REQUEST_PHONE_CALL);
+        } else {
+            String uri = "tel:" + phone.trim();
             Intent intent = new Intent(Intent.ACTION_CALL);
             intent.setData(Uri.parse(uri));
             context.startActivity(intent);
 
-           // Toast.makeText(context,phone,Toast.LENGTH_SHORT).show();
         }
 
     }

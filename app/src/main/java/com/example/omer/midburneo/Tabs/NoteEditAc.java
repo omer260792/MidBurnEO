@@ -2,6 +2,7 @@ package com.example.omer.midburneo.Tabs;
 
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.example.omer.midburneo.DataBase.DBHelper;
@@ -107,6 +109,7 @@ public class NoteEditAc extends AppCompatActivity {
 
             }
         };
+
 
 
         saveButton.setOnClickListener(new View.OnClickListener() {

@@ -50,13 +50,14 @@ public class EquipmentAc extends AppCompatActivity {
 
     private Button addEquipmentBtn, excelEquipmentBtn;
     private EditText etSearchEquipment;
-    private  EquipmentAdapter mAdapter;
+    private EquipmentAdapter mAdapter;
     public RecyclerView recyclerView;
     //RecyclerView.Adapter mAdapter;
     public RecyclerView.LayoutManager layoutManager;
     private ArrayList<Equipment> equipmentUtilsList = new ArrayList<>();
 
     public String current_admin, current_uid;
+    public Boolean boolRecycler = false;
     public DBEquipment dbEquipment;
     public DBHelper dbHelper;
     public SQLiteDatabase db;
@@ -91,35 +92,52 @@ public class EquipmentAc extends AppCompatActivity {
         }
 
 
-        recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(EquipmentAc.this);
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setHasFixedSize(true);
+
 
         getRawCountSql();
+        getEquipment(boolRecycler);
 
-        if (countSqlLite == 0) {
-            Log.e(TAG, "oncreat if " + String.valueOf(countSqlLite));
-
-            UpdateDateFromFireBaseToSQLiteEquipment();
-
-        } else {
-            getEquipment();
-
-        }
         etSearchEquipment.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                Log.e(TAG, "beforeTextChanged");
 
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Log.e(TAG, "onTextChanged");
+
 
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                    filter(s.toString());
+                filter(s.toString());
+                Log.e(TAG, "afterTextChanged");
+                String test = etSearchEquipment.getText().toString() + "";
+
+                if (!test.equals("")) {
+
+                    boolRecycler = false;
+                    Log.e(TAG, "boolRecycler = false;" + test);
+                    LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
+                    layoutManager.setStackFromEnd(boolRecycler);
+                    recyclerView.setLayoutManager(layoutManager);
+
+                } else {
+                    boolRecycler = true;
+                    Log.e(TAG, "boolRecycler = true;" + test);
+                    LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
+                    layoutManager.setStackFromEnd(boolRecycler);
+                    recyclerView.setLayoutManager(layoutManager);
+
+
+                }
+
 
             }
         });
@@ -159,21 +177,47 @@ public class EquipmentAc extends AppCompatActivity {
         super.onStart();
         Log.e(TAG, "onstart");
 
+        if (countSqlLite == 0) {
+            Log.e(TAG, "oncreat if " + String.valueOf(countSqlLite));
 
+            UpdateDateFromFireBaseToSQLiteEquipment();
+
+        } else {
+            String test = etSearchEquipment.getText().toString() + "";
+
+            if (test.equals("")) {
+
+                boolRecycler = true;
+                Log.e(TAG, "boolRecycler = true onCreat;" + test);
+                LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
+                layoutManager.setStackFromEnd(boolRecycler);
+
+            } else {
+                boolRecycler = false;
+                Log.e(TAG, "boolRecycler = false onCreat;" + test);
+                LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
+                layoutManager.setStackFromEnd(boolRecycler);
+
+            }
+        }
     }
 
-    public void getEquipment() {
+    public void getEquipment(Boolean bool) {
 
         Log.e(TAG, "getEquipment");
 
         try {
+
             equipmentUtilsList.addAll(dbHelper.getAllEquipment());
             mAdapter = new EquipmentAdapter(EquipmentAc.this, equipmentUtilsList);
             LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
-            layoutManager.setStackFromEnd(true);
+            layoutManager.setStackFromEnd(bool);
             recyclerView.setLayoutManager(layoutManager);
             recyclerView.setAdapter(mAdapter);
+            // recyclerView.setHasFixedSize(bool);
             Log.e(TAG, "getEquipment() + try");
+
+            UpdateDateFromFireBaseToSQLiteEquipment();
 
 
         } catch (Exception e) {
@@ -192,10 +236,16 @@ public class EquipmentAc extends AppCompatActivity {
                 filteredList.add(item);
 
             }
+
+//            if (item.content.toLowerCase().contains(text.toLowerCase())) {
+//                filteredList.add(item);
+//
+//            }
         }
 
         mAdapter.filterList(filteredList);
     }
+
     public void UpdateDateFromFireBaseToSQLiteEquipment() {
         if (current_camp_static.equals(null)) {
 
@@ -208,10 +258,13 @@ public class EquipmentAc extends AppCompatActivity {
             DatabaseReference discussionRoomsRef = rootRef.child("Camps").child(current_camp_static).child("Equipment");
             Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + else");
 
-            if (countSqlLite == 0) {
-                discussionRoomsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            discussionRoomsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                    long FBCount = dataSnapshot.getChildrenCount();
+                    if (countSqlLite == 0) {
+
                         for (DataSnapshot ds : dataSnapshot.getChildren()) {
 
 
@@ -228,18 +281,57 @@ public class EquipmentAc extends AppCompatActivity {
                             dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
                             Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + countSqlLite == 0");
 
+
                         }
-                        getEquipment();
+
+                        if (!etSearchEquipment.equals("")) {
+
+                            boolRecycler = false;
+
+                            getEquipment(boolRecycler);
+
+                        } else {
+                            boolRecycler = true;
+
+                            getEquipment(boolRecycler);
+
+                        }
+                    } else if (countSqlLite < FBCount) {
+
+                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
+
+                            if (countSqlLite < FBCount) {
+
+                                String name = ds.child("nameProd").getValue(String.class);
+                                String content = ds.child(FeedReaderContract.FeedEntry.CONTENT).getValue(String.class);
+                                String amount = ds.child(FeedReaderContract.FeedEntry.MOUNT).getValue(String.class);
+                                String amountCurrent = ds.child("mountCurrent").getValue(String.class);
+                                String time = ds.child(FeedReaderContract.FeedEntry.TIME).getValue(String.class);
+                                String image = ds.child(FeedReaderContract.FeedEntry.IMAGE).getValue(String.class);
+                                String sender = ds.child("sender").getValue(String.class);
+                                String msgUid = ds.child(FeedReaderContract.FeedEntry.MESSAGE_UID).getKey();
 
 
+                                dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
+                                Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + countSqlLite == 0");
+
+                            }
+
+                        }
+
+                    } else {
+                        return;
                     }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                }
 
-                    }
-                });
-            }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+
         }
 
 

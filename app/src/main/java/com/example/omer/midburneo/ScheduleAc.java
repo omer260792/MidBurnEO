@@ -1,7 +1,5 @@
 package com.example.omer.midburneo;
 
-
-import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -16,16 +14,10 @@ import android.widget.Toast;
 import com.applandeo.materialcalendarview.CalendarView;
 import com.applandeo.materialcalendarview.EventDay;
 import com.applandeo.materialcalendarview.exceptions.OutOfDateRangeException;
-import com.applandeo.materialcalendarview.listeners.OnCalendarPageChangeListener;
 import com.applandeo.materialcalendarview.listeners.OnDayClickListener;
-import com.example.omer.midburneo.AddNoteActivity;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.DataBase.DBHelper;
-import com.example.omer.midburneo.NotePreviewActivity;
-import com.example.omer.midburneo.R;
-import com.example.omer.midburneo.Tabs.AdminAc;
-import com.example.omer.midburneo.Tabs.ChatListAc;
-import com.example.omer.midburneo.Tabs.MainPageAc;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -39,15 +31,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR;
-import static com.example.omer.midburneo.NotePreviewActivity.getFormattedDate;
 import static com.example.omer.midburneo.RegisterAc.prefs;
-import static com.example.omer.midburneo.Tabs.ChatListAc.setImgUrlDefault;
-import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_MESSAGE;
 import static com.example.omer.midburneo.Tabs.MainPageAc.current_admin_static;
 import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
 import static com.example.omer.midburneo.Tabs.MainPageAc.current_time_calendar_static;
@@ -61,12 +47,12 @@ public class ScheduleAc extends AppCompatActivity {
     private ArrayList<EventDay> mEventDays = new ArrayList<>();
     public DBHelper db;
     public SQLiteDatabase dbr;
-    public String msg, sender, time, msgUid, current_uid, current_admin;
+    public String msg, sender, time, msgUid, current_uid, current_admin, uid_msg, msg_sender, setTime;
     public Calendar calendar;
     public int mDay, checkTablecount;
     public MyEventDay myEventDay;
     public long countSqlLite;
-    private DatabaseReference mUserDatabase;
+    private DatabaseReference mUserDatabase, discussionRoomsRef;
 
 
     @Override
@@ -127,7 +113,6 @@ public class ScheduleAc extends AppCompatActivity {
         });
 
 
-
     }
 
     @Override
@@ -181,16 +166,6 @@ public class ScheduleAc extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public Calendar getCalendar(long time) {
-
-        calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(time);
-
-
-        mDay = calendar.get(Calendar.DAY_OF_MONTH);
-        return calendar;
-
-    }
 
     public long getRawCountSql() {
         SQLiteDatabase dbr;
@@ -212,80 +187,19 @@ public class ScheduleAc extends AppCompatActivity {
         getRawCountSql();
 
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference discussionRoomsRef = rootRef.child("Camps").child(current_camp_static).child("Calendar");
+        discussionRoomsRef = rootRef.child("Camps").child(current_camp_static).child("Calendar");
 
         if (countSqlLite == 0) {
 
             long currentDateTime = System.currentTimeMillis();
             current_time_static = String.valueOf(currentDateTime);
 
-            Query query = discussionRoomsRef.orderByChild("time").startAt(current_time_static);
-            ValueEventListener valueEventListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                        long FBCount = dataSnapshot.getChildrenCount();
+            getCalnderFromFireBase(current_time_calendar_static);
 
-                        if (countSqlLite < FBCount) {
-
-                            String msg = ds.child("message").getValue(String.class);
-                            String msg_sender = ds.child("message_sender").getValue(String.class);
-                            String time = ds.child("time").getValue(String.class);
-                            String uid_msg = ds.getKey();
-
-                            Log.d("countSqlLite", String.valueOf(countSqlLite));
-                            Log.d("ghghg", String.valueOf(uid_msg));
-                            Log.d("FBCount", String.valueOf(FBCount));
-
-
-                            db.SaveDBSqliteToCalendar(msg, msg_sender, time, uid_msg);
-
-                            getCalendarPickerView();
-
-                        }
-
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                }
-            };
-            query.addListenerForSingleValueEvent(valueEventListener);
         } else {
+            getCalnderFromFireBase(current_time_static);
 
-            Query query = discussionRoomsRef.orderByChild("time").startAt(current_time_calendar_static);
-            ValueEventListener valueEventListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                        long FBCount = dataSnapshot.getChildrenCount();
-
-                        if (countSqlLite < FBCount) {
-
-                            String msg = ds.child("message").getValue(String.class);
-                            String msg_sender = ds.child("message_sender").getValue(String.class);
-                            String time = ds.child("time").getValue(String.class);
-                            String uid_msg = ds.getKey();
-
-                            Log.d("countSqlLite", String.valueOf(countSqlLite));
-                            Log.d("ghghg", String.valueOf(uid_msg));
-                            Log.d("FBCount", String.valueOf(FBCount));
-
-
-                            db.SaveDBSqliteToCalendar(msg, msg_sender, time, uid_msg);
-
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                }
-            };
-            query.addListenerForSingleValueEvent(valueEventListener);
         }
-
 
     }
 
@@ -293,6 +207,8 @@ public class ScheduleAc extends AppCompatActivity {
         db = new DBHelper(getApplicationContext());
 
         dbr = db.getWritableDatabase();
+
+
 
         String countQuery = "SELECT  * FROM " + TABLE_NAME_CALENDAR;
         Cursor cursor = dbr.rawQuery(countQuery, null);
@@ -304,12 +220,24 @@ public class ScheduleAc extends AppCompatActivity {
                 sender = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER));
                 time = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
                 msgUid = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID));
+                setTime = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME__SET));
                 String index = cursor.getString(cursor.getColumnIndex("_id"));
 
                 Calendar cal = Calendar.getInstance();
                 Calendar cal1 = Calendar.getInstance();
 
                 SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+
+//                try {
+//                    long testL = Long.parseLong(time);
+//                    String test = String.valueOf(sdf.parse(setTime));
+//                    String test2 = String.valueOf(sdf.parse(time));
+//                    String test1 = String.valueOf(sdf.parse(String.valueOf(testL)));
+//
+//                    Log.e("fbhgbhfgbgghghghg",test + test2 + test1);
+//                } catch (ParseException e) {
+//                    e.printStackTrace();
+//                }
 
                 long currentDateTime = System.currentTimeMillis();
                 String timeCurrent = String.valueOf(currentDateTime);
@@ -337,7 +265,6 @@ public class ScheduleAc extends AppCompatActivity {
             } while (cursor.moveToNext());
 
         }
-        // close db connection
         dbr.close();
     }
 
@@ -356,9 +283,7 @@ public class ScheduleAc extends AppCompatActivity {
                 prefs.edit().putString("camps", current_camp_static).apply();
                 prefs.edit().putString("admin", current_admin_static).apply();
 
-
                 UpdateSqliteFromFireBaseCalendar();
-
 
             }
 
@@ -369,6 +294,45 @@ public class ScheduleAc extends AppCompatActivity {
         });
     }
 
+    public void getCalnderFromFireBase(String ChildTime) {
+
+        long currentDateTime = System.currentTimeMillis();
+        current_time_static = String.valueOf(currentDateTime);
+
+        Query query = discussionRoomsRef.orderByChild("time").startAt(ChildTime);
+        ValueEventListener valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    long FBCount = dataSnapshot.getChildrenCount();
+
+                    if (countSqlLite < FBCount) {
+                        msg = ds.child("message").getValue(String.class);
+                        msg_sender = ds.child("message_sender").getValue(String.class);
+                        time = ds.child("time").getValue(String.class);
+                        setTime = ds.child("timeSet").getValue(String.class);
+                        uid_msg = ds.getKey();
+
+                        Log.d("countSqlLite", String.valueOf(countSqlLite));
+                        Log.d("ghghg", String.valueOf(uid_msg));
+                        Log.d("FBCount", String.valueOf(FBCount));
+
+
+                        db.SaveDBSqliteToCalendar(msg, msg_sender, time, uid_msg,setTime);
+
+                        getCalendarPickerView();
+                    }
+
+
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        };
+        query.addListenerForSingleValueEvent(valueEventListener);
+    }
 
 
 }
