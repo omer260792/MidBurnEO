@@ -25,12 +25,13 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.omer.midburneo.CampsAc;
 import com.example.omer.midburneo.Class.Friend;
+import com.example.omer.midburneo.Class.UserTest;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.R;
 import com.example.omer.midburneo.Tabs.AdminAc;
 import com.example.omer.midburneo.Tabs.ChatAc;
-import com.example.omer.midburneo.Tabs.ChatListAc;
 import com.example.omer.midburneo.Tabs.MainPageAc;
+import com.example.omer.midburneo.Tabs.TestChatListAc;
 import com.example.omer.midburneo.Utils.PopUpUser;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -92,7 +93,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
         } else {
             holder.pName.setText(friend.getName());
-            holder.pLastMsg.setText(friend.getLastMsg());
+            holder.pLastMsg.setText(friend.getRole());
 
             urlString = friend.getImage();
 
@@ -123,6 +124,9 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
         public Dialog myDialog;
 
+        UserTest user = UserTest.getInstance();
+
+
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -141,8 +145,9 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
                     Friend friend = (Friend) view.getTag();
 
+                   // user.SPUser();
                     Toast.makeText(view.getContext(), friend.getName(), Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(context, ChatListAc.class);
+                    Intent intent = new Intent(context, TestChatListAc.class);
                     intent.putExtra("nameUidFriend", friend.getName());
                     intent.putExtra("imageUidFriend", friend.getImage());
                     intent.putExtra("receiverUidFriend", friend.getUidReceiver());
@@ -151,6 +156,8 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                     intent.putExtra("countUidFriend", friend.getUidCount());
                     intent.putExtra("timeUidFriend", friend.getTime());
                     intent.putExtra("onilneUidFriend", friend.getOnline());
+                    intent.putExtra("deviceUidFriend", friend.getDevice());
+                    intent.putExtra("tokenUidFriend", friend.getToken());
                     context.startActivity(intent);
 
                 }

@@ -47,6 +47,8 @@ import static com.example.omer.midburneo.RegisterAc.SHPRF;
 public class ChatAc extends AppCompatActivity {
 
 
+
+
     private final String TAG = "ChatAc";
 
     private RecyclerView recyclerView;
@@ -54,7 +56,7 @@ public class ChatAc extends AppCompatActivity {
     private CircleImageView imageView;
     private UtilHelper utilHelper;
 
-    public String current_uid, currentImageSP, currentNameSP, currentstatusSp, currentCampSP, getUid, getUidUsers, get_lastmsg, get_phone, getNameReceiver, get_image, get_time, name;
+    public String current_uid, currentImageSP, currentNameSP, currentstatusSp, currentCampSP, getUid, getUidUsers, get_lastmsg, get_phone, get_device, get_token, getNameReceiver, get_image, get_time, name;
     public long countSqlLite;
     public int num = 1;
 
@@ -75,7 +77,6 @@ public class ChatAc extends AppCompatActivity {
         imageView = findViewById(R.id.imgChatUser);
         recyclerView = findViewById(R.id.recycler_Expand);
 
-        current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
         currentNameSP = prefs.getString("name", null);
@@ -100,6 +101,9 @@ public class ChatAc extends AppCompatActivity {
         layoutManager = new LinearLayoutManager(ChatAc.this);
         recyclerView.setLayoutManager(layoutManager);
         personUtilsList = new ArrayList<>();
+
+
+        current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         getProfilesCount();
 
@@ -169,12 +173,14 @@ public class ChatAc extends AppCompatActivity {
                             get_image = ds.child("image").getValue(String.class);
                             get_lastmsg = ds.child("lastmsg").getValue(String.class);
                             get_phone = ds.child("phone").getValue(String.class);
+                            get_device = ds.child(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID).getValue(String.class);
+                            get_token = ds.child(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN).getValue(String.class);
                             getUidUsers = ds.getKey();
 
                             Log.d("countSqlLite", String.valueOf(countSqlLite));
                             Log.d("FBCount", String.valueOf(FBCount));
 
-                            db.SaveDBSqliteUser(getNameReceiver, currentCampSP, getUidUsers, get_image, get_lastmsg, get_phone);
+                            db.SaveDBSqliteUser(getNameReceiver, currentCampSP, getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token);
 
                         }
                     }

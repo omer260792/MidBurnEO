@@ -6,28 +6,25 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.nfc.Tag;
 import android.provider.BaseColumns;
-import android.provider.ContactsContract;
 import android.util.Log;
 
-import com.applandeo.materialcalendarview.EventDay;
 import com.example.omer.midburneo.Class.Calendar;
 import com.example.omer.midburneo.Class.Equipment;
 import com.example.omer.midburneo.Class.FeedReaderContract;
+import com.example.omer.midburneo.Class.FirebaseMessageModel;
 import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.Class.Message;
 import com.example.omer.midburneo.Class.MessageNote;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.ROLE;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
@@ -60,7 +57,9 @@ public class DBHelper extends SQLiteOpenHelper {
                     FeedReaderContract.FeedEntry.UID + " TEXT," +
                     FeedReaderContract.FeedEntry.LASTMSG + " TEXT," +
                     FeedReaderContract.FeedEntry.ROLE + " TEXT," +
-                    FeedReaderContract.FeedEntry.PHONE + " TEXT)";
+                    FeedReaderContract.FeedEntry.PHONE + " TEXT," +
+                    FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID + " TEXT," +
+                    FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN + " TEXT)";
 
 
     private static final String SQL_DELETE_ENTRIES =
@@ -74,7 +73,6 @@ public class DBHelper extends SQLiteOpenHelper {
                     FeedReaderContract.FeedEntry.MESSAGE_SENDER + " TEXT," +
                     FeedReaderContract.FeedEntry.NAME + " TEXT," +
                     FeedReaderContract.FeedEntry.TIME + " TEXT," +
-                    FeedReaderContract.FeedEntry.IMAGE + " TEXT," +
                     FeedReaderContract.FeedEntry.MESSAGE_UID + " TEXT," +
                     FeedReaderContract.FeedEntry.STATUS + " TEXT)";
 
@@ -189,6 +187,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 String time = friend.setTime(cursor.getString(cursor.getColumnIndex("time")));
                 String role = friend.setRole(cursor.getString(cursor.getColumnIndex("role")));
                 String phone = friend.setPhone(cursor.getString(cursor.getColumnIndex("phone")));
+                String cDevice = friend.setDevice(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID)));
+                String cToken = friend.setToken(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN)));
 
 
                 if (!uid.equals(current_uid)) {
@@ -198,6 +198,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
             } while (cursor.moveToNext());
 
+
         }
         // close db connection
         db.close();
@@ -205,8 +206,8 @@ public class DBHelper extends SQLiteOpenHelper {
         return notes;
     }
 
-    public List<Message> getAllMsg() {
-        List<Message> msgList = new ArrayList<>();
+    public List<FirebaseMessageModel> getAllMsg() {
+        List<FirebaseMessageModel> msgList = new ArrayList<>();
 
         db = this.getReadableDatabase();
         Log.e(TAG, "getAllMsg");
@@ -223,23 +224,22 @@ public class DBHelper extends SQLiteOpenHelper {
 
                     current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-                    Message message = new Message();
+                    FirebaseMessageModel message = new FirebaseMessageModel();
 
                     String getTimeCursor = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
                     long getTimeLong = Long.parseLong(getTimeCursor);
 
                     DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm");
-                    String timeFormat = getTimeHourMintus.format(getTimeLong);
+                    long timeFormat = Long.parseLong(getTimeHourMintus.format(getTimeLong));
 
-                    String name_sender = message.setName_sender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.NAME)));
-                    String msg = message.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE)));
-                    String receiver = message.setReceiver(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_RECEIVER)));
-                    String sender = message.setSender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
-                    String time = message.setTime(timeFormat);
-                    String image = message.setImage(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.IMAGE)));
-                    String uidMsg = message.setUidMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
+                    String name_sender = message.setSenderName(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.NAME)));
+                    String msg = message.setText(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE)));
+                    String receiver = message.setReceiverId(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_RECEIVER)));
+                    String sender = message.setSenderId(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
+                    String time = message.setCreatedDate(timeFormat);
+                    String uidMsg = message.setId(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
                     String status = message.setStatus(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.STATUS)));
-                    String uidcount = message.setUidCounts(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID)));
+                    //String uidcount = message.setc(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID)));
 
                     Log.e((TAG), "getAllMsg" + msg);
                     Log.e((TAG), "getAllMsg" + status);
@@ -247,7 +247,6 @@ public class DBHelper extends SQLiteOpenHelper {
                     Log.e((TAG), "getAllMsg" + receiver);
                     Log.e((TAG), "getAllMsg" + name_sender);
                     Log.e((TAG), "getAllMsg" + time);
-                    Log.e((TAG), "getAllMsg" + uidcount);
 
 
                     msgList.add(message);
@@ -501,7 +500,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
-    public void SaveDBSqliteUser(String Name, String Camp, String Uid, String image, String lstmsg, String phone) {
+    public void SaveDBSqliteUser(String Name, String Camp, String Uid, String image, String lstmsg, String phone, String device, String token) {
 
         SQLiteDatabase db;
 
@@ -522,97 +521,22 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(FeedReaderContract.FeedEntry.LASTMSG, lstmsg);
         values.put(FeedReaderContract.FeedEntry.ROLE, "אין תפקיד");
         values.put(FeedReaderContract.FeedEntry.PHONE, phone);
+        values.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID, device);
+        values.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN, token);
 
 
         // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
 
-//        try {
-//
-//
-//            String[] projection = {
-//                    BaseColumns._ID,
-//                    FeedReaderContract.FeedEntry.NAME,
-//                    FeedReaderContract.FeedEntry.CAMPS,
-//                    FeedReaderContract.FeedEntry.ADMIN,
-//                    FeedReaderContract.FeedEntry.IMAGE,
-//                    FeedReaderContract.FeedEntry.UID,
-//                    FeedReaderContract.FeedEntry.UID_id
-//            };
-//
-//            String selection = FeedReaderContract.FeedEntry.NAME + " = ?";
-//            String[] selectionArgs = {Name};
-//
-//            String sortOrder =
-//                    FeedReaderContract.FeedEntry.UID + " DESC";
-//
-//            Cursor cursor = db.query(
-//                    FeedReaderContract.FeedEntry.TABLE_NAME,   // The table to query
-//                    projection,             // The array of columns to return (pass null to get all)
-//                    selection,              // The columns for the WHERE clause
-//                    selectionArgs,          // The values for the WHERE clause
-//                    null,                   // don't group the rows
-//                    null,                   // don't filter by row groups
-//                    sortOrder               // The sort order
-//            );
-//
-//
-//            cursor.moveToNext();
-//
-//            String nameCheck = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.NAME));
-//
-//
-//            if (!nameCheck.equals(Name)) {
-//
-//                Log.e("*******************", "SaveDBSqlite_succ");
-//
-//                ContentValues values = new ContentValues();
-//                values.put(FeedReaderContract.FeedEntry.ADMIN, "default");
-//                values.put(FeedReaderContract.FeedEntry.CAMPS, Camp);
-//                values.put(FeedReaderContract.FeedEntry.CHAT, "default");
-//                values.put(FeedReaderContract.FeedEntry.EMAIL, "default");
-//                values.put(FeedReaderContract.FeedEntry.IMAGE, image);
-//                values.put(FeedReaderContract.FeedEntry.NAME, Name);
-//                values.put(FeedReaderContract.FeedEntry.NUMBER, "default");
-//                values.put(FeedReaderContract.FeedEntry.PASSWORD, "default");
-//                values.put(FeedReaderContract.FeedEntry.STATUS, "default");
-//                values.put(FeedReaderContract.FeedEntry.TIME, "default");
-//                values.put(FeedReaderContract.FeedEntry.UID, Uid);
-//                values.put(FeedReaderContract.FeedEntry.LASTMSG, lstmsg);
-//
-//
-//                // Insert the new row, returning the primary key value of the new row
-//                long newRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
-//            }
-//
-//        } catch (Exception e) {
-//            Log.e("*******************", "SaveDBSqlite_error");
-//
-//            ContentValues values = new ContentValues();
-//            values.put(FeedReaderContract.FeedEntry.ADMIN, "default");
-//            values.put(FeedReaderContract.FeedEntry.CAMPS, Camp);
-//            values.put(FeedReaderContract.FeedEntry.CHAT, "default");
-//            values.put(FeedReaderContract.FeedEntry.EMAIL, "default");
-//            values.put(FeedReaderContract.FeedEntry.IMAGE, image);
-//            values.put(FeedReaderContract.FeedEntry.NAME, Name);
-//            values.put(FeedReaderContract.FeedEntry.NUMBER, "default");
-//            values.put(FeedReaderContract.FeedEntry.PASSWORD, "default");
-//            values.put(FeedReaderContract.FeedEntry.STATUS, "default");
-//            values.put(FeedReaderContract.FeedEntry.TIME, "default");
-//            values.put(FeedReaderContract.FeedEntry.UID, Uid);
-//            values.put(FeedReaderContract.FeedEntry.LASTMSG, lstmsg);
-//
-//
-//            // Insert the new row, returning the primary key value of the new row
-//            long newRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
-//        }
+        Log.e(TAG, " SaveDBSqliteUser" + String.valueOf(newRowId));
+
 
         db.close();
 
 
     }
 
-    public void SaveDBSqliteMsgUser(String msg, String msg_receiver, String msg_sender, String name, String time, String image, String uid_msg, String status, String table) {
+    public void SaveDBSqliteMsgUser(String msg, String msg_receiver, String msg_sender, String name, String time, String uid_msg, String status, String table) {
 
         TABLE_NAME_MESSAGE = table;
 
@@ -626,7 +550,6 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(FeedReaderContract.FeedEntry.MESSAGE_SENDER, msg_sender);
         values.put(FeedReaderContract.FeedEntry.NAME, name);
         values.put(FeedReaderContract.FeedEntry.TIME, time);
-        values.put(FeedReaderContract.FeedEntry.IMAGE, image);
         values.put(FeedReaderContract.FeedEntry.MESSAGE_UID, uid_msg);
         values.put(FeedReaderContract.FeedEntry.STATUS, status);
 
@@ -636,7 +559,7 @@ public class DBHelper extends SQLiteOpenHelper {
         // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert(TABLE_NAME_MESSAGE, null, values);
 
-        Log.e(TAG, String.valueOf(newRowId) + " SaveDBSqliteUserrrrrrrr");
+        Log.e(TAG, " SaveDBSqliteMsgUser" + String.valueOf(newRowId));
 
 
         db.close();

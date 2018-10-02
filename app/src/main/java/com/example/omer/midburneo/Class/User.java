@@ -1,5 +1,7 @@
 package com.example.omer.midburneo.Class;
 
+import android.content.SharedPreferences;
+
 public class User {
 
     public String admin;
@@ -15,6 +17,8 @@ public class User {
     public String uid;
     public String time;
     public String id;
+
+
 
 
     public User(String admin, String camps, String chat, String email, String image, String name, String number, String password, String status, String url, String uid, String time, String id) {
@@ -137,5 +141,4 @@ public class User {
         this.id = id;
     }
 }
-
 

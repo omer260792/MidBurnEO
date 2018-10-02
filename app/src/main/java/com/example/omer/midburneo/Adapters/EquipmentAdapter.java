@@ -17,7 +17,6 @@ import com.bumptech.glide.Glide;
 import com.example.omer.midburneo.Class.Equipment;
 import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.R;
-import com.example.omer.midburneo.Tabs.ChatListAc;
 import com.example.omer.midburneo.Tabs.EquipmentPreviewAc;
 import com.google.firebase.database.DatabaseReference;
 

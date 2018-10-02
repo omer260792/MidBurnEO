@@ -13,8 +13,28 @@ public class Friend {
     public String online;
     public String phone;
 
+    public String device;
+    public String token;
+
     public String time;
 
+    public String getDevice() {
+        return device;
+    }
+
+    public String setDevice(String device) {
+        this.device = device;
+        return device;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public String setToken(String token) {
+        this.token = token;
+        return token;
+    }
 
     public Friend() {
 

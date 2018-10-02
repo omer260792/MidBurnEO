@@ -27,7 +27,6 @@ import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.Class.MessageNote;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.R;
-import com.example.omer.midburneo.Tabs.ChatListAc;
 import com.example.omer.midburneo.Tabs.NotesAc;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;

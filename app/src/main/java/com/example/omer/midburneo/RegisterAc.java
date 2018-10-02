@@ -1,5 +1,6 @@
 package com.example.omer.midburneo;
 
+
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -10,6 +11,7 @@ import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -30,6 +32,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -47,7 +50,7 @@ public class RegisterAc extends AppCompatActivity {
     private Button registerButton;
     private CircleImageView imageView;
 
-    public String getName, getEmail, getPass, getNum, stringUrl, current_uid, image, timeString;
+    public String getName, getEmail, getPass, getNum, stringUrl, current_uid, image, timeString, currentDeviceId, currentTokern;
 
     private FirebaseAuth mAuth;
     private ProgressDialog mprogress;
@@ -79,6 +82,10 @@ public class RegisterAc extends AppCompatActivity {
         mImageStorage = FirebaseStorage.getInstance().getReference();
 
 
+        currentDeviceId = Settings.Secure.getString(getBaseContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+
+
+
         mAuth = FirebaseAuth.getInstance();
 
 
@@ -104,6 +111,9 @@ public class RegisterAc extends AppCompatActivity {
 
         prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
         prefs.edit().putString("email", "register").apply();
+
+      currentTokern = FirebaseInstanceId.getInstance().getToken();
+
 
 
         if (!TextUtils.isEmpty(getName) && !TextUtils.isEmpty(getEmail) && !TextUtils.isEmpty(getPass) ) {//&& getNum.trim().length()>123456789
@@ -134,6 +144,7 @@ public class RegisterAc extends AppCompatActivity {
 
                                 HashMap<String, String> userMap = new HashMap<>();
 
+
                                 userMap.put(FeedReaderContract.FeedEntry.NAME, getName);
                                 userMap.put(FeedReaderContract.FeedEntry.EMAIL, getEmail);
                                 userMap.put(FeedReaderContract.FeedEntry.PASSWORD, getPass);
@@ -149,31 +160,34 @@ public class RegisterAc extends AppCompatActivity {
                                 userMap.put(FeedReaderContract.FeedEntry.ROLE, "אין תפקיד");
                                 userMap.put(FeedReaderContract.FeedEntry.ONLINE, "true");
                                 userMap.put(FeedReaderContract.FeedEntry.PHONE, getNum);
+                                userMap.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID, currentDeviceId);
+                                userMap.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN, currentTokern);
+
 
                                 mDatabase.setValue(userMap);
 
-                                SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
-                                ContentValues values = new ContentValues();
-                                values.put(FeedReaderContract.FeedEntry.ADMIN, "default");
-                                values.put(FeedReaderContract.FeedEntry.CAMPS, "default");
-                                values.put(FeedReaderContract.FeedEntry.CHAT, "default");
-                                values.put(FeedReaderContract.FeedEntry.EMAIL, getEmail);
-                                values.put(FeedReaderContract.FeedEntry.IMAGE, image);
-                                values.put(FeedReaderContract.FeedEntry.NAME, getName);
-                                values.put(FeedReaderContract.FeedEntry.NUMBER, "default");
-                                values.put(FeedReaderContract.FeedEntry.PASSWORD, getPass);
-                                values.put(FeedReaderContract.FeedEntry.STATUS, "default");
-                                values.put(FeedReaderContract.FeedEntry.TIME, timeString);
-                                values.put(FeedReaderContract.FeedEntry.UID_id, "1");
-                                values.put(FeedReaderContract.FeedEntry.UID, current_uid);
-                                values.put(FeedReaderContract.FeedEntry.LASTMSG, "default");
-                                values.put(FeedReaderContract.FeedEntry.ROLE, "אין תפקיד");
-                                values.put(FeedReaderContract.FeedEntry.PHONE, getNum);
-
-
-
-                                db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
+//                                SQLiteDatabase db = mDbHelper.getWritableDatabase();
+//
+//                                ContentValues values = new ContentValues();
+//                                values.put(FeedReaderContract.FeedEntry.ADMIN, "default");
+//                                values.put(FeedReaderContract.FeedEntry.CAMPS, "default");
+//                                values.put(FeedReaderContract.FeedEntry.CHAT, "default");
+//                                values.put(FeedReaderContract.FeedEntry.EMAIL, getEmail);
+//                                values.put(FeedReaderContract.FeedEntry.IMAGE, image);
+//                                values.put(FeedReaderContract.FeedEntry.NAME, getName);
+//                                values.put(FeedReaderContract.FeedEntry.NUMBER, "default");
+//                                values.put(FeedReaderContract.FeedEntry.PASSWORD, getPass);
+//                                values.put(FeedReaderContract.FeedEntry.STATUS, "default");
+//                                values.put(FeedReaderContract.FeedEntry.TIME, timeString);
+//                                values.put(FeedReaderContract.FeedEntry.UID_id, "1");
+//                                values.put(FeedReaderContract.FeedEntry.UID, current_uid);
+//                                values.put(FeedReaderContract.FeedEntry.LASTMSG, "default");
+//                                values.put(FeedReaderContract.FeedEntry.ROLE, "אין תפקיד");
+//                                values.put(FeedReaderContract.FeedEntry.PHONE, getNum);
+//
+//
+//
+//                                db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
 
                                 prefs.edit().putString("name", getName).apply();
                                 prefs.edit().putString("image", image).apply();
@@ -300,3 +314,5 @@ public class RegisterAc extends AppCompatActivity {
 
 
 }
+
+

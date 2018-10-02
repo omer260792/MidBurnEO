@@ -91,7 +91,7 @@ public class CreateCampAc extends AppCompatActivity {
                             } else {
 
                                 SaveDBFireBase();
-                                SaveDBSqlite();
+                             //   SaveDBSqlite();
 
                                 prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
                                 prefs.edit().putString("camps", camp_name).apply();
@@ -194,19 +194,31 @@ public class CreateCampAc extends AppCompatActivity {
 
 
                 mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_camp_user);
-                Map<String, Object> createGroup = new HashMap<>();
-                createGroup.put("camps", camp_name);
-                createGroup.put("name", camp_name);
-                createGroup.put("number", "default");
-                createGroup.put("chat", current_camp_user);
-                createGroup.put("status", "default");
-                createGroup.put("time", "default");
-                createGroup.put("image", "default");
-                createGroup.put("lastmsg", "default");
-                createGroup.put("online", "default");
-                createGroup.put("phone", "default");
+                Map<String, Object> userMapCamp = new HashMap<>();
 
-                mUserDatabase.updateChildren(createGroup);
+
+                userMapCamp.put(FeedReaderContract.FeedEntry.NAME, camp_name);
+                userMapCamp.put(FeedReaderContract.FeedEntry.EMAIL, "default");
+                userMapCamp.put(FeedReaderContract.FeedEntry.PASSWORD, "default");
+                userMapCamp.put(FeedReaderContract.FeedEntry.NUMBER, "default");
+                userMapCamp.put(FeedReaderContract.FeedEntry.IMAGE, "default");
+                userMapCamp.put(FeedReaderContract.FeedEntry.ADMIN, "default");
+                userMapCamp.put(FeedReaderContract.FeedEntry.CHAT, current_camp_user);
+                userMapCamp.put(FeedReaderContract.FeedEntry.CAMPS, camp_name);
+                userMapCamp.put(FeedReaderContract.FeedEntry.STATUS, "status");
+                userMapCamp.put(FeedReaderContract.FeedEntry.TIME, "default");
+                userMapCamp.put(FeedReaderContract.FeedEntry.LASTMSG, "default");
+                userMapCamp.put(FeedReaderContract.FeedEntry.UID, current_uid);
+                userMapCamp.put(FeedReaderContract.FeedEntry.ROLE, "default");
+                userMapCamp.put(FeedReaderContract.FeedEntry.ONLINE, "default");
+                userMapCamp.put(FeedReaderContract.FeedEntry.PHONE, "default");
+                userMapCamp.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID, "default");
+                userMapCamp.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN, "default");
+
+
+                mUserDatabase.updateChildren(userMapCamp);
+
+
 
 
             }

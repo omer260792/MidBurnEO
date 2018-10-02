@@ -62,6 +62,8 @@ public class EquipmentAc extends AppCompatActivity {
     public DBHelper dbHelper;
     public SQLiteDatabase db;
     private int countSqlLite;
+    private int num = 1;
+
 
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -207,17 +209,21 @@ public class EquipmentAc extends AppCompatActivity {
         Log.e(TAG, "getEquipment");
 
         try {
+            if (num==1){
+                equipmentUtilsList.addAll(dbHelper.getAllEquipment());
+                mAdapter = new EquipmentAdapter(EquipmentAc.this, equipmentUtilsList);
+                LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
+                layoutManager.setStackFromEnd(bool);
+                recyclerView.setLayoutManager(layoutManager);
+                recyclerView.setAdapter(mAdapter);
+                // recyclerView.setHasFixedSize(bool);
+                Log.e(TAG, "getEquipment() + try");
 
-            equipmentUtilsList.addAll(dbHelper.getAllEquipment());
-            mAdapter = new EquipmentAdapter(EquipmentAc.this, equipmentUtilsList);
-            LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
-            layoutManager.setStackFromEnd(bool);
-            recyclerView.setLayoutManager(layoutManager);
-            recyclerView.setAdapter(mAdapter);
-            // recyclerView.setHasFixedSize(bool);
-            Log.e(TAG, "getEquipment() + try");
+                UpdateDateFromFireBaseToSQLiteEquipment();
+                num= 2;
+            }
 
-            UpdateDateFromFireBaseToSQLiteEquipment();
+
 
 
         } catch (Exception e) {
@@ -314,6 +320,7 @@ public class EquipmentAc extends AppCompatActivity {
 
                                 dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
                                 Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + countSqlLite == 0");
+
 
                             }
 
