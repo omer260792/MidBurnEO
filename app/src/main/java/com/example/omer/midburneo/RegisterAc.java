@@ -53,6 +53,7 @@ public class RegisterAc extends AppCompatActivity {
     public String getName, getEmail, getPass, getNum, stringUrl, current_uid, image, timeString, currentDeviceId, currentTokern;
 
     private FirebaseAuth mAuth;
+    private FirebaseUser current_user;
     private ProgressDialog mprogress;
     private DatabaseReference mDatabase;
     private StorageReference mImageStorage, filePath;
@@ -128,10 +129,9 @@ public class RegisterAc extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
 
-                                FirebaseUser current_user = FirebaseAuth.getInstance().getCurrentUser();
+                                current_user  = FirebaseAuth.getInstance().getCurrentUser();
                                 current_uid = current_user.getUid();
 
-                                DBHelper mDbHelper = new DBHelper(getApplicationContext());
 
                                 mDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
 

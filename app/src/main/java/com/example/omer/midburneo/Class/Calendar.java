@@ -8,6 +8,17 @@ public class Calendar {
     public String msguid;
     public String timeSet;
 
+    public String getCountRaw() {
+        return countRaw;
+    }
+
+    public String setCountRaw(String countRaw) {
+        this.countRaw = countRaw;
+        return countRaw;
+    }
+
+    public String countRaw;
+
 
     public Calendar(String msg, String sender, String time, String msguid, String timeSet) {
         this.msg = msg;

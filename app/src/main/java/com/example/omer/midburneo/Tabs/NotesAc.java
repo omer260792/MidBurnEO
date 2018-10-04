@@ -1,32 +1,26 @@
 package com.example.omer.midburneo.Tabs;
 
-import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.Toast;
 
-import com.example.omer.midburneo.Adapters.EquipmentAdapter;
-import com.example.omer.midburneo.Adapters.FriendsAdapter;
-import com.example.omer.midburneo.Adapters.MessageNoteAdapter;
-import com.example.omer.midburneo.Class.FeedReaderContract;
-import com.example.omer.midburneo.Class.Friend;
-import com.example.omer.midburneo.Class.MessageNote;
-import com.example.omer.midburneo.DataBase.DBEquipment;
+import com.example.omer.midburneo.Adapters.ViewPagerAdapter;
 import com.example.omer.midburneo.DataBase.DBHelper;
+
+import com.example.omer.midburneo.Fragments.FragmentHistory;
+import com.example.omer.midburneo.Fragments.FragmentMain;
 import com.example.omer.midburneo.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -35,18 +29,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
 
-import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
+
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_NOTE;
-import static com.example.omer.midburneo.RegisterAc.SHPRF;
-import static com.example.omer.midburneo.RegisterAc.prefs;
 import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
 import static com.example.omer.midburneo.Tabs.MainPageAc.current_name_static;
 
@@ -54,59 +39,46 @@ public class NotesAc extends AppCompatActivity {
 
     private static final String TAG = "NotesAc";
 
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
+    private ViewPagerAdapter adapter;
 
-    private Button addNoteButton;
-    private CheckBox checkBox;
-
-    private DatabaseReference mUserDatabase;
-
-    public RecyclerView.Adapter mAdapterNote;
-    public RecyclerView.LayoutManager layoutManagerNote;
-    public RecyclerView recyclerViewNote;
-    private List<MessageNote> messageNoteList = new ArrayList<>();
-
-
+    public DBHelper dbHelper;
+    public SQLiteDatabase db;
+    private int countSqlLite;
     public SharedPreferences prefs;
 
-    public String current_camp, current_uid, getUid, date, dateEnd, current_admin;
-
+    private String  current_uid, getUid;
     private String getTitle = "getMsg";
     private String getSender = "getSender";
     private String getDate = "getDate";
     private String getDateEnd = "getDateEnd";
     private String getContent = "getContent";
     private String getBool = "getBool";
-    private String getUidMsg = "getUidMsg";
-    private long timeLong, timeEndLong;
 
-    public DBHelper dbHelper;
-    public SQLiteDatabase db;
-    private int countSqlLite;
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tab_note);
 
-        Log.e(TAG, "onCreate");
 
-        recyclerViewNote = findViewById(R.id.recyclerViewNote);
-        addNoteButton = findViewById(R.id.addNoteButton);
-        checkBox = findViewById(R.id.checkBoxNote);
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
+        viewPager = (ViewPager) findViewById(R.id.container);
+        adapter = new ViewPagerAdapter(getSupportFragmentManager());
 
-        //checkBox.setChecked(true);
+        adapter.AddFragment(new FragmentMain(), "main");
+        adapter.AddFragment(new FragmentHistory(), "history");
+
+        viewPager.setAdapter(adapter);
+        tabLayout.setupWithViewPager(viewPager);
 
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        dbHelper = new DBHelper(this);
-
-        recyclerViewNote.setHasFixedSize(true);
-        layoutManagerNote = new LinearLayoutManager(NotesAc.this);
-        recyclerViewNote.setLayoutManager(layoutManagerNote);
 
 
         try {
 
-            getRawCountSql();
+            UpdateDateFromFireBaseToSQLiteNote();
 
             current_camp_static = prefs.getString("camps", null);
             current_name_static = prefs.getString("name", null);
@@ -118,55 +90,6 @@ public class NotesAc extends AppCompatActivity {
 
         }
 
-        if (countSqlLite == 0) {
-            Log.e(TAG, "oncreat if " + String.valueOf(countSqlLite));
-
-            UpdateDateFromFireBaseToSQLiteNote();
-
-        } else {
-            getNoteMsg();
-
-        }
-
-
-        addNoteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(NotesAc.this, NoteEditAc.class);
-                startActivity(i);
-            }
-        });
-
-
-    }
-
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-    }
-
-    public void getNoteMsg() {
-
-        Log.e(TAG, "getNoteMsg");
-
-        try {
-            messageNoteList.addAll(dbHelper.getAllNote());
-            mAdapterNote = new MessageNoteAdapter(this, messageNoteList);
-            LinearLayoutManager layoutManager = new LinearLayoutManager(NotesAc.this);
-            layoutManager.setStackFromEnd(true);
-            recyclerViewNote.setLayoutManager(layoutManager);
-            recyclerViewNote.setAdapter(mAdapterNote);
-            mAdapterNote.notifyDataSetChanged();
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            e.getStackTrace();
-            e.getMessage();
-
-        }
 
     }
 
@@ -174,7 +97,7 @@ public class NotesAc extends AppCompatActivity {
     public void UpdateDateFromFireBaseToSQLiteNote() {
         if (current_camp_static.equals(null)) {
 
-            Log.e(TAG, "UpdateDateFromFireBaseToSQLiteNote After + if");
+            Log.e(TAG, "UpdateDateFromFireBaseToSQLiteNote = camp is null in Sqlite");
 
             return;
         } else {
@@ -202,7 +125,7 @@ public class NotesAc extends AppCompatActivity {
                             Log.e(TAG, "UpdateDateFromFireBaseToSQLiteNote After + countSqlLite == 0");
 
                         }
-                        getNoteMsg();
+                        //   getNoteMsg();
 
                     }
 
@@ -211,6 +134,40 @@ public class NotesAc extends AppCompatActivity {
 
                     }
                 });
+            }else {
+                discussionRoomsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            long FBCount = dataSnapshot.getChildrenCount();
+
+                            if (countSqlLite < FBCount) {
+
+                                getUid = snapshot.getKey().toString();
+
+                                getTitle = snapshot.child("title").getValue(String.class);
+                                getContent = snapshot.child("content").getValue(String.class);
+                                getDate = snapshot.child("date").getValue(String.class);
+                                getDateEnd = snapshot.child("dateEnd").getValue(String.class);
+                                getBool = snapshot.child("dateBool").getValue(String.class);
+                                getSender = snapshot.child("sender").getValue(String.class);
+
+                                dbHelper.SaveDBSqliteToNote(getTitle, getContent, getDate, getDateEnd, getBool, getSender, current_uid, getUid);
+                                Log.e(TAG, "UpdateDateFromFireBaseToSQLiteNote After + countSqlLite == 0");
+                            }
+
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
             }
         }
 
@@ -232,8 +189,32 @@ public class NotesAc extends AppCompatActivity {
         return countSqlLite;
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+         getMenuInflater().inflate(R.menu.menu_note, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        if (id == R.id.item_note) {
+            Intent i = new Intent(NotesAc.this, NoteEditAc.class);
+            startActivity(i);
+
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     public void onClickCheckBox(View view) {
 
 
     }
 }
+

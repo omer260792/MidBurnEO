@@ -45,11 +45,10 @@ public class ScheduleAc extends AppCompatActivity {
     private static final int ADD_NOTE = 44;
     private CalendarView mCalendarView;
     private ArrayList<EventDay> mEventDays = new ArrayList<>();
-    public DBHelper db;
-    public SQLiteDatabase dbr;
-    public String msg, sender, time, msgUid, current_uid, current_admin, uid_msg, msg_sender, setTime;
+    public DBHelper dbHelper;
+    public SQLiteDatabase db;
+    public String msg, sender, time, msgUid, current_uid, current_admin, uid_msg, msg_sender, setTime, count;
     public Calendar calendar;
-    public int mDay, checkTablecount;
     public MyEventDay myEventDay;
     public long countSqlLite;
     private DatabaseReference mUserDatabase, discussionRoomsRef;
@@ -61,9 +60,10 @@ public class ScheduleAc extends AppCompatActivity {
         setContentView(R.layout.tab_schedule);
         mCalendarView = (CalendarView) findViewById(R.id.calendarView);
 
-        db = new DBHelper(getApplicationContext());
+        dbHelper = new DBHelper(getApplicationContext());
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
+        getDateCalendar();
 
         getRawCountSql();
         if (countSqlLite == 0) {
@@ -162,6 +162,8 @@ public class ScheduleAc extends AppCompatActivity {
         Intent intent = new Intent(this, NotePreviewActivity.class);
         if (eventDay instanceof MyEventDay) {
             intent.putExtra(EVENT, (MyEventDay) eventDay);
+            intent.putExtra("countIntent",count);
+            intent.putExtra("timeIntent",time);
         }
         startActivity(intent);
     }
@@ -169,7 +171,7 @@ public class ScheduleAc extends AppCompatActivity {
 
     public long getRawCountSql() {
         SQLiteDatabase dbr;
-        dbr = db.getWritableDatabase();
+        dbr = dbHelper.getWritableDatabase();
 
         String countQuery = "SELECT  * FROM " + TABLE_NAME_CALENDAR;
         Cursor cursor = dbr.rawQuery(countQuery, null);
@@ -197,6 +199,8 @@ public class ScheduleAc extends AppCompatActivity {
             getCalnderFromFireBase(current_time_calendar_static);
 
         } else {
+
+
             getCalnderFromFireBase(current_time_static);
 
         }
@@ -204,14 +208,16 @@ public class ScheduleAc extends AppCompatActivity {
     }
 
     public void getCalendarPickerView() {
-        db = new DBHelper(getApplicationContext());
+        dbHelper = new DBHelper(getApplicationContext());
 
-        dbr = db.getWritableDatabase();
-
+        db = dbHelper.getWritableDatabase();
 
 
         String countQuery = "SELECT  * FROM " + TABLE_NAME_CALENDAR;
-        Cursor cursor = dbr.rawQuery(countQuery, null);
+        Cursor cursor = db.rawQuery(countQuery, null);
+
+        com.example.omer.midburneo.Class.Calendar calendar = new com.example.omer.midburneo.Class.Calendar();
+
 
         if (cursor.moveToFirst()) {
             do {
@@ -221,23 +227,14 @@ public class ScheduleAc extends AppCompatActivity {
                 time = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
                 msgUid = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID));
                 setTime = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME__SET));
-                String index = cursor.getString(cursor.getColumnIndex("_id"));
+                count = calendar.setCountRaw(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID)));
+
 
                 Calendar cal = Calendar.getInstance();
                 Calendar cal1 = Calendar.getInstance();
 
                 SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
 
-//                try {
-//                    long testL = Long.parseLong(time);
-//                    String test = String.valueOf(sdf.parse(setTime));
-//                    String test2 = String.valueOf(sdf.parse(time));
-//                    String test1 = String.valueOf(sdf.parse(String.valueOf(testL)));
-//
-//                    Log.e("fbhgbhfgbgghghghg",test + test2 + test1);
-//                } catch (ParseException e) {
-//                    e.printStackTrace();
-//                }
 
                 long currentDateTime = System.currentTimeMillis();
                 String timeCurrent = String.valueOf(currentDateTime);
@@ -265,7 +262,7 @@ public class ScheduleAc extends AppCompatActivity {
             } while (cursor.moveToNext());
 
         }
-        dbr.close();
+        db.close();
     }
 
     public void getUserTime() {
@@ -282,6 +279,7 @@ public class ScheduleAc extends AppCompatActivity {
                 prefs.edit().putString("time", current_time_static).apply();
                 prefs.edit().putString("camps", current_camp_static).apply();
                 prefs.edit().putString("admin", current_admin_static).apply();
+
 
                 UpdateSqliteFromFireBaseCalendar();
 
@@ -318,7 +316,7 @@ public class ScheduleAc extends AppCompatActivity {
                         Log.d("FBCount", String.valueOf(FBCount));
 
 
-                        db.SaveDBSqliteToCalendar(msg, msg_sender, time, uid_msg,setTime);
+                        dbHelper.SaveDBSqliteToCalendar(msg, msg_sender, time, uid_msg, setTime);
 
                         getCalendarPickerView();
                     }
@@ -334,5 +332,23 @@ public class ScheduleAc extends AppCompatActivity {
         query.addListenerForSingleValueEvent(valueEventListener);
     }
 
+    private void getDateCalendar() {
+        Calendar cal = Calendar.getInstance();
+
+        try {
+
+            long currentDateTime = System.currentTimeMillis();
+            String timeCurrent = String.valueOf(currentDateTime);
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+
+            cal.setTime(sdf.parse(timeCurrent));
+            mCalendarView.setDate(cal);
+            mCalendarView.showCurrentMonthPage();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+    }
 
 }

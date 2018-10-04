@@ -3,9 +3,12 @@ package com.example.omer.midburneo.Adapters;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.Class.MessageNote;
 import com.example.omer.midburneo.DataBase.DBHelper;
@@ -43,11 +47,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_NOTE;
 import static com.example.omer.midburneo.RegisterAc.prefs;
 import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
 
 public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.ViewHolder> {
 
+    private static final String TAG = "MessageNoteAdapter";
 
     private Context context;
     private final List<MessageNote> MessageNoteList;
@@ -57,7 +63,7 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
     private FirebaseUser mCurrentUser;
     private DatabaseReference mUserDatabase;
     private DBHelper dbHelper;
-
+    public SQLiteDatabase db;
 
 
     public MessageNoteAdapter(Context context, List MessageNoteList) {
@@ -94,9 +100,9 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
         holder.pDateEnd.setText(dateEnd);
         holder.checkBox.setBackgroundColor(android.R.drawable.checkbox_off_background);
 
+        uidMsgString = messageNote.getUidMsg();
 
-
-        holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @SuppressLint("ResourceAsColor")
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -112,7 +118,11 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
 
                     current_camp_static = prefs.getString("camps", null);
 
-                    UpdateFirebase(current_camp_static,messageNote.getUidMsg());
+                    String count = messageNote.getCount();
+
+                    UpdateFirebase(current_camp_static, messageNote.getUidMsg());
+                    getLastMsg(count);
+
 
                 } else {
                     //checkBox clicked and unchecked
@@ -128,7 +138,6 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
         });
 
 
-
     }
 
     @Override
@@ -141,7 +150,6 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
         public TextView pTitle, pContent, pDate, pDateEnd;
         public CheckBox checkBox;
         public RelativeLayout relativeLayout;
-        // private CheckedTextView
 
 
         public ViewHolder(View itemView) {
@@ -228,7 +236,7 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
 
     }
 
-    private void UpdateFirebase(String campString, String uidMsgString){
+    private void UpdateFirebase(String campString, String uidMsgString) {
 
 
         long currentDateTime = System.currentTimeMillis();
@@ -241,5 +249,37 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
         mapCampsUpdates.put("dateBool", "true");
 
         mUserDatabase.updateChildren(mapCampsUpdates);
+    }
+
+    public void getLastMsg(String countRaw) {
+
+        try {
+
+            dbHelper = new DBHelper(context);
+            db = dbHelper.getWritableDatabase();
+
+            String countQuery = "SELECT  * FROM " + TABLE_NAME_NOTE;
+            Cursor cursor = db.rawQuery(countQuery, null);
+            cursor.moveToLast();
+            String dateBool = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE_BOOL));
+//            Log.e(TAG, "onDestroy_lastMsg: " + last_msg);
+//            Log.e(TAG, "onDestroy_lastMsg: " + time);
+            cursor.close();
+
+            int count = Integer.parseInt(countRaw);
+
+            ContentValues cv = new ContentValues();
+            cv.put(FeedReaderContract.FeedEntry.DATE_BOOL, "true");
+
+
+            db.update(TABLE_NAME_NOTE, cv, "_id=" + count, null);
+
+
+        } catch (Exception e) {
+            Log.e(TAG, "Exception - Error change Bool date");
+
+        }
+
+
     }
 }

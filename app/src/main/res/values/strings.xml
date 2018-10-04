@@ -9,8 +9,10 @@
     <string name="msg_subscribe_failed">msg_subscribe_failed</string>
 
 
-    <string-array name="android_dropdown_arrays">
+    <string-array name="android_dropdown_arrays"></string-array>
+    <string name="action_list_note">הכנס מטלות</string>
+    <string name="action_list_Equipment">הכנס ציוד</string>
+    <string name="action_excel">פתח אקסל</string>
 
 
-</string-array>
 </resources>

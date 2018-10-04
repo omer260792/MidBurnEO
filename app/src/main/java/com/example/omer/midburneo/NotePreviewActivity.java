@@ -34,7 +34,7 @@ public class NotePreviewActivity extends AppCompatActivity {
     public DBHelper dbHelper;
     private CalendarAdapter mAdapter;
     private ArrayList<Calendar> calendarArrayList = new ArrayList<>();
-
+    private String count, time;
 
 
     @Override
@@ -44,10 +44,14 @@ public class NotePreviewActivity extends AppCompatActivity {
 
 
         Intent intent = getIntent();
+//        count = getIntent().getStringExtra("coumtIntent");
+//        time = getIntent().getStringExtra("timeIntent");
+
+
         recyclerNotePreview = findViewById(R.id.recycler_note_preview);
 
         dbHelper = new DBHelper(getApplicationContext());
-       // getNotePreview();
+        // getNotePreview();
 
         if (intent != null) {
             Object event = intent.getParcelableExtra(ScheduleAc.EVENT);
@@ -58,7 +62,7 @@ public class NotePreviewActivity extends AppCompatActivity {
                 getSupportActionBar().setTitle(getFormattedDate(myEventDay.getCalendar().getTime()));
                 //tvNote.setText(myEventDay.getNote());
 
-                String time =  String.valueOf(getFormattedDate(myEventDay.getCalendar().getTime()));
+                String time = String.valueOf(getFormattedDate(myEventDay.getCalendar().getTime()));
                 Log.e(" Rffffffffffead", time);
 
                 getNotePreview(time);
@@ -70,6 +74,7 @@ public class NotePreviewActivity extends AppCompatActivity {
             }
         }
     }
+
     public void getNotePreview(String time) {
 
         Log.e(TAG, "getEquipment");
@@ -82,7 +87,6 @@ public class NotePreviewActivity extends AppCompatActivity {
             layoutManager.setStackFromEnd(false);
             recyclerNotePreview.setLayoutManager(layoutManager);
             recyclerNotePreview.setAdapter(mAdapter);
-
 
 
         } catch (Exception e) {

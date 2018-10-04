@@ -294,6 +294,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 String timeSet = calendar.setTimeSet(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME__SET)));
 
 
+
+
                 calendarList.add(calendar);
 
 
@@ -366,7 +368,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
-    public List<MessageNote> getAllNote() {
+    public List<MessageNote> getAllNote(String bool) {
         List<MessageNote> msgNoteList = new ArrayList<>();
 
         db = this.getReadableDatabase();
@@ -386,29 +388,37 @@ public class DBHelper extends SQLiteOpenHelper {
 
                     MessageNote messageNote = new MessageNote();
 
-                    String getTimeCursor = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE));
-                    String getTimeCursorEnd = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE_END));
-                    long getTimeLong = Long.parseLong(getTimeCursor);
+                    String dateBool = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE_BOOL));
 
-                    DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm");
-                    String timeFormat = getTimeHourMintus.format(getTimeLong);
+                    if (dateBool.equals(bool)){
 
-                    String title = messageNote.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TITLE)));
-                    String content = messageNote.setContent(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.CONTENT)));
-                    String date = messageNote.setDate(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE)));
-                    String dateEnd = messageNote.setDateEnd(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE_END)));
-                    String dateBool = messageNote.setDateBool(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE_BOOL)));
-                    // String time = messageNote.setDateBool(timeFormat);
-                    String sender = messageNote.setSender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
-                    String camp = messageNote.setCamp(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.CAMPS)));
-                    String msgUid = messageNote.setUidMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
-                    String uidcount = messageNote.setCount(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID)));
+                        String getTimeCursor = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE));
+                        String getTimeCursorEnd = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE_END));
+                        long getTimeLong = Long.parseLong(getTimeCursor);
 
-                    Log.e((TAG), "msgNoteList" + title);
-                    Log.e((TAG), "msgNoteList" + content);
+                        DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm");
+                        String timeFormat = getTimeHourMintus.format(getTimeLong);
+
+                        String title = messageNote.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TITLE)));
+                        String content = messageNote.setContent(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.CONTENT)));
+                        String date = messageNote.setDate(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE)));
+                        String dateEnd = messageNote.setDateEnd(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE_END)));
+                        messageNote.setDateBool(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE_BOOL)));
+
+                        String sender = messageNote.setSender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
+                        String camp = messageNote.setCamp(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.CAMPS)));
+                        String msgUid = messageNote.setUidMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
+                        String uidcount = messageNote.setCount(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID)));
+
+                        Log.e((TAG), "msgNoteList" + title);
+                        Log.e((TAG), "msgNoteList" + content);
 
 
-                    msgNoteList.add(messageNote);
+                        msgNoteList.add(messageNote);
+                    }
+
+
+
 
 
                 } while (cursor.moveToNext());
@@ -471,6 +481,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 String sender = calendar.setSender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
                 time = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
                 String timeSetString = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME__SET));
+                String countSetString = calendar.setCountRaw(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID)));
 
                 long timeSetLong = (Long.parseLong(timeSetString));
                 DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm");
@@ -480,6 +491,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 String timeSets = calendar.setTime(time);
 
                 Log.e(TAG + "Read", msg);
+                Log.e(TAG + "Reaeeeeeeed", countSetString);
                 Log.e(TAG + "sender", sender);
                 Log.e(TAG + "Read", time);
                 Log.e(TAG + "Read", timeSet);
@@ -686,6 +698,16 @@ public class DBHelper extends SQLiteOpenHelper {
         db.close();
 
 
+    }
+
+    public void deleteRawFromTable (int id, String time, String table){
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "DELETE FROM " + table + " WHERE "
+                + FeedReaderContract.FeedEntry._ID + " = '" + id + "'" +
+                " AND " + FeedReaderContract.FeedEntry.TIME + " = '" + time + "'";
+        Log.d(TAG, "deleteName: query: " + query);
+        Log.d(TAG, "deleteName: Deleting " + time + " from database.");
+        db.execSQL(query);
     }
 
 

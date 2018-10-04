@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.example.omer.midburneo.Class.FirebaseUserModel;
 import com.example.omer.midburneo.Class.UserTest;
+import com.firebase.client.Firebase;
 import com.google.firebase.FirebaseError;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -20,13 +21,15 @@ import com.google.firebase.iid.FirebaseInstanceIdService;
 public class MyFirebaseInstanceIdService extends FirebaseInstanceIdService {
 
     private static final String TAG = "MyFirebaseIIDService";
+    private FirebaseDatabase database;
+    private DatabaseReference usersRef;
 
     UserTest user = UserTest.getInstance();
 
     @Override
     public void onTokenRefresh() {
         // Get updated InstanceID token.
-        String refreshedToken = FirebaseInstanceId.getInstance().getToken();
+        String refreshedToken = null;//FirebaseInstanceId.getInstance().getToken();
         if (refreshedToken != null) {
             Log.d(TAG, "Refreshed token: " + refreshedToken);
 
@@ -43,8 +46,8 @@ public class MyFirebaseInstanceIdService extends FirebaseInstanceIdService {
     public void sendTokenToServer(final String strToken) {
         // API call to send token to Server
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference usersRef = database.getReference("Users");
+        database =  FirebaseDatabase.getInstance();
+        usersRef = database.getReference("Users");
 
         usersRef.addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
             @Override
@@ -67,17 +70,18 @@ public class MyFirebaseInstanceIdService extends FirebaseInstanceIdService {
                                 }
                             }
                         });
-//                        usersRef.child(userSnapshot.getKey()).child("deviceToken").setValue(strToken, new Firebase.CompletionListener() {
-//
-//                            @Override
-//                            public void onComplete(FirebaseError firebaseError, Firebase firebase) {
-//                                if (firebaseError != null) {
-//                                    Log.i(TAG, firebaseError.toString());
-//                                } else {
-//                                    System.out.println("Refreshed Token Updated");
-//                                }
-//                            }
-//                        });
+                        usersRef.child(userSnapshot.getKey()).child("deviceToken").setValue(strToken, new Firebase.CompletionListener() {
+
+                            @Override
+                            public void onComplete(com.firebase.client.FirebaseError firebaseError, Firebase firebase) {
+                                if (firebaseError != null) {
+                                    Log.i(TAG, firebaseError.toString());
+                                } else {
+                                    System.out.println("Refreshed Token Updated");
+                                }
+                            }
+
+                        });
 
                     }
                 }

@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
@@ -53,7 +52,6 @@ public class MainPageAc extends AppCompatActivity {
     public static final String setImgUrlDefault = "https://firebasestorage.googleapis.com/v0/b/midburneo-6d072.appspot.com/o/profile_images%2Fcropped5081028198796683166.jpg?alt=media&token=8c49a7b9-2ee5-4ea6-b7c2-52199ef167f8";
 
 
-
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
@@ -70,10 +68,6 @@ public class MainPageAc extends AppCompatActivity {
 
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         TABLE_NAME_MESSAGE = current_uid;
-
-
-
-
 
 
         GridView gridView = findViewById(R.id.grid_view);
@@ -132,7 +126,7 @@ public class MainPageAc extends AppCompatActivity {
 
             UpdateUserOnline();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
 
         }
@@ -144,48 +138,44 @@ public class MainPageAc extends AppCompatActivity {
 //        new Thread(new Runnable() {
 //            public void run() {
 
-            mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
-            mUserDatabase.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+        mUserDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                    current_image = dataSnapshot.child("image").getValue().toString();
-                    current_admin_static = dataSnapshot.child("admin").getValue().toString();
-                    current_name = dataSnapshot.child("name").getValue().toString();
-                    current_camp_static = dataSnapshot.child("camps").getValue().toString();
-                    current_uid_camp_static = dataSnapshot.child("chat").getValue().toString();
-                    String deviceUserIntent = dataSnapshot.child("device_id").getValue().toString();
-                    String tokenUserIntent = dataSnapshot.child("device_token").getValue().toString();
+                current_image = dataSnapshot.child("image").getValue().toString();
+                current_admin_static = dataSnapshot.child("admin").getValue().toString();
+                current_name = dataSnapshot.child("name").getValue().toString();
+                current_camp_static = dataSnapshot.child("camps").getValue().toString();
+                current_uid_camp_static = dataSnapshot.child("chat").getValue().toString();
+                String deviceUserIntent = dataSnapshot.child("device_id").getValue().toString();
+                String tokenUserIntent = dataSnapshot.child("device_token").getValue().toString();
 
-                    prefs.edit().putString("device_id", deviceUserIntent).apply();
-
-
-
-                    final FirebaseUserModel firebaseUserModel = new FirebaseUserModel();
-                    firebaseUserModel.setName(current_uid);
-                    firebaseUserModel.setDeviceId(deviceUserIntent);
-                    firebaseUserModel.setDeviceToken(tokenUserIntent);
-
-                    firebaseUserModel.setImage("default");
-                    firebaseUserModel.setRole("default");
-                    firebaseUserModel.setDeviceId(deviceUserIntent);
-                    firebaseUserModel.setAdmin("default");
-                    firebaseUserModel.setNumber("default");
-                    firebaseUserModel.setUidReceiver(current_uid);
-                    firebaseUserModel.setCamp("default");
-                    firebaseUserModel.setPass("default");
-                    firebaseUserModel.setPhone("default");
-                    firebaseUserModel.setChat("default");
-                    firebaseUserModel.setDeviceToken(tokenUserIntent);
-                    firebaseUserModel.setName(current_uid);
-                    firebaseUserModel.setLastMsg("default");
-                    firebaseUserModel.setOnline("true");
-                    firebaseUserModel.setTime("default");
-                    firebaseUserModel.setEmail("default");
-                    firebaseUserModel.setStatus("status");
+                prefs.edit().putString("device_id", deviceUserIntent).apply();
 
 
+                final FirebaseUserModel firebaseUserModel = new FirebaseUserModel();
+                firebaseUserModel.setName(current_uid);
+                firebaseUserModel.setDeviceId(deviceUserIntent);
+                firebaseUserModel.setDeviceToken(tokenUserIntent);
 
+                firebaseUserModel.setImage("default");
+                firebaseUserModel.setRole("default");
+                firebaseUserModel.setDeviceId(deviceUserIntent);
+                firebaseUserModel.setAdmin("default");
+                firebaseUserModel.setNumber("default");
+                firebaseUserModel.setUidReceiver(current_uid);
+                firebaseUserModel.setCamp("default");
+                firebaseUserModel.setPass("default");
+                firebaseUserModel.setPhone("default");
+                firebaseUserModel.setChat("default");
+                firebaseUserModel.setDeviceToken(tokenUserIntent);
+                firebaseUserModel.setName(current_uid);
+                firebaseUserModel.setLastMsg("default");
+                firebaseUserModel.setOnline("true");
+                firebaseUserModel.setTime("default");
+                firebaseUserModel.setEmail("default");
+                firebaseUserModel.setStatus("status");
 
 
 //                final FirebaseUserModel firebaseUserModel = new FirebaseUserModel();
@@ -208,38 +198,33 @@ public class MainPageAc extends AppCompatActivity {
 //                firebaseUserModel.setDeviceToken(firebaseInstanceId);
 //
 
-                    user.login(firebaseUserModel);
-                    user.saveFirebaseKey(dataSnapshot.getKey());
+                user.login(firebaseUserModel);
+                user.saveFirebaseKey(dataSnapshot.getKey());
 
 
-                    //current_time_static = dataSnapshot.child("time").getValue().toString();
+                if (current_image.equals("default")) {
+                    image = setImgUrlDefault;
 
-                    if (current_image.equals("default")) {
-                        image = setImgUrlDefault;
-
-                    } else {
-                        image = current_image;
-
-                    }
-
-                    prefs.edit().putString("image", image).apply();
-                    prefs.edit().putString("admin", current_admin_static).apply();
-                    prefs.edit().putString("name", current_name).apply();
-                    prefs.edit().putString("camps", current_camp_static).apply();
-                    prefs.edit().putString("chat", current_uid_camp_static).apply();
-                    prefs.edit().putString("device_id", deviceUserIntent).apply();
-                    prefs.edit().putString("device_token", tokenUserIntent).apply();
-                    //prefs.edit().putString("time", current_time_static).apply();
+                } else {
+                    image = current_image;
 
                 }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
+                prefs.edit().putString("image", image).apply();
+                prefs.edit().putString("admin", current_admin_static).apply();
+                prefs.edit().putString("name", current_name).apply();
+                prefs.edit().putString("camps", current_camp_static).apply();
+                prefs.edit().putString("chat", current_uid_camp_static).apply();
+                prefs.edit().putString("device_id", deviceUserIntent).apply();
+                prefs.edit().putString("device_token", tokenUserIntent).apply();
 
-                }
-            });
+            }
 
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
+            }
+        });
 
 
 //            }

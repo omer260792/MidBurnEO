@@ -228,9 +228,14 @@ public class TestChatListAc extends AppCompatActivity {
 
                         if (receiver.equals(uidUserIntent)) {
 
-                            firebaseMessageModel.setId(postSnapshot.getKey());
+                            if (sender.equals(current_uid)) {
 
-                            messages.add(firebaseMessageModel);
+                                firebaseMessageModel.setId(postSnapshot.getKey());
+
+                                messages.add(firebaseMessageModel);
+
+                            }
+
 
 
                         } else if (sender.equals(current_uid) && receiver.equals(uidUserIntent)) {

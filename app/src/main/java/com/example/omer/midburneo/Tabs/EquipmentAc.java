@@ -12,13 +12,14 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.ajts.androidmads.library.ExcelToSQLite;
-import com.ajts.androidmads.library.SQLiteToExcel;
 import com.example.omer.midburneo.Adapters.EquipmentAdapter;
 import com.example.omer.midburneo.Class.Equipment;
 import com.example.omer.midburneo.Class.FeedReaderContract;
@@ -34,7 +35,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
 import static com.example.omer.midburneo.DataBase.DBEquipment.DATABASE_NAME_EQUIPMENT;
@@ -47,12 +47,9 @@ public class EquipmentAc extends AppCompatActivity {
 
     private static final String TAG = "EquipmentAc";
 
-
-    private Button addEquipmentBtn, excelEquipmentBtn;
     private EditText etSearchEquipment;
     private EquipmentAdapter mAdapter;
     public RecyclerView recyclerView;
-    //RecyclerView.Adapter mAdapter;
     public RecyclerView.LayoutManager layoutManager;
     private ArrayList<Equipment> equipmentUtilsList = new ArrayList<>();
 
@@ -73,8 +70,7 @@ public class EquipmentAc extends AppCompatActivity {
         Log.e(TAG, "onCreate");
 
 
-        addEquipmentBtn = findViewById(R.id.addEquipmentButton);
-        excelEquipmentBtn = findViewById(R.id.excelEquipmentButton);
+
         recyclerView = findViewById(R.id.recycler_Equipment);
         etSearchEquipment = findViewById(R.id.etSearchEquipment);
 
@@ -144,33 +140,7 @@ public class EquipmentAc extends AppCompatActivity {
             }
         });
 
-        addEquipmentBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-                current_admin = prefs.getString("admin", null);
-
-                if (current_admin.equals("admin")) {
-                    Intent i = new Intent(EquipmentAc.this, EquipmentEditAc.class);
-                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    i.putExtra("UidEquipment", current_uid);
-                    i.putExtra("nameSenderEquipment", current_name_static);
-                    startActivity(i);
-                    finish();
-                } else {
-                    Toast.makeText(EquipmentAc.this, "אתה לא מנהל",
-                            Toast.LENGTH_SHORT).show();
-                }
-
-
-            }
-        });
-        excelEquipmentBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ExcelToSQLite();
-            }
-        });
 
     }
 
@@ -216,7 +186,6 @@ public class EquipmentAc extends AppCompatActivity {
                 layoutManager.setStackFromEnd(bool);
                 recyclerView.setLayoutManager(layoutManager);
                 recyclerView.setAdapter(mAdapter);
-                // recyclerView.setHasFixedSize(bool);
                 Log.e(TAG, "getEquipment() + try");
 
                 UpdateDateFromFireBaseToSQLiteEquipment();
@@ -390,6 +359,49 @@ public class EquipmentAc extends AppCompatActivity {
         });
 
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_equipment, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        if (id == R.id.item_equipment) {
+            current_admin = prefs.getString("admin", null);
+
+            if (current_admin.equals("admin")) {
+                Intent i = new Intent(EquipmentAc.this, EquipmentEditAc.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                i.putExtra("UidEquipment", current_uid);
+                i.putExtra("nameSenderEquipment", current_name_static);
+                startActivity(i);
+                finish();
+            } else {
+                Toast.makeText(EquipmentAc.this, "אתה לא מנהל",
+                        Toast.LENGTH_SHORT).show();
+            }
+
+
+            return true;
+        }
+        if (id == R.id.item_excel) {
+            ExcelToSQLite();
+
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    public void onClickCheckBox(View view) {
+
+
+    }
+
 
 
 }

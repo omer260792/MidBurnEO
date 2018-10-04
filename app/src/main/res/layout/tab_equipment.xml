@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -10,15 +9,6 @@
         android:layout_height="55dp"
         android:background="#ffdddddd"
         android:padding="5dp">
-
-        <Button
-            android:id="@+id/excelEquipmentButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/colorAccent"
-            android:text="פתח אקסל"
-            android:textSize="20dp"
-            android:textAlignment="center"/>
 
         <TextView
             android:id="@+id/tvNameEquipment"
@@ -30,31 +20,21 @@
             android:textSize="30dp" />
 
 
-        <Button
-            android:id="@+id/addEquipmentButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/colorAccent"
-            android:text="הוסף ציוד"
-            android:textSize="20dp"
-            android:textAlignment="center"/>
-
-
     </LinearLayout>
 
     <EditText
         android:id="@+id/etSearchEquipment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:drawableLeft="@android:drawable/ic_menu_search"
-        android:layout_margin="10dp"/>
+        android:layout_margin="10dp"
+        android:drawableLeft="@android:drawable/ic_menu_search" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_Equipment"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
         android:padding="4dp"
-        android:scrollbars="vertical"/>
+        android:scrollbars="vertical" />
 
 
 </LinearLayout>
