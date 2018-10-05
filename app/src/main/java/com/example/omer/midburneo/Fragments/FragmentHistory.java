@@ -55,12 +55,9 @@ public class FragmentHistory extends Fragment {
         recyclerViewNote = view.findViewById(R.id.recyclerFragmentHistory);
         checkBox = view.findViewById(R.id.checkBoxNote);
 
-
-
         dbHelper = new DBHelper(getContext());
 
         getNoteMsg();
-
 
         return view;
     }
@@ -71,7 +68,6 @@ public class FragmentHistory extends Fragment {
         super.onCreate(savedInstanceState);
 
     }
-
 
     public void getNoteMsg() {
 

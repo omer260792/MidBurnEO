@@ -1,19 +1,12 @@
 package com.example.omer.midburneo.Adapters;
 
-import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,16 +16,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.example.omer.midburneo.CampsAc;
 import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.Class.UserTest;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.R;
-import com.example.omer.midburneo.Tabs.AdminAc;
-import com.example.omer.midburneo.Tabs.ChatAc;
-import com.example.omer.midburneo.Tabs.MainPageAc;
-import com.example.omer.midburneo.Tabs.TestChatListAc;
-import com.example.omer.midburneo.Utils.PopUpUser;
+import com.example.omer.midburneo.Tabs.ChatListAc;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -44,9 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import me.himanshusoni.chatmessageview.ChatMessageView;
 
-import static com.example.omer.midburneo.RegisterAc.REQUEST_PHONE_CALL;
 import static com.example.omer.midburneo.RegisterAc.prefs;
 import static com.example.omer.midburneo.Tabs.ChatAc.callPhoneChatAc;
 import static com.example.omer.midburneo.Tabs.MainPageAc.current_admin_static;
@@ -147,7 +133,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
                    // user.SPUser();
                     Toast.makeText(view.getContext(), friend.getName(), Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(context, TestChatListAc.class);
+                    Intent intent = new Intent(context, ChatListAc.class);
                     intent.putExtra("nameUidFriend", friend.getName());
                     intent.putExtra("imageUidFriend", friend.getImage());
                     intent.putExtra("receiverUidFriend", friend.getUidReceiver());

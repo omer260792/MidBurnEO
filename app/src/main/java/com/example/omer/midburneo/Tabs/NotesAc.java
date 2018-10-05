@@ -65,7 +65,6 @@ public class NotesAc extends AppCompatActivity {
 
         dbHelper = new DBHelper(this);
 
-
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         viewPager = (ViewPager) findViewById(R.id.container);
         adapter = new ViewPagerAdapter(getSupportFragmentManager());
@@ -79,11 +78,19 @@ public class NotesAc extends AppCompatActivity {
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
 
+
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.e(TAG,"onstart");
+
+
         getRawCountSql();
         try {
-
-
-
+            
             UpdateDateFromFireBaseToSQLiteNote();
 
             current_camp_static = prefs.getString("camps", null);
@@ -95,14 +102,6 @@ public class NotesAc extends AppCompatActivity {
         } catch (NullPointerException e) {
 
         }
-
-
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.e(TAG,"onstart");
 
     }
 
@@ -138,9 +137,10 @@ public class NotesAc extends AppCompatActivity {
                             dbHelper.SaveDBSqliteToNote(getTitle, getContent, getDate, getDateEnd, getBool, getSender, current_uid, getUid);
                             Log.e(TAG, "UpdateDateFromFireBaseToSQLiteNote After + countSqlLite == 0");
 
+
                         }
-                           fragmentHistory.getNoteMsg();
-                            fragmentMain.getNoteMsg();
+                        //   fragmentHistory.getNoteMsg();
+                        fragmentMain.getNoteMsg();
 
 
                     }
@@ -202,7 +202,6 @@ public class NotesAc extends AppCompatActivity {
     public long getRawCountSql() {
         db = dbHelper.getWritableDatabase();
         Log.i(TAG, "dddddddd:" + "dddd");
-
 
         String countQuery = "SELECT  * FROM " + TABLE_NAME_NOTE;
         Cursor cursor = db.rawQuery(countQuery, null);

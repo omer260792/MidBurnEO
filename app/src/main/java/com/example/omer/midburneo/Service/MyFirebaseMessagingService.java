@@ -11,7 +11,6 @@ import android.util.Log;
 
 import com.example.omer.midburneo.R;
 import com.example.omer.midburneo.Tabs.ChatAc;
-import com.example.omer.midburneo.Tabs.TestChatListAc;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 

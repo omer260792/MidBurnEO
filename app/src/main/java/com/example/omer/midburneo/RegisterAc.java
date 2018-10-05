@@ -19,11 +19,13 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.Tabs.ProfileAc;
+import com.example.omer.midburneo.Utils.SendMailTask;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -40,7 +42,9 @@ import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -117,6 +121,9 @@ public class RegisterAc extends AppCompatActivity {
         if (!TextUtils.isEmpty(getName) && !TextUtils.isEmpty(getEmail) && !TextUtils.isEmpty(getPass)) {//&& getNum.trim().length()>123456789
 
 
+            prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
+            prefs.edit().putString("email", "register").apply();
+
             mprogress.setMessage("Signing Up");
             mprogress.show();
 
@@ -164,10 +171,9 @@ public class RegisterAc extends AppCompatActivity {
                                 mDatabase.setValue(userMap);
 
 
-                                prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
-                                prefs.edit().putString("email", "register").apply();
                                 prefs.edit().putString("name", getName).apply();
                                 prefs.edit().putString("image", image).apply();
+
 
 
                             }
@@ -187,6 +193,27 @@ public class RegisterAc extends AppCompatActivity {
 
 
         }
+
+//
+//        String emailSubject = "emailSubject";
+//        String emailBody = "emailBody";
+//
+//
+//        String toEmails = ((TextView) findViewById(R.id.emailFieldReg))
+//                .getText().toString();
+//
+//        List<String> toEmailList = Arrays.asList(toEmails
+//                .split("\\s*,\\s*"));
+//
+//        try {
+//            new SendMailTask(RegisterAc.this).execute(getEmail,
+//                    getPass, toEmailList, emailSubject, emailBody);
+//
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//
+//        }
     }
 
     public void onImg(View view) {

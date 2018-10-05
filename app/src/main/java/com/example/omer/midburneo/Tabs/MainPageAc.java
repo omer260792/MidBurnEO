@@ -177,7 +177,6 @@ public class MainPageAc extends AppCompatActivity {
                 firebaseUserModel.setEmail("default");
                 firebaseUserModel.setStatus("status");
 
-
 //                final FirebaseUserModel firebaseUserModel = new FirebaseUserModel();
 //                firebaseUserModel.setName(getName);
 //                firebaseUserModel.setEmail(getEmail);
@@ -196,7 +195,6 @@ public class MainPageAc extends AppCompatActivity {
 //                firebaseUserModel.setPhone(getNum);
 //                firebaseUserModel.setDeviceId(currentDeviceId);
 //                firebaseUserModel.setDeviceToken(firebaseInstanceId);
-//
 
                 user.login(firebaseUserModel);
                 user.saveFirebaseKey(dataSnapshot.getKey());

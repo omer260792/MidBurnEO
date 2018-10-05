@@ -142,7 +142,7 @@
             android:name=".Tabs.NoteEditAc"
             android:label="Standard calendar" />
 
-        <activity android:name=".Tabs.TestChatListAc"></activity>
+        <activity android:name=".Tabs.ChatListAc"></activity>
 
 
         <service android:name=".Service.MyFirebaseInstanceIdService">

@@ -103,8 +103,9 @@ dependencies {
 
     implementation 'com.loopj.android:android-async-http:1.4.9'
 
-
-
+    //Mail
+    implementation 'com.sun.mail:android-mail:1.6.0'
+    implementation 'com.sun.mail:android-activation:1.6.0'
 //    implementation 'com.google.android.gms:play-services-analytics:16.0.3'
 //    implementation 'com.google.android.gms:play-services-tagmanager:16.0.1'
 

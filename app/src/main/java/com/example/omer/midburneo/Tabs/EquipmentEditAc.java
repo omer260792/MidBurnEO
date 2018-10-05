@@ -56,7 +56,7 @@ public class EquipmentEditAc extends AppCompatActivity {
     public DBEquipment dbEquipment;
 
     public static String  directory_path = Environment.getExternalStoragePublicDirectory(
-            Environment.DIRECTORY_PICTURES).getAbsolutePath();
+            Environment.DIRECTORY_DOCUMENTS).getAbsolutePath();
 
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -88,7 +88,7 @@ public class EquipmentEditAc extends AppCompatActivity {
 
 
         File file = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "/equipmentsDoc.xls");
+                Environment.DIRECTORY_DOCUMENTS), "/equipmentsDoc.xls");
         if (!file.exists()) {
 
 

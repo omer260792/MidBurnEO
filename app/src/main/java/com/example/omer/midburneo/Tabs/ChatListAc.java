@@ -9,8 +9,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -41,7 +43,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -54,35 +55,30 @@ import com.theartofdev.edmodo.cropper.CropImageView;
 
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.UUID;
 
 import cz.msebera.android.httpclient.HttpHeaders;
 import cz.msebera.android.httpclient.entity.StringEntity;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static com.example.omer.midburneo.Adapters.MessagesListAdapter.VIEW_TYPE;
 import static com.example.omer.midburneo.Adapters.MessagesListAdapter.VIEW_TYPE_PICTURE;
-import static com.example.omer.midburneo.Class.UserTest.DeviceId;
-import static com.example.omer.midburneo.Class.UserTest.Key;
-import static com.example.omer.midburneo.Class.UserTest.Name;
 import static com.example.omer.midburneo.RegisterAc.CAMERA;
 import static com.example.omer.midburneo.RegisterAc.GALLERY;
 import static com.example.omer.midburneo.RegisterAc.SHPRF;
 import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
-import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
-import static com.example.omer.midburneo.Tabs.MainPageAc.current_name_static;
 import static com.example.omer.midburneo.Tabs.MainPageAc.current_uid_camp_static;
 
 
-public class TestChatListAc extends AppCompatActivity {
+public class ChatListAc extends AppCompatActivity {
     private static final String TAG = "ChattingActivity";
 
     UserTest user = UserTest.getInstance();
@@ -106,7 +102,7 @@ public class TestChatListAc extends AppCompatActivity {
     private StorageReference mImageStorage, filePath;
 
 
-    public static TestChatListAc chattingActivity;
+    public static ChatListAc chatListAc;
     public String nameUserIntent, campUserIntent, uidUserIntent, chatRoomsUserIntent, imageUserIntent, statusUserIntent, deviceUserIntent, tokenUserIntent, countUserIntent, timeUserIntent, onilneUserIntent, current_image, timeExitSP, current_uid, current_name, current_device, nameCampSP, table, deviceTokenCurrentSP, childGroupName, realTime, last_msg, StringCurrentMil, currentTime;
     public String stringUrl = "stringUrl";
     public int num = 1;
@@ -162,7 +158,7 @@ public class TestChatListAc extends AppCompatActivity {
 
         tvNameUser.setText(nameUserIntent);
 
-        chattingActivity = this;
+        chatListAc = this;
 
 
         btnSend.setEnabled(false);
@@ -224,7 +220,7 @@ public class TestChatListAc extends AppCompatActivity {
                     String image = postSnapshot.child("image").getValue().toString();
 
 
-                    if (image.equals("default")){
+                    if (image.equals("default")) {
                         VIEW_TYPE_PICTURE = 2;
 
                     }
@@ -338,8 +334,8 @@ public class TestChatListAc extends AppCompatActivity {
 
     public void hideKeyboard() {
         try {
-            InputMethodManager inputManager = (InputMethodManager) chattingActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
-            inputManager.hideSoftInputFromWindow(chattingActivity.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+            InputMethodManager inputManager = (InputMethodManager) chatListAc.getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(chatListAc.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         } catch (Exception e) {
             Log.i(TAG, "Exception while hiding keyboard");
         }
@@ -430,9 +426,9 @@ public class TestChatListAc extends AppCompatActivity {
 
     public void loadImagebtn(View view) {
 
-        PermissionManager.check(TestChatListAc.this, android.Manifest.permission.READ_EXTERNAL_STORAGE, GALLERY);
-        PermissionManager.check(TestChatListAc.this, android.Manifest.permission.CAMERA, CAMERA);
-        PermissionManager.check(TestChatListAc.this, Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
+        PermissionManager.check(ChatListAc.this, android.Manifest.permission.READ_EXTERNAL_STORAGE, GALLERY);
+        PermissionManager.check(ChatListAc.this, android.Manifest.permission.CAMERA, CAMERA);
+        PermissionManager.check(ChatListAc.this, Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
 
         AlertDialog alertDialog = new AlertDialog.Builder(this).create();
 
@@ -482,6 +478,7 @@ public class TestChatListAc extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 resultUri = result.getUri();
 
+
                 filePath = mImageStorage.child("msg_images").child(resultUri.getLastPathSegment());
 
                 filePath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
@@ -496,7 +493,7 @@ public class TestChatListAc extends AppCompatActivity {
 
                                 if (stringUrl != null) {
 
-
+                                    hideKeyboard();
                                     sendMsgWithNotification();
 
 
@@ -511,7 +508,7 @@ public class TestChatListAc extends AppCompatActivity {
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
 
-                Toast.makeText(TestChatListAc.this, "error", Toast.LENGTH_LONG).show();
+                Toast.makeText(ChatListAc.this, "error", Toast.LENGTH_LONG).show();
 
             }
         }
@@ -542,8 +539,11 @@ public class TestChatListAc extends AppCompatActivity {
             firebaseMessageModel.setImage(current_image);
             firebaseMessageModel.setStatus("false");
 
+            updateListView();
 
-            final ProgressDialog Dialog = new ProgressDialog(chattingActivity);
+
+
+            final ProgressDialog Dialog = new ProgressDialog(chatListAc);
             Dialog.setMessage("Please wait..");
             Dialog.setCancelable(false);
             Dialog.show();
@@ -552,7 +552,6 @@ public class TestChatListAc extends AppCompatActivity {
             newRef.setValue(firebaseMessageModel, new DatabaseReference.CompletionListener() {
                 @Override
                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                    Dialog.dismiss();
 
                     if (databaseError != null) {
                         Log.i(TAG, databaseError.toString());
@@ -626,12 +625,16 @@ public class TestChatListAc extends AppCompatActivity {
                         }
 
                     }
+                    Dialog.dismiss();
+
                 }
             });
             num = 2;
 
         }
     }
+
+
 }
 
 

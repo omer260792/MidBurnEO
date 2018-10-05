@@ -48,8 +48,6 @@ public class CampsAc extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camps);
 
-
-
         spinner2 = findViewById(R.id.spinner2);
         BtnCreate = findViewById(R.id.BtnCreate);
         confirmCampBtn = findViewById(R.id.confirmCampBtn);
@@ -57,17 +55,14 @@ public class CampsAc extends AppCompatActivity {
         mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
         current_uid = mCurrentUser.getUid();
 
-
         confirmCampBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
 
                 SaveDataFireBase();
 
                 prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
                 prefs.edit().putString("camps", camp_name).apply();
-
 
                 Intent intent = new Intent(CampsAc.this, MainPageAc.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -75,7 +70,6 @@ public class CampsAc extends AppCompatActivity {
                 finish();
             }
         });
-
 
         BtnCreate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -177,9 +171,7 @@ public class CampsAc extends AppCompatActivity {
     }
 
 
-
-    public void getUidCamp(){
-
+    public void getUidCamp() {
 
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
         DatabaseReference discussionRoomsRef = rootRef.child("Users");
@@ -190,7 +182,7 @@ public class CampsAc extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
 
-                        uid_camp = ds.child("chat").getValue(String.class);
+                    uid_camp = ds.child("chat").getValue(String.class);
                 }
             }
 
@@ -200,23 +192,18 @@ public class CampsAc extends AppCompatActivity {
         };
         query.addListenerForSingleValueEvent(valueEventListener);
 
-
     }
-
-
-
 
 
     public void SaveDataFireBase() {
 
-                mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
 
-                Map<String, Object> mapUserUpdates = new HashMap<>();
-                mapUserUpdates.put("camps", get_name_camp);
-                mapUserUpdates.put("num", current_num);
-                mapUserUpdates.put("chat", uid_camp);
-                mUserDatabase.updateChildren(mapUserUpdates);
-
+        Map<String, Object> mapUserUpdates = new HashMap<>();
+        mapUserUpdates.put("camps", get_name_camp);
+        mapUserUpdates.put("num", current_num);
+        mapUserUpdates.put("chat", uid_camp);
+        mUserDatabase.updateChildren(mapUserUpdates);
 
     }
 }

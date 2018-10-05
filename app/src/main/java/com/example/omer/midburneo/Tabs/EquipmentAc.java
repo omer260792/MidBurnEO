@@ -1,9 +1,11 @@
 package com.example.omer.midburneo.Tabs;
 
+import android.Manifest;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -20,11 +22,13 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.ajts.androidmads.library.ExcelToSQLite;
+import com.ajts.androidmads.library.SQLiteToExcel;
 import com.example.omer.midburneo.Adapters.EquipmentAdapter;
 import com.example.omer.midburneo.Class.Equipment;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.DataBase.DBEquipment;
 import com.example.omer.midburneo.DataBase.DBHelper;
+import com.example.omer.midburneo.PermissionManager;
 import com.example.omer.midburneo.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -34,10 +38,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
 import static com.example.omer.midburneo.DataBase.DBEquipment.DATABASE_NAME_EQUIPMENT;
+import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
 import static com.example.omer.midburneo.RegisterAc.prefs;
 import static com.example.omer.midburneo.Tabs.EquipmentEditAc.directory_path;
 import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
@@ -54,6 +60,7 @@ public class EquipmentAc extends AppCompatActivity {
     private ArrayList<Equipment> equipmentUtilsList = new ArrayList<>();
 
     public String current_admin, current_uid;
+    public String filePathString = "לא יצר קובץ";
     public Boolean boolRecycler = false;
     public DBEquipment dbEquipment;
     public DBHelper dbHelper;
@@ -62,13 +69,11 @@ public class EquipmentAc extends AppCompatActivity {
     private int num = 1;
 
 
-
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tab_equipment);
 
         Log.e(TAG, "onCreate");
-
 
 
         recyclerView = findViewById(R.id.recycler_Equipment);
@@ -81,6 +86,7 @@ public class EquipmentAc extends AppCompatActivity {
         try {
             current_camp_static = prefs.getString("camps", null);
             current_name_static = prefs.getString("name", null);
+
 
             Log.e(TAG, current_name_static);
             Log.e(TAG, current_camp_static);
@@ -103,16 +109,15 @@ public class EquipmentAc extends AppCompatActivity {
 
             UpdateDateFromFireBaseToSQLiteEquipment();
 
-        }
-        else {
+        } else {
             String test = etSearchEquipment.getText().toString() + "";
             //   getEquipment(boolRecycler);
             if (test.equals("")) {
 
-                if (countSqlLite>7){
+                if (countSqlLite > 7) {
                     boolRecycler = true;//start up
 
-                }else {
+                } else {
                     boolRecycler = false;//start down
                 }
                 LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
@@ -130,7 +135,7 @@ public class EquipmentAc extends AppCompatActivity {
 
             }
         }
-      //  getEquipment(boolRecycler);
+        //  getEquipment(boolRecycler);
 
         etSearchEquipment.addTextChangedListener(new TextWatcher() {
             @Override
@@ -175,13 +180,14 @@ public class EquipmentAc extends AppCompatActivity {
         });
 
 
-
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         Log.e(TAG, "onstart");
+
+
 
 
     }
@@ -191,7 +197,7 @@ public class EquipmentAc extends AppCompatActivity {
         Log.e(TAG, "getEquipment");
 
         try {
-            if (num==1){
+            if (num == 1) {
                 equipmentUtilsList.addAll(dbHelper.getAllEquipment());
                 mAdapter = new EquipmentAdapter(EquipmentAc.this, equipmentUtilsList);
                 LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
@@ -201,10 +207,8 @@ public class EquipmentAc extends AppCompatActivity {
                 Log.e(TAG, "getEquipment() + try");
 
                 UpdateDateFromFireBaseToSQLiteEquipment();
-                num= 2;
+                num = 2;
             }
-
-
 
 
         } catch (Exception e) {
@@ -254,7 +258,6 @@ public class EquipmentAc extends AppCompatActivity {
 
                         for (DataSnapshot ds : dataSnapshot.getChildren()) {
 
-
                             String name = ds.child("nameProd").getValue(String.class);
                             String content = ds.child(FeedReaderContract.FeedEntry.CONTENT).getValue(String.class);
                             String amount = ds.child(FeedReaderContract.FeedEntry.MOUNT).getValue(String.class);
@@ -264,10 +267,10 @@ public class EquipmentAc extends AppCompatActivity {
                             String sender = ds.child("sender").getValue(String.class);
                             String msgUid = ds.child(FeedReaderContract.FeedEntry.MESSAGE_UID).getKey();
 
-
                             dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
                             Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + countSqlLite == 0");
 
+                            dbEquipment.SaveDBSqliteToEquipmentExcel(name, content, amount, amountCurrent, time, image, current_name_static);
 
                         }
 
@@ -300,7 +303,8 @@ public class EquipmentAc extends AppCompatActivity {
 
 
                                 dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
-                                Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + countSqlLite == 0");
+
+                                dbEquipment.SaveDBSqliteToEquipmentExcel(name, content, amount, amountCurrent, time, image, current_name_static);
 
 
                             }
@@ -342,35 +346,31 @@ public class EquipmentAc extends AppCompatActivity {
         return countSqlLite;
     }
 
-    public void ExcelToSQLite() {
+    public void getExcelSettings() {
 
-        File file = new File(directory_path, "/" + current_camp_static + ".xls"); //    "/users.xls"
+        PermissionManager.check(EquipmentAc.this, Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
+
+        File file = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOCUMENTS), "/"+current_camp_static+".xls"); //    "/users.xls"
         if (!file.exists()) {
+
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            SQLiteToExcel();
+
             Toast.makeText(EquipmentAc.this,
-                    "אין תיקייה ", //ADD THIS
+                    filePathString, //ADD THIS
                     Toast.LENGTH_SHORT).show();
-            return;
+
+        }else {
+            Toast.makeText(EquipmentAc.this,
+                    filePathString, //ADD THIS
+                    Toast.LENGTH_SHORT).show();
+
         }
-        dbEquipment.open();
-
-        ExcelToSQLite excelToSQLite = new ExcelToSQLite(getApplicationContext(), DATABASE_NAME_EQUIPMENT, true);
-        // Import EXCEL FILE to SQLite
-        excelToSQLite.importFromFile(directory_path + "/users.xls", new ExcelToSQLite.ImportListener() {
-            @Override
-            public void onStart() {
-
-            }
-
-            @Override
-            public void onCompleted(String dbName) {
-                Log.e(TAG, dbName);
-            }
-
-            @Override
-            public void onError(Exception e) {
-                //Log.i("exr",e.st);
-            }
-        });
 
     }
 
@@ -404,7 +404,7 @@ public class EquipmentAc extends AppCompatActivity {
             return true;
         }
         if (id == R.id.item_excel) {
-            ExcelToSQLite();
+            getExcelSettings();
 
         }
 
@@ -414,8 +414,64 @@ public class EquipmentAc extends AppCompatActivity {
     public void onClickCheckBox(View view) {
 
 
+
     }
 
+    public void SQLiteToExcel(){
+
+
+
+        dbEquipment.open();
+        SQLiteToExcel sqLiteToExcel = new SQLiteToExcel(getApplicationContext(), DATABASE_NAME_EQUIPMENT, directory_path);
+
+        sqLiteToExcel.exportAllTables(current_camp_static+".xls", new SQLiteToExcel.ExportListener() {
+            @Override
+            public void onStart() {
+
+            }
+
+            @Override
+            public void onCompleted(String filePath) {
+                filePathString = "הצליח ליצור קובץ אקסל";
+
+
+                Log.e("Successfully Exported", filePath);
+            }
+
+            @Override
+            public void onError(Exception e) {
+
+            }
+        });
+
+        Log.v(TAG, "SQLiteToExcel");
+    }
+
+    public void ExcelToSQLite(){
+
+                dbEquipment.open();
+
+        ExcelToSQLite excelToSQLite = new ExcelToSQLite(getApplicationContext(), DATABASE_NAME_EQUIPMENT, true);
+        // Import EXCEL FILE to SQLite
+        excelToSQLite.importFromFile(directory_path + "/users.xls", new ExcelToSQLite.ImportListener() {
+            @Override
+            public void onStart() {
+
+            }
+
+            @Override
+            public void onCompleted(String dbName) {
+                Log.e(TAG, dbName);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                //Log.i("exr",e.st);
+            }
+        });
+
+
+    }
 
 
 }

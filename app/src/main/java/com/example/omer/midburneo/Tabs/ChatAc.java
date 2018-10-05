@@ -46,8 +46,11 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.omer.midburneo.RegisterAc.REQUEST_PHONE_CALL;
 import static com.example.omer.midburneo.RegisterAc.SHPRF;
+import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
 
 public class ChatAc extends AppCompatActivity {
+
+
 
 
     private final String TAG = "ChatAc";
@@ -57,7 +60,7 @@ public class ChatAc extends AppCompatActivity {
     private CircleImageView imageView;
     private UtilHelper utilHelper;
 
-    public String current_uid, currentImageSP, currentNameSP, currentstatusSp, currentCampSP, getUid, getUidUsers, get_lastmsg, get_phone, get_device, get_token, getNameReceiver, get_image, get_msg_uid, name;
+    public String current_uid, currentImageSP, currentNameSP, currentChatSP, currentstatusSP, currentCampSP, getUid, getUidUsers, get_lastmsg, get_phone, get_device, get_token, get_chat, getNameReceiver, get_image, get_msg_uid, name;
     public long countSqlLite;
     public int num = 1;
 
@@ -83,7 +86,8 @@ public class ChatAc extends AppCompatActivity {
         currentNameSP = prefs.getString("name", null);
         currentImageSP = prefs.getString("image", null);
         currentCampSP = prefs.getString("camps", null);
-        currentstatusSp = prefs.getString("status", null);
+        currentstatusSP = prefs.getString("status", null);
+        currentChatSP = prefs.getString("chat", null);
 
         nameCampTv.setText(currentCampSP);
 
@@ -175,6 +179,7 @@ public class ChatAc extends AppCompatActivity {
                             get_lastmsg = ds.child("lastmsg").getValue(String.class);
                             get_phone = ds.child("phone").getValue(String.class);
                             get_device = ds.child(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID).getValue(String.class);
+                            get_chat = ds.child(FeedReaderContract.FeedEntry.CHAT).getValue(String.class);
                             get_token = ds.child(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN).getValue(String.class);
                             getUidUsers = ds.getKey();
 
@@ -193,17 +198,36 @@ public class ChatAc extends AppCompatActivity {
 
                                 getMyKeyMsg = UUID.randomUUID().toString();
 
-                                saveUserChatFirebase(getMyKeyMsg);
-                                numm = 2;
+
+                                if (getNameReceiver.equals(current_camp_static)){
+                                    getMyKeyMsg = get_chat;
+                                    saveUserChatFirebase(getMyKeyMsg);
+
+                                }else {
+                                    saveUserChatFirebase(getMyKeyMsg);
+
+                                }
 
 
                             }
                             try {
-                               // if (numm == 2) {
+
+                                if (getNameReceiver.equals(current_camp_static)){
+                                    getMyKeyMsg = get_chat;
+                                    db.SaveDBSqliteUser(getNameReceiver, currentCampSP, getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
+                                        Log.e(TAG,"changeKeyChat");
+                                        Log.e(TAG,getMyKeyMsg);
+                                        Log.e(TAG,get_chat);
+                                }else {
                                     db.SaveDBSqliteUser(getNameReceiver, currentCampSP, getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
 
+                                    Log.e(TAG,"NOtt-  changeKeyChat");
+                                    Log.e(TAG,getMyKeyMsg);
+                                    Log.e(TAG,get_chat);
+                                }
 
-                            }catch (NullPointerException e){
+
+                            } catch (NullPointerException e) {
                                 e.printStackTrace();
                             }
 
