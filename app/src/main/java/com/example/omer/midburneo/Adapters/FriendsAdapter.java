@@ -158,6 +158,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                     intent.putExtra("onilneUidFriend", friend.getOnline());
                     intent.putExtra("deviceUidFriend", friend.getDevice());
                     intent.putExtra("tokenUidFriend", friend.getToken());
+                    intent.putExtra("chatRoomsUidFriend", friend.getChatRoom());
                     context.startActivity(intent);
 
                 }

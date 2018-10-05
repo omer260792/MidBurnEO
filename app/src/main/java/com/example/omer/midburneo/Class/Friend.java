@@ -12,9 +12,9 @@ public class Friend {
     public String role;
     public String online;
     public String phone;
-
     public String device;
     public String token;
+    public String chatRoom;
 
     public String time;
 
@@ -50,7 +50,16 @@ public class Friend {
         return phone;
     }
 
-    public Friend(String name, String camp, String uidReceiver, String image, String lastMsg, String status, String uidCount, String role, String online, String phone) {
+    public String getChatRoom() {
+        return chatRoom;
+    }
+
+    public String setChatRoom(String chatRoom) {
+        this.chatRoom = chatRoom;
+        return chatRoom;
+    }
+
+    public Friend(String name, String camp, String uidReceiver, String image, String lastMsg, String status, String uidCount, String role, String online, String phone, String chatRoom) {
         this.name = name;
         this.camp = camp;
         this.uidReceiver = uidReceiver;
@@ -61,6 +70,7 @@ public class Friend {
         this.role = role;
         this.online = online;
         this.phone = phone;
+        this.chatRoom = chatRoom;
 
 
     }

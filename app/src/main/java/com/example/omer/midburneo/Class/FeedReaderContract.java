@@ -51,6 +51,7 @@ public final class FeedReaderContract {
 
         public static final String CURRENT_DEVICE_ID = "device_id";
         public static final String CURRENT_DEVICE_TOKEN = "device_token";
+        public static final String CHAT_ROOMS = "chat_rooms";
 
 
 

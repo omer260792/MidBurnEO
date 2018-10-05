@@ -47,6 +47,8 @@ public class NotesAc extends AppCompatActivity {
     public SQLiteDatabase db;
     private int countSqlLite;
     public SharedPreferences prefs;
+    private FragmentMain fragmentMain;
+    private  FragmentHistory fragmentHistory;
 
     private String  current_uid, getUid;
     private String getTitle = "getMsg";
@@ -60,6 +62,8 @@ public class NotesAc extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tab_note);
+
+        dbHelper = new DBHelper(this);
 
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
@@ -75,8 +79,10 @@ public class NotesAc extends AppCompatActivity {
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
 
-
+        getRawCountSql();
         try {
+
+
 
             UpdateDateFromFireBaseToSQLiteNote();
 
@@ -93,6 +99,12 @@ public class NotesAc extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.e(TAG,"onstart");
+
+    }
 
     public void UpdateDateFromFireBaseToSQLiteNote() {
         if (current_camp_static.equals(null)) {
@@ -101,7 +113,9 @@ public class NotesAc extends AppCompatActivity {
 
             return;
         } else {
-            getRawCountSql();
+            fragmentHistory = new FragmentHistory();
+            fragmentMain = new FragmentMain();
+
             DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
             DatabaseReference discussionRoomsRef = rootRef.child("Camps").child(current_camp_static).child("Note");
             Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + else");
@@ -125,7 +139,9 @@ public class NotesAc extends AppCompatActivity {
                             Log.e(TAG, "UpdateDateFromFireBaseToSQLiteNote After + countSqlLite == 0");
 
                         }
-                        //   getNoteMsg();
+                           fragmentHistory.getNoteMsg();
+                            fragmentMain.getNoteMsg();
+
 
                     }
 
@@ -158,7 +174,16 @@ public class NotesAc extends AppCompatActivity {
                                 Log.e(TAG, "UpdateDateFromFireBaseToSQLiteNote After + countSqlLite == 0");
                             }
 
+
                         }
+//                        if (getBool.equals("true")){
+//                            fragmentHistory.getNoteMsg();
+//
+//                        }else {
+//                            fragmentMain.getNoteMsg();
+//                        }
+                        fragmentHistory.getNoteMsg();
+                        fragmentMain.getNoteMsg();
 
                     }
 
@@ -176,6 +201,8 @@ public class NotesAc extends AppCompatActivity {
 
     public long getRawCountSql() {
         db = dbHelper.getWritableDatabase();
+        Log.i(TAG, "dddddddd:" + "dddd");
+
 
         String countQuery = "SELECT  * FROM " + TABLE_NAME_NOTE;
         Cursor cursor = db.rawQuery(countQuery, null);

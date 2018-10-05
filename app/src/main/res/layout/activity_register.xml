@@ -8,19 +8,20 @@
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/buttonImageRegister"
         android:background="@drawable/midburn_logo"
-        android:layout_marginTop="60dp"
-        android:layout_marginBottom="30dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="60dp"
         android:onClick="onImg"
         android:layout_width="120dp"
         android:layout_height="120dp" />
 
     <TextView
-        android:layout_marginTop="-33dp"
+        android:layout_marginTop="-63dp"
         android:text="הוסף תמונה"
         android:layout_width="80dp"
         android:layout_height="20dp" />
 
     <GridLayout
+        android:layout_marginTop="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:columnCount="2"
@@ -66,7 +67,7 @@
             android:id="@+id/textNumReg"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="textPassword"
+            android:inputType="textPhonetic"
             android:ems="10"/>
 
         <TextView
@@ -75,18 +76,17 @@
             android:text="טלפון:" />
 
 
-
     </GridLayout>
 
     <LinearLayout
         android:layout_width="150dp"
-        android:layout_height="100dp">
+        android:layout_height="150dp">
 
         <Button
             android:id="@+id/registerButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="30dp"
             android:text="הירשם"
             android:onClick="RegisterBtn"/>
 

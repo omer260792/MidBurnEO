@@ -71,6 +71,11 @@ public class FragmentMain extends Fragment {
 
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
     public void getNoteMsg() {
 
         Log.e(TAG, "getNoteMsg");

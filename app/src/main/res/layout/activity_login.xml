@@ -1,76 +1,80 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center_horizontal">
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
 
     <TextView
-        android:layout_marginTop="60dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:text="MidCamp"
         android:textAlignment="center"
-        android:textSize="30dp"
         android:textColor="#000000"
-        android:text="MidBurn"/>
+        android:textSize="30dp" />
 
     <GridLayout
 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:columnCount="2"
-        android:rowCount="2"
         android:layout_marginBottom="20dp"
-        android:layout_marginTop="60dp">
-
-        <TextView
-            android:textColor="#000000"
-            android:textStyle="bold"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Email"/>
+        android:layout_marginTop="60dp"
+        android:columnCount="2"
+        android:rowCount="2">
 
         <EditText
             android:id="@+id/LoginUserName"
-            android:textColor="#000000"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:ems="10"
             android:inputType="textEmailAddress"
-            android:ems="10" />
+            android:textColor="#000000" />
+
 
         <TextView
-            android:textColor="#000000"
-            android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Password"/>
+            android:text="מייל:"
+            android:textColor="#000000"
+            android:textStyle="bold" />
+
 
         <EditText
             android:id="@+id/LoginPassword"
-            android:textColor="#000000"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:ems="10"
             android:inputType="textPassword"
-            android:ems="10" />
+            android:textColor="#000000" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=":סיסמא"
+            android:textColor="#000000"
+            android:textStyle="bold" />
+
+
     </GridLayout>
 
     <Button
         android:id="@+id/SignInBtn"
-        android:layout_marginTop="30dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Login"
+        android:layout_marginTop="30dp"
+        android:ems="8"
         android:onClick="LoginBtnFunc"
-        android:ems="8"/>
+        android:text="כניסה" />
 
     <TextView
         android:id="@+id/SignUpBtn"
-        android:layout_marginTop="10dp"
-        android:textColor="#000000"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:onClick="RegisterBtn"
-        android:textStyle="bold"
-        android:text="Do not have an account? Register now"
-        android:paddingTop="16dp" />
+        android:paddingTop="16dp"
+        android:text=" לחץ כאן? ברנר חדש אין לך משתמש "
+        android:textColor="#545454"
+        android:textStyle="bold" />
 
 </LinearLayout>

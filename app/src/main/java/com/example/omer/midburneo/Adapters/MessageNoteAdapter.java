@@ -64,7 +64,7 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
     private DatabaseReference mUserDatabase;
     private DBHelper dbHelper;
     public SQLiteDatabase db;
-
+    private ViewGroup viewGroup;
 
     public MessageNoteAdapter(Context context, List MessageNoteList) {
         this.context = context;
@@ -77,6 +77,7 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_message_note, parent, false);
         ViewHolder viewHolder = new ViewHolder(v);
+        viewGroup = parent;
         return viewHolder;
     }
 
@@ -102,7 +103,7 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
 
         uidMsgString = messageNote.getUidMsg();
 
-                holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @SuppressLint("ResourceAsColor")
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -124,6 +125,8 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
                     getLastMsg(count);
 
 
+                  //  viewGroup.removeView(holder.parentRelative);
+
                 } else {
                     //checkBox clicked and unchecked
                     int btnDrawable = android.R.drawable.checkbox_off_background;
@@ -131,11 +134,12 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
                     holder.checkBox.setButtonDrawable(btnDrawable);
                     holder.relativeLayout.setBackgroundColor(R.color.colorAccent);
 
-
                 }
 
             }
         });
+
+
 
 
     }
@@ -149,7 +153,7 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
 
         public TextView pTitle, pContent, pDate, pDateEnd;
         public CheckBox checkBox;
-        public RelativeLayout relativeLayout;
+        public RelativeLayout relativeLayout, parentRelative;
 
 
         public ViewHolder(View itemView) {
@@ -161,6 +165,9 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
             pDateEnd = itemView.findViewById(R.id.tvDateEndNote);
             checkBox = itemView.findViewById(R.id.checkBoxNote);
             relativeLayout = itemView.findViewById(R.id.relativeLayoutTop3);
+            parentRelative = itemView.findViewById(R.id.parentRelative);
+
+
 
 
             this.setIsRecyclable(false);

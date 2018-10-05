@@ -81,6 +81,7 @@ public class MessagesListAdapter extends ArrayAdapter<MessageCell> {
         if (VIEW_TYPE_PICTURE==2 && !cellItem[position].getImage().equals("default")){
 
 
+           
 
             Glide.with(context).load(cellItem[position].getImage()).into(image_message_profile);
             text_message_time.setText(cellItem[position].getMessageDateTime());

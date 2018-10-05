@@ -28,26 +28,36 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".LoginAc">
+        <activity
+            android:name=".LoginAc"
+            android:label="הרשמה">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".RegisterAc">
+        <activity
+            android:name=".RegisterAc"
+            android:label="התחברות">
             <intent-filter>
                 <action android:name="RegisterAc" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".CampsAc">
+        <activity
+            android:name=".CampsAc"
+            android:label="הרשמה מחנה נושא">
             <intent-filter>
                 <action android:name="CampsAc" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".CreateCampAc">
+        <activity
+            android:name=".CreateCampAc"
+            android:label="יצירת מחנה נושא">
             <intent-filter>
                 <action android:name="CreateCampAc" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -100,12 +110,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".Tabs.ChatListAc">
-            <intent-filter>
-                <action android:name="AdminAc" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
+
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />

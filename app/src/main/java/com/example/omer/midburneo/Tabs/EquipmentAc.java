@@ -96,7 +96,41 @@ public class EquipmentAc extends AppCompatActivity {
 
 
         getRawCountSql();
-        getEquipment(boolRecycler);
+
+
+        if (countSqlLite == 0) {
+            Log.e(TAG, "oncreat if " + String.valueOf(countSqlLite));
+
+            UpdateDateFromFireBaseToSQLiteEquipment();
+
+        }
+        else {
+            String test = etSearchEquipment.getText().toString() + "";
+            //   getEquipment(boolRecycler);
+            if (test.equals("")) {
+
+                if (countSqlLite>7){
+                    boolRecycler = true;//start up
+
+                }else {
+                    boolRecycler = false;//start down
+                }
+                LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
+                layoutManager.setStackFromEnd(boolRecycler);
+                getEquipment(boolRecycler);
+
+
+            } else {
+                boolRecycler = false;
+
+                LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
+                layoutManager.setStackFromEnd(boolRecycler);
+                getEquipment(boolRecycler);
+
+
+            }
+        }
+      //  getEquipment(boolRecycler);
 
         etSearchEquipment.addTextChangedListener(new TextWatcher() {
             @Override
@@ -127,7 +161,7 @@ public class EquipmentAc extends AppCompatActivity {
                     recyclerView.setLayoutManager(layoutManager);
 
                 } else {
-                    boolRecycler = true;
+                    boolRecycler = false;
                     Log.e(TAG, "boolRecycler = true;" + test);
                     LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
                     layoutManager.setStackFromEnd(boolRecycler);
@@ -149,29 +183,7 @@ public class EquipmentAc extends AppCompatActivity {
         super.onStart();
         Log.e(TAG, "onstart");
 
-        if (countSqlLite == 0) {
-            Log.e(TAG, "oncreat if " + String.valueOf(countSqlLite));
 
-            UpdateDateFromFireBaseToSQLiteEquipment();
-
-        } else {
-            String test = etSearchEquipment.getText().toString() + "";
-
-            if (test.equals("")) {
-
-                boolRecycler = true;
-                Log.e(TAG, "boolRecycler = true onCreat;" + test);
-                LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
-                layoutManager.setStackFromEnd(boolRecycler);
-
-            } else {
-                boolRecycler = false;
-                Log.e(TAG, "boolRecycler = false onCreat;" + test);
-                LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
-                layoutManager.setStackFromEnd(boolRecycler);
-
-            }
-        }
     }
 
     public void getEquipment(Boolean bool) {
@@ -296,6 +308,8 @@ public class EquipmentAc extends AppCompatActivity {
                         }
 
                     } else {
+
+
                         return;
                     }
 

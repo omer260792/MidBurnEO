@@ -232,6 +232,7 @@ public class ProfileAc extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 Uri resultUri = result.getUri();
+                Picasso.get().load(resultUri).error(R.drawable.admin_btn_logo).into(imageView);
 
                 //Progress Dialog
                 mProgressDialog = new ProgressDialog(this);
@@ -257,7 +258,6 @@ public class ProfileAc extends AppCompatActivity {
                                     stringUrl = String.valueOf(uri);
 
 
-                                    Picasso.get().load(uri).error(R.drawable.admin_btn_logo).into(imageView);
 
                                     mProgressDialog.dismiss();
                                     Toast.makeText(ProfileAc.this, "Success", Toast.LENGTH_LONG).show();

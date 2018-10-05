@@ -1,5 +1,6 @@
 package com.example.omer.midburneo.Tabs;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -84,6 +85,8 @@ public class EquipmentPreviewAc extends AppCompatActivity {
                     long currentDateTime = System.currentTimeMillis();
                     timePre = String.valueOf(currentDateTime);
                     UpdateDataToFireBaseEquipment();
+
+
 
 
                 } else {

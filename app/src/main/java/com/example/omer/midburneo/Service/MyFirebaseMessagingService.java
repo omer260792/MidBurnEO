@@ -51,5 +51,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         notificationManager.notify(0, notificationBuilder.build());
+        Log.e(TAG,"ssssssssss");
+
+    }
+
+    @Override
+    public void onDestroy() {
+
+        super.onDestroy();
+        Log.e(TAG,"succcccc");
+
     }
 }

@@ -37,7 +37,10 @@ import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -47,8 +50,6 @@ import static com.example.omer.midburneo.RegisterAc.SHPRF;
 public class ChatAc extends AppCompatActivity {
 
 
-
-
     private final String TAG = "ChatAc";
 
     private RecyclerView recyclerView;
@@ -56,7 +57,7 @@ public class ChatAc extends AppCompatActivity {
     private CircleImageView imageView;
     private UtilHelper utilHelper;
 
-    public String current_uid, currentImageSP, currentNameSP, currentstatusSp, currentCampSP, getUid, getUidUsers, get_lastmsg, get_phone, get_device, get_token, getNameReceiver, get_image, get_time, name;
+    public String current_uid, currentImageSP, currentNameSP, currentstatusSp, currentCampSP, getUid, getUidUsers, get_lastmsg, get_phone, get_device, get_token, getNameReceiver, get_image, get_msg_uid, name;
     public long countSqlLite;
     public int num = 1;
 
@@ -177,10 +178,35 @@ public class ChatAc extends AppCompatActivity {
                             get_token = ds.child(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN).getValue(String.class);
                             getUidUsers = ds.getKey();
 
-                            Log.d("countSqlLite", String.valueOf(countSqlLite));
-                            Log.d("FBCount", String.valueOf(FBCount));
+                            String getMyKeyMsg = ds.child(current_uid).getValue(String.class);
 
-                            db.SaveDBSqliteUser(getNameReceiver, currentCampSP, getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token);
+                            int numm = 1;
+
+                            try {
+                                if (getMyKeyMsg.equals(null)) {
+
+                                }
+
+                            } catch (NullPointerException e) {
+                                e.printStackTrace();
+
+
+                                getMyKeyMsg = UUID.randomUUID().toString();
+
+                                saveUserChatFirebase(getMyKeyMsg);
+                                numm = 2;
+
+
+                            }
+                            try {
+                               // if (numm == 2) {
+                                    db.SaveDBSqliteUser(getNameReceiver, currentCampSP, getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
+
+
+                            }catch (NullPointerException e){
+                                e.printStackTrace();
+                            }
+
 
                         }
                     }
@@ -216,7 +242,25 @@ public class ChatAc extends AppCompatActivity {
 
         }
 
+
     }
 
+    public void saveUserChatFirebase(String uid) {
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(getUidUsers);
+
+        Map<String, Object> stringObjectHashMap = new HashMap<>();
+        stringObjectHashMap.put(current_uid, uid);
+
+        mUserDatabase.updateChildren(stringObjectHashMap);
+
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+
+        Map<String, Object> stringObjectHashMap1 = new HashMap<>();
+        stringObjectHashMap1.put(getUidUsers, uid);
+
+        mUserDatabase.updateChildren(stringObjectHashMap1);
+
+
+    }
 
 }

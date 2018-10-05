@@ -248,6 +248,7 @@ public class AdminAc extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 Uri resultUri = result.getUri();
+                Picasso.get().load(resultUri).error(R.drawable.admin_btn_logo).into(circleImageView);
 
                 //Progress Dialog
                 mProgressDialog = new ProgressDialog(this);
@@ -275,7 +276,6 @@ public class AdminAc extends AppCompatActivity {
                                     stringUrl = String.valueOf(uri);
 
 
-                                    Picasso.get().load(uri).error(R.drawable.admin_btn_logo).into(circleImageView);
                                     Toast.makeText(AdminAc.this, "Success", Toast.LENGTH_LONG).show();
 
 

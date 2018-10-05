@@ -2,6 +2,7 @@ package com.example.omer.midburneo;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.nfc.Tag;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -24,6 +25,9 @@ import static com.example.omer.midburneo.RegisterAc.SHPRF;
 
 
 public class LoginAc extends AppCompatActivity {
+
+    private final String TAG = "LoginAc";
+
 
     EditText loginUserName, loginUserPassword;
     Button signinBtn;
@@ -55,7 +59,7 @@ public class LoginAc extends AppCompatActivity {
                     prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
 
                     checkEmailReg = prefs.getString("email", null);
-                    if (checkEmailReg == null){
+                    if (checkEmailReg != "register"){
                         checkEmailReg = "main";
                     }
 
@@ -64,10 +68,7 @@ public class LoginAc extends AppCompatActivity {
                 }
 
                 if (firebaseAuth.getCurrentUser() == null) {
-//                    Intent logIntent = new Intent(LoginAc.this, RegisterAc.class);
-//                    logIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                    startActivity(logIntent);
-//                    finish();
+
 
                 } else {
 
@@ -95,6 +96,15 @@ public class LoginAc extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         mAuth.addAuthStateListener(mAuthLis);
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.e(TAG, "succ");
+
+        super.onDestroy();
+
+
     }
 
     public void RegisterBtn(View view) {

@@ -59,7 +59,8 @@ public class DBHelper extends SQLiteOpenHelper {
                     FeedReaderContract.FeedEntry.ROLE + " TEXT," +
                     FeedReaderContract.FeedEntry.PHONE + " TEXT," +
                     FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID + " TEXT," +
-                    FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN + " TEXT)";
+                    FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN + " TEXT," +
+                    FeedReaderContract.FeedEntry.CHAT_ROOMS + " TEXT)";
 
 
     private static final String SQL_DELETE_ENTRIES =
@@ -189,6 +190,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 String phone = friend.setPhone(cursor.getString(cursor.getColumnIndex("phone")));
                 String cDevice = friend.setDevice(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID)));
                 String cToken = friend.setToken(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN)));
+                String chatRooms = friend.setChatRoom(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.CHAT_ROOMS)));
 
 
                 if (!uid.equals(current_uid)) {
@@ -294,8 +296,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 String timeSet = calendar.setTimeSet(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME__SET)));
 
 
-
-
                 calendarList.add(calendar);
 
 
@@ -390,7 +390,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
                     String dateBool = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE_BOOL));
 
-                    if (dateBool.equals(bool)){
+                    if (dateBool.equals(bool)) {
 
                         String getTimeCursor = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE));
                         String getTimeCursorEnd = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE_END));
@@ -416,9 +416,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
                         msgNoteList.add(messageNote);
                     }
-
-
-
 
 
                 } while (cursor.moveToNext());
@@ -512,7 +509,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
-    public void SaveDBSqliteUser(String Name, String Camp, String Uid, String image, String lstmsg, String phone, String device, String token) {
+    public void SaveDBSqliteUser(String Name, String Camp, String Uid, String image, String lstmsg, String phone, String device, String token,String chat) {
 
         SQLiteDatabase db;
 
@@ -535,6 +532,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(FeedReaderContract.FeedEntry.PHONE, phone);
         values.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID, device);
         values.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN, token);
+        values.put(FeedReaderContract.FeedEntry.CHAT_ROOMS, chat);
 
 
         // Insert the new row, returning the primary key value of the new row
@@ -700,7 +698,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    public void deleteRawFromTable (int id, String time, String table){
+    public void deleteRawFromTable(int id, String time, String table) {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "DELETE FROM " + table + " WHERE "
                 + FeedReaderContract.FeedEntry._ID + " = '" + id + "'" +

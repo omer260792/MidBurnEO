@@ -107,7 +107,7 @@ public class TestChatListAc extends AppCompatActivity {
 
 
     public static TestChatListAc chattingActivity;
-    public String nameUserIntent, campUserIntent, uidUserIntent, imageUserIntent, statusUserIntent, deviceUserIntent, tokenUserIntent, countUserIntent, timeUserIntent, onilneUserIntent, current_image, timeExitSP, current_uid, current_name, current_device, nameCampSP, table, deviceTokenCurrentSP, childGroupName, realTime, last_msg, StringCurrentMil, currentTime;
+    public String nameUserIntent, campUserIntent, uidUserIntent, chatRoomsUserIntent, imageUserIntent, statusUserIntent, deviceUserIntent, tokenUserIntent, countUserIntent, timeUserIntent, onilneUserIntent, current_image, timeExitSP, current_uid, current_name, current_device, nameCampSP, table, deviceTokenCurrentSP, childGroupName, realTime, last_msg, StringCurrentMil, currentTime;
     public String stringUrl = "stringUrl";
     public int num = 1;
 
@@ -137,6 +137,7 @@ public class TestChatListAc extends AppCompatActivity {
         onilneUserIntent = getIntent().getStringExtra("onilneUidFriend");
         deviceUserIntent = getIntent().getStringExtra("deviceUidFriend");
         tokenUserIntent = getIntent().getStringExtra("tokenUidFriend");
+        chatRoomsUserIntent = getIntent().getStringExtra("chatRoomsUidFriend");
 
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
@@ -155,11 +156,10 @@ public class TestChatListAc extends AppCompatActivity {
 
         database = FirebaseDatabase.getInstance();
         usersRef = database.getReference("Users");
-        messagesRef = database.getReference("ChatRooms");
+        messagesRef = database.getReference("ChatRooms").child(chatRoomsUserIntent);
         dbHelper = new DBHelper(getApplicationContext());
 
 
-        setTitle("Chatting");
         tvNameUser.setText(nameUserIntent);
 
         chattingActivity = this;
@@ -224,70 +224,14 @@ public class TestChatListAc extends AppCompatActivity {
                     String image = postSnapshot.child("image").getValue().toString();
 
 
-                    if (image.equals("default")) {
-
-                        if (receiver.equals(uidUserIntent)) {
-
-                            if (sender.equals(current_uid)) {
-
-                                firebaseMessageModel.setId(postSnapshot.getKey());
-
-                                messages.add(firebaseMessageModel);
-
-                            }
-
-
-
-                        } else if (sender.equals(current_uid) && receiver.equals(uidUserIntent)) {
-
-                            if (!receiver.equals(current_uid_camp_static)) {
-                                firebaseMessageModel.setId(postSnapshot.getKey());
-
-                                messages.add(firebaseMessageModel);
-                            }
-
-                        } else if (sender.equals(uidUserIntent) && receiver.equals(current_uid)) {
-
-                            if (!receiver.equals(current_uid_camp_static)) {
-                                firebaseMessageModel.setId(postSnapshot.getKey());
-
-                                messages.add(firebaseMessageModel);
-                            }
-                        }
-
-                    } else {
-
+                    if (image.equals("default")){
                         VIEW_TYPE_PICTURE = 2;
 
-                        if (receiver.equals(uidUserIntent)) {
-
-
-                            firebaseMessageModel.setId(postSnapshot.getKey());
-
-                            messages.add(firebaseMessageModel);
-
-
-                        } else if (sender.equals(current_uid) && receiver.equals(uidUserIntent)) {
-
-                            if (!receiver.equals(current_uid_camp_static)) {
-                                firebaseMessageModel.setId(postSnapshot.getKey());
-
-                                messages.add(firebaseMessageModel);
-
-                            }
-
-                        } else if (sender.equals(uidUserIntent) && receiver.equals(current_uid)) {
-
-                            if (!receiver.equals(current_uid_camp_static)) {
-                                firebaseMessageModel.setId(postSnapshot.getKey());
-
-                                messages.add(firebaseMessageModel);
-
-                            }
-                        }
                     }
 
+                    firebaseMessageModel.setId(postSnapshot.getKey());
 
+                    messages.add(firebaseMessageModel);
                 }
 
                 updateListView();
@@ -691,21 +635,3 @@ public class TestChatListAc extends AppCompatActivity {
 }
 
 
-//                    String admin = firebaseUserModel.getAdmin();
-//                    String camps = firebaseUserModel.getCamp();
-//                    String chat = firebaseUserModel.getChat();
-//                    String device_token = firebaseUserModel.getDeviceToken();
-//                    String email = firebaseUserModel.getEmail();
-//                    String image = firebaseUserModel.getImage();
-//                    String lasmsg = firebaseUserModel.getLastMsg();
-//                    String name = firebaseUserModel.getName();
-//                    String number = firebaseUserModel.getNumber();
-//                    String onilne = firebaseUserModel.getOnline();
-//                    String pass = firebaseUserModel.getPass();
-//                    String phone = firebaseUserModel.getPhone();
-//                    String role = firebaseUserModel.getRole();
-//                    String status = firebaseUserModel.getStatus();
-//                    String time = firebaseUserModel.getTime();
-//                    String uid = firebaseUserModel.getUidReceiver();
-//
-//
