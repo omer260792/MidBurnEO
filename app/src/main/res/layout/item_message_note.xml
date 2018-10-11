@@ -1,94 +1,144 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/parentRelative"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent">
 
-    <RelativeLayout
+    <android.support.v7.widget.CardView
         android:id="@+id/relativeLayoutTop3"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:background="@color/colorAccent"
-        android:orientation="horizontal">
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2dp"
+        android:layout_marginTop="2dp"
+        app:cardBackgroundColor="@color/cardview_shadow_start_color"
+        app:cardCornerRadius="4dp"
+        app:cardElevation="0dp"
+        app:cardUseCompatPadding="true"
+        app:contentPadding="5dp"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
 
-        <TextView
-            android:id="@+id/txtViewTimeNote"
+        <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:hint="16:00"
-            android:textSize="20dp" />
+            tools:layout_editor_absoluteX="8dp"
+            tools:layout_editor_absoluteY="8dp">
+
+            <TextView
+                android:id="@+id/txtViewTimeNote"
+                android:layout_width="0dp"
+                android:layout_height="25dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="ddddd"
+                android:textColor="@color/colorAccent"
+
+                android:textSize="16sp"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
 
-        <TextView
-            android:id="@+id/txtViewMsgNote"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/txtViewTimeNote"
-            android:gravity="right"
-            android:hint="title"
-            android:paddingRight="5dp"
-            android:textSize="25dp" />
-
-        <TextView
-            android:id="@+id/tvContentNote"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_below="@+id/txtViewMsgNote"
-            android:gravity="right"
-            android:hint="text"
-            android:paddingRight="5dp"
-            android:textSize="20dp" />
-
-
-        <CheckBox
-            android:id="@+id/checkBoxNote"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/tvContentNote"
-            android:gravity="right"
-            android:onClick="onClickCheckBox"
-            android:paddingRight="5dp"
-            android:text="סיום המטלה" />
-
-        <LinearLayout
-            android:id="@+id/linearLayoutTop"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/checkBoxNote"
-            android:paddingRight="5dp">
-
-            <GridLayout
-                android:id="@+id/gridViewNote"
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/txtViewMsgNote"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:columnCount="2"
-                android:rowCount="1">
+                android:layout_marginEnd="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:gravity="right"
+                android:text="בחר תאריך"
+                android:textColor="@color/colorAccent"
+                android:textSize="16sp"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/txtViewTimeNote" />
 
-                <TextView
-                    android:id="@+id/tvDateEndNote"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp"
-                    android:gravity="right"
-                    android:text="date"
-                    android:textSize="20dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="50dp"
-                    android:layout_gravity="right"
-                    android:ems="10"
-                    android:hint="תאריך סיום המטלה:" />
-
-
-            </GridLayout>
-        </LinearLayout>
-
-
-    </RelativeLayout>
+            <TextView
+                android:id="@+id/tvContentNote"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:gravity="right"
+                android:hint="MAC Address - The physical address of the WAN port, "
+                android:textColor="@color/daysLabelColor"
+                android:textSize="18sp"
+                android:typeface="sans"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/txtViewMsgNote" />
 
 
-</RelativeLayout>
+            <CheckBox
+                android:id="@+id/checkBoxNote"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:gravity="right"
+                android:onClick="onClickCheckBox"
+                android:text="סיום המטלה"
+                android:textColor="@color/colorAccent"
+                android:textSize="16sp"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvContentNote" />
+
+
+            <TextView
+                android:id="@+id/tvTextEndNote"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:gravity="right"
+                android:text=":תאריך סיום המטלה"
+                android:textColor="@color/colorAccent"
+                android:textSize="16sp"
+                app:layout_constraintHorizontal_bias="0.97"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/checkBoxNote" />
+
+
+            <TextView
+                android:id="@+id/tvDateEndNote"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8dp"
+                android:gravity="right"
+                android:text="בחר תאריך"
+                android:textColor="@color/colorAccent"
+                android:textSize="16sp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="@+id/tvTextEndNote"
+                app:layout_constraintTop_toBottomOf="@+id/checkBoxNote" />
+
+
+        </android.support.constraint.ConstraintLayout>
+    </android.support.v7.widget.CardView>
+</android.support.constraint.ConstraintLayout>
+
+
+

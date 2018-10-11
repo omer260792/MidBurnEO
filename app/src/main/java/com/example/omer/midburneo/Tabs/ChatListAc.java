@@ -2,14 +2,16 @@ package com.example.omer.midburneo.Tabs;
 
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -18,8 +20,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -27,10 +31,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.omer.midburneo.Adapters.MessagesListAdapter;
+import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.FirebaseMessageModel;
-import com.example.omer.midburneo.Class.FirebaseUserModel;
 import com.example.omer.midburneo.Class.MessageCell;
-import com.example.omer.midburneo.Class.UserTest;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.PermissionManager;
 import com.example.omer.midburneo.R;
@@ -58,8 +61,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -73,21 +75,22 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import static com.example.omer.midburneo.Adapters.MessagesListAdapter.VIEW_TYPE_PICTURE;
 import static com.example.omer.midburneo.RegisterAc.CAMERA;
 import static com.example.omer.midburneo.RegisterAc.GALLERY;
-import static com.example.omer.midburneo.RegisterAc.SHPRF;
+import static com.example.omer.midburneo.RegisterAc.REQUEST_PHONE_RECORD;
 import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
-import static com.example.omer.midburneo.Tabs.MainPageAc.current_uid_camp_static;
+import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
+import static com.loopj.android.http.AsyncHttpClient.LOG_TAG;
 
 
 public class ChatListAc extends AppCompatActivity {
     private static final String TAG = "ChattingActivity";
 
-    UserTest user = UserTest.getInstance();
 
     ListView listView;
     EditText textComment;
     private ImageView btnSend, imagebtnChat;
     private CircleImageView imageUser;
     TextView tvNameUser, tvTimeUser;
+    private Button mRecordButton;
 
     List<FirebaseMessageModel> messages = new ArrayList<FirebaseMessageModel>();
 
@@ -101,18 +104,24 @@ public class ChatListAc extends AppCompatActivity {
     private Uri resultUri;
     private StorageReference mImageStorage, filePath;
 
+    private MediaRecorder mRecorder;
+    private ProgressDialog progressDialog;
+    private boolean permissionToRecordAccepted = false;
+    private String mFileName = null;
+
 
     public static ChatListAc chatListAc;
-    public String nameUserIntent, campUserIntent, uidUserIntent, chatRoomsUserIntent, imageUserIntent, statusUserIntent, deviceUserIntent, tokenUserIntent, countUserIntent, timeUserIntent, onilneUserIntent, current_image, timeExitSP, current_uid, current_name, current_device, nameCampSP, table, deviceTokenCurrentSP, childGroupName, realTime, last_msg, StringCurrentMil, currentTime;
+    public String nameUserIntent, campUserIntent, uidUserIntent, chatRoomsUserIntent, imageUserIntent, statusUserIntent, deviceUserIntent, tokenUserIntent, countUserIntent, timeUserIntent, onilneUserIntent, current_image, current_uid, current_name, current_device, table;
     public String stringUrl = "stringUrl";
     public int num = 1;
 
     JSONArray registration_ids = new JSONArray();
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.test_chtting);
+        setContentView(R.layout.chtting_layout);
 
 
         listView = (ListView) findViewById(R.id.chattingList);
@@ -122,6 +131,7 @@ public class ChatListAc extends AppCompatActivity {
         tvNameUser = findViewById(R.id.tvNameChat);
         tvTimeUser = findViewById(R.id.tvTimeChat);
         imageUser = (CircleImageView) findViewById(R.id.imgUserChat);
+        mRecordButton = findViewById(R.id.recored_button);
 
         nameUserIntent = getIntent().getStringExtra("nameUidFriend");
         campUserIntent = getIntent().getStringExtra("campUidFriend");
@@ -138,27 +148,17 @@ public class ChatListAc extends AppCompatActivity {
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         mImageStorage = FirebaseStorage.getInstance().getReference();
-
-
-        prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
-        current_image = prefs.getString("image", null);
-        current_name = prefs.getString("name", null);
-        nameCampSP = prefs.getString("camps", null);
-        current_uid_camp_static = prefs.getString("chat", null);
-        timeExitSP = prefs.getString("time_msg", null);
-        deviceTokenCurrentSP = prefs.getString("device_token", null);
-        current_device = prefs.getString("device_id", null);
-
-
         database = FirebaseDatabase.getInstance();
+
         usersRef = database.getReference("Users");
         messagesRef = database.getReference("ChatRooms").child(chatRoomsUserIntent);
+
+        progressDialog = new ProgressDialog(this);
         dbHelper = new DBHelper(getApplicationContext());
+        chatListAc = this;
 
 
         tvNameUser.setText(nameUserIntent);
-
-        chatListAc = this;
 
 
         btnSend.setEnabled(false);
@@ -172,6 +172,32 @@ public class ChatListAc extends AppCompatActivity {
         }
 
         CheckUserIfOnline();
+
+
+        //*******************888888888888888888************
+        //## need to add permision file
+        /// ActivityCompat.requestPermissions(ChatListAc.this, permissions, REQUEST_PHONE_RECORD);
+        PermissionManager.check(ChatListAc.this, Manifest.permission.RECORD_AUDIO, REQUEST_PHONE_RECORD);
+        mFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recording.3gp";
+
+        mRecordButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    startRecording();
+
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+
+                    stopRecording();
+
+                }
+
+
+                return false;
+            }
+        });
 
         textComment.addTextChangedListener(new TextWatcher() {
             @Override
@@ -260,13 +286,13 @@ public class ChatListAc extends AppCompatActivity {
                     //Getting the data from snapshot
                     try {
 
-                        String name = postSnapshot.child("name").getValue().toString();
-                        String device = postSnapshot.child("device_id").getValue().toString();
+                        String name = postSnapshot.child(FeedReaderContract.FeedEntry.NAME).getValue().toString();
+                        String device = postSnapshot.child(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID).getValue().toString();
                         String getUid = postSnapshot.getKey();
-                        String token = postSnapshot.child("device_token").getValue().toString();
+                        String token = postSnapshot.child(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN).getValue().toString();
 
 
-                        if (nameCampSP.equals(nameUserIntent)) {
+                        if (firebaseUserModel.getCamp().equals(nameUserIntent)) {
 
 
                             if (!device.equals("default") && !token.equals("default")) {
@@ -278,7 +304,6 @@ public class ChatListAc extends AppCompatActivity {
 
 
                         } else if (getUid.equals(uidUserIntent)) {
-                            FirebaseUserModel firebaseUserModel = postSnapshot.getValue(FirebaseUserModel.class);
 
 
                             if (!device.equals(current_device) && !token.isEmpty()) {
@@ -370,12 +395,7 @@ public class ChatListAc extends AppCompatActivity {
         listView.requestFocus();
     }
 
-    /**
-     * Return date in specified format.
-     *
-     * @param milliSeconds Date in milliseconds
-     * @return String representing date in specified format
-     */
+
     public static String getDate(long milliSeconds) {
         // Create a DateFormatter object for displaying date in specified format.
         SimpleDateFormat formatter = new SimpleDateFormat("dd MMM, yyyy, hh:mm a");
@@ -542,7 +562,6 @@ public class ChatListAc extends AppCompatActivity {
             updateListView();
 
 
-
             final ProgressDialog Dialog = new ProgressDialog(chatListAc);
             Dialog.setMessage("Please wait..");
             Dialog.setCancelable(false);
@@ -561,7 +580,7 @@ public class ChatListAc extends AppCompatActivity {
                         long currentDateTime = System.currentTimeMillis();
 
                         String time = String.valueOf(currentDateTime);
-                        if (nameUserIntent.equals(nameCampSP)) {
+                        if (nameUserIntent.equals(firebaseUserModel.getCamp())) {
 
                             table = current_uid;
 
@@ -569,7 +588,7 @@ public class ChatListAc extends AppCompatActivity {
                             table = uidUserIntent;
 
                         }
-
+                        // need to find uid msg
                         dbHelper.SaveDBSqliteMsgUser(wishMessage, uidUserIntent, current_uid, current_name, time, time, "false", table);
 
                         if (registration_ids.length() > 0) {
@@ -632,6 +651,61 @@ public class ChatListAc extends AppCompatActivity {
             num = 2;
 
         }
+    }
+
+    private void startRecording() {
+        mRecorder = new MediaRecorder();
+        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        mRecorder.setOutputFile(mFileName);
+
+
+        try {
+            mRecorder.prepare();
+            mRecorder.start();
+
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "prepare() failed");
+        }
+
+    }
+
+    private void stopRecording() {
+        mRecorder.stop();
+        mRecorder.release();
+        mRecorder = null;
+        uploadAudio();
+    }
+
+    private void uploadAudio() {
+        progressDialog.setMessage("מעלה הקלטה");
+        progressDialog.show();
+
+        StorageReference filePath = mImageStorage.child("Audio").child("new_audio.3gp");
+
+        Uri uri = Uri.fromFile(new File(mFileName));
+        filePath.putFile(uri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                progressDialog.dismiss();
+                progressDialog.setMessage("סיים לעלות הקלטה");
+
+            }
+        });
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case REQUEST_PHONE_RECORD:
+                permissionToRecordAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                break;
+        }
+        if (!permissionToRecordAccepted) finish();
+
     }
 
 

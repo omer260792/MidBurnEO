@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -30,10 +29,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 
-
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_NOTE;
-import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
-import static com.example.omer.midburneo.Tabs.MainPageAc.current_name_static;
+import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 public class NotesAc extends AppCompatActivity {
 
@@ -48,9 +45,9 @@ public class NotesAc extends AppCompatActivity {
     private int countSqlLite;
     public SharedPreferences prefs;
     private FragmentMain fragmentMain;
-    private  FragmentHistory fragmentHistory;
+    private FragmentHistory fragmentHistory;
 
-    private String  current_uid, getUid;
+    private String current_uid, getUid;
     private String getTitle = "getMsg";
     private String getSender = "getSender";
     private String getDate = "getDate";
@@ -77,27 +74,17 @@ public class NotesAc extends AppCompatActivity {
 
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-
-
-
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Log.e(TAG,"onstart");
-
+        Log.e(TAG, "onstart");
 
         getRawCountSql();
         try {
-            
+
             UpdateDateFromFireBaseToSQLiteNote();
-
-            current_camp_static = prefs.getString("camps", null);
-            current_name_static = prefs.getString("name", null);
-
-            Log.e(TAG, current_name_static);
-            Log.e(TAG, current_camp_static);
 
         } catch (NullPointerException e) {
 
@@ -106,7 +93,7 @@ public class NotesAc extends AppCompatActivity {
     }
 
     public void UpdateDateFromFireBaseToSQLiteNote() {
-        if (current_camp_static.equals(null)) {
+        if (firebaseUserModel.getCamp().equals(null)) {
 
             Log.e(TAG, "UpdateDateFromFireBaseToSQLiteNote = camp is null in Sqlite");
 
@@ -116,7 +103,7 @@ public class NotesAc extends AppCompatActivity {
             fragmentMain = new FragmentMain();
 
             DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-            DatabaseReference discussionRoomsRef = rootRef.child("Camps").child(current_camp_static).child("Note");
+            DatabaseReference discussionRoomsRef = rootRef.child("Camps").child(firebaseUserModel.getCamp()).child("Note");
             Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + else");
 
             if (countSqlLite == 0) {
@@ -139,9 +126,7 @@ public class NotesAc extends AppCompatActivity {
 
 
                         }
-                        //   fragmentHistory.getNoteMsg();
                         fragmentMain.getNoteMsg();
-
 
                     }
 
@@ -150,7 +135,7 @@ public class NotesAc extends AppCompatActivity {
 
                     }
                 });
-            }else {
+            } else {
                 discussionRoomsRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -173,7 +158,6 @@ public class NotesAc extends AppCompatActivity {
                                 dbHelper.SaveDBSqliteToNote(getTitle, getContent, getDate, getDateEnd, getBool, getSender, current_uid, getUid);
                                 Log.e(TAG, "UpdateDateFromFireBaseToSQLiteNote After + countSqlLite == 0");
                             }
-
 
                         }
 //                        if (getBool.equals("true")){
@@ -201,8 +185,6 @@ public class NotesAc extends AppCompatActivity {
 
     public long getRawCountSql() {
         db = dbHelper.getWritableDatabase();
-        Log.i(TAG, "dddddddd:" + "dddd");
-
         String countQuery = "SELECT  * FROM " + TABLE_NAME_NOTE;
         Cursor cursor = db.rawQuery(countQuery, null);
         cursor.moveToFirst();
@@ -218,7 +200,7 @@ public class NotesAc extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-         getMenuInflater().inflate(R.menu.menu_note, menu);
+        getMenuInflater().inflate(R.menu.menu_note, menu);
         return true;
     }
 

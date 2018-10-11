@@ -97,7 +97,6 @@ public class DBEquipment extends SQLiteOpenHelper {
         // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert(TABLE_NAME_EQUIPMENT, null, values);
 
-        prefs.edit().putString("time_equipment", time);
 
 
         Log.e(TAG, String.valueOf(time) + " time_equipment");

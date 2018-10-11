@@ -8,11 +8,11 @@
     <android.support.v7.widget.CardView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="2dp"
-        android:layout_marginRight="2dp"
-        android:layout_marginTop="2dp"
-        app:cardBackgroundColor="@color/cardview_shadow_start_color"
-        app:cardCornerRadius="4dp"
+        android:layout_marginLeft="70dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        app:cardBackgroundColor="@color/cardview_shadow_end_color"
+        app:cardCornerRadius="6dp"
         app:cardElevation="0dp"
         app:cardUseCompatPadding="true"
         app:contentPadding="5dp"
@@ -21,7 +21,6 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -29,7 +28,7 @@
             tools:layout_editor_absoluteY="8dp">
 
             <TextView
-                android:id="@+id/tvNameNotePreview"
+                android:id="@+id/photoName"
                 android:layout_width="0dp"
                 android:layout_height="25dp"
                 android:layout_marginEnd="8dp"
@@ -38,7 +37,6 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:gravity="right"
-                android:text="ddddd"
                 android:textColor="@color/colorAccent"
                 android:textSize="16sp"
                 app:layout_constraintHorizontal_bias="0.0"
@@ -46,24 +44,8 @@
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <ImageView
-                android:id="@+id/tvImageNotePreview"
-                android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:gravity="center_vertical"
-                android:textColor="@color/colorAccent"
-                android:textSize="16sp"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvNameNotePreview" />
             <TextView
-                android:id="@+id/tvTimeNotePreview"
+                android:id="@+id/dateTime"
                 android:layout_width="0dp"
                 android:layout_height="25dp"
                 android:layout_marginEnd="8dp"
@@ -73,11 +55,11 @@
                 android:gravity="right"
                 android:text="13 May 2017, 1:19 AM"
                 android:textColor="@color/cardview_dark_background"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvContentNotePreview" />
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/wishMessage" />
 
             <TextView
-                android:id="@+id/tvContentNotePreview"
+                android:id="@+id/wishMessage"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
@@ -86,15 +68,43 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:gravity="right"
-                android:hint="MAC Address - The physical address of the WAN port, as seen from the Internet. IP Address"
-                android:textColor="@color/daysLabelColor"
+
+                android:text="MAC Address - The physical address of the WAN port, as seen from the Internet. IP Address - The current WAN (Internet) IP Address. This field will be blank or 0.0.0.0 if the IP Address is assigned dynamically and there is no connection to Internet."
+                android:textColor="?android:attr/textColorTertiary"
                 android:textSize="18sp"
                 android:typeface="sans"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvImageNotePreview" />
+                app:layout_constraintTop_toBottomOf="@+id/photoName" />
 
+            <!--<ImageView-->
+            <!--android:id="@+id/imageView3"-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_height="1dp"-->
+            <!--android:layout_marginBottom="0dp"-->
+            <!--android:layout_marginLeft="8dp"-->
+            <!--android:layout_marginRight="8dp"-->
+            <!--android:layout_marginTop="0dp"-->
+            <!--app:layout_constraintBottom_toTopOf="@+id/wishMessage"-->
+            <!--app:layout_constraintLeft_toLeftOf="parent"-->
+            <!--app:layout_constraintRight_toRightOf="parent"-->
+            <!--app:layout_constraintTop_toBottomOf="@+id/photoName"-->
+            <!--app:srcCompat="@color/colorPrimaryDark" />-->
+
+            <!--<ImageView-->
+            <!--android:id="@+id/imageView4"-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_height="1dp"-->
+            <!--android:layout_marginBottom="0dp"-->
+            <!--android:layout_marginLeft="8dp"-->
+            <!--android:layout_marginRight="8dp"-->
+            <!--android:layout_marginTop="0dp"-->
+            <!--app:layout_constraintBottom_toTopOf="@+id/dateTime"-->
+            <!--app:layout_constraintLeft_toLeftOf="parent"-->
+            <!--app:layout_constraintRight_toRightOf="parent"-->
+            <!--app:layout_constraintTop_toBottomOf="@+id/wishMessage"-->
+            <!--app:srcCompat="@color/colorPrimary" />-->
 
         </android.support.constraint.ConstraintLayout>
     </android.support.v7.widget.CardView>

@@ -2,6 +2,10 @@ package com.example.omer.midburneo.Class;
 
 import android.content.SharedPreferences;
 
+import static android.content.Context.MODE_PRIVATE;
+import static com.example.omer.midburneo.RegisterAc.SHPRF;
+import static com.example.omer.midburneo.RegisterAc.prefs;
+
 
 public class UserTest {
 
@@ -12,8 +16,7 @@ public class UserTest {
         return user;
     }
 
-    public String firebaseKey = "firebaseKey";
-    public String name = "Owner";
+    public String name = "";
     public String deviceId = "";
     public String deviceToken = "";
     public String admin = "";
@@ -48,6 +51,8 @@ public class UserTest {
     public Boolean login(FirebaseUserModel firebaseUserModel) {
 
 
+
+
         image = firebaseUserModel.getImage();
         role = firebaseUserModel.getRole();
         deviceId = firebaseUserModel.getDeviceId();
@@ -68,35 +73,10 @@ public class UserTest {
 
 
 
-        SharedPreferences.Editor editor = sharedpreferences.edit();
-        editor.putString(Key, firebaseKey);
-        editor.putString(Name, name);
-        editor.putString(DeviceId, deviceId);
 
-        editor.apply();
 
         return true;
     }
 
-    public void saveFirebaseKey(String key) {
-        this.firebaseKey = key;
 
-        SharedPreferences.Editor editor = sharedpreferences.edit();
-        editor.putString(Key, firebaseKey);
-        editor.apply();
-    }
-
-    public void logout() {
-        firebaseKey = "";
-        name = "";
-        deviceId = "";
-        deviceToken = "";
-
-        SharedPreferences.Editor editor = sharedpreferences.edit();
-        editor.putString(Key, firebaseKey);
-        editor.putString(Name, name);
-        editor.putString(DeviceId, deviceId);
-
-        editor.apply();
-    }
 }

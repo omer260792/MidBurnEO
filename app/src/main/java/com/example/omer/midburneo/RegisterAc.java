@@ -1,14 +1,13 @@
 package com.example.omer.midburneo;
 
+// done ido
 
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -16,16 +15,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.DataBase.DBHelper;
-import com.example.omer.midburneo.Tabs.ProfileAc;
-import com.example.omer.midburneo.Utils.SendMailTask;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -42,9 +39,8 @@ import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -54,12 +50,12 @@ public class RegisterAc extends AppCompatActivity {
     private Button registerButton;
     private CircleImageView imageView;
 
-    public String getName, getEmail, getPass, getNum, stringUrl, current_uid, image, timeString, currentDeviceId, currentTokern;
+    public String getName, getEmail, getPass, getNum, stringUrl, current_uid, image, timeString, currentDeviceId, currentToken;
 
     private FirebaseAuth mAuth;
     private FirebaseUser current_user;
     private ProgressDialog mprogress;
-    private DatabaseReference mDatabase;
+    private DatabaseReference mUserDatabase;
     private StorageReference mImageStorage, filePath;
 
     private Uri resultUri;
@@ -68,7 +64,7 @@ public class RegisterAc extends AppCompatActivity {
     public static SharedPreferences prefs;
     public static String SHPRF = "User";
 
-    public static final int CAMERA = 1, GALLERY = 2, WRITE_STORAGE = 3, REQUEST_PHONE_CALL = 4;
+    public static final int CAMERA = 1, GALLERY = 2, WRITE_STORAGE = 3, REQUEST_PHONE_CALL = 4, REQUEST_PHONE_RECORD =5;
 
 
     @Override
@@ -86,7 +82,7 @@ public class RegisterAc extends AppCompatActivity {
         imageView = findViewById(R.id.buttonImageRegister);
 
         mImageStorage = FirebaseStorage.getInstance().getReference();
-
+       // filePath = FirebaseStorage.getInstance().getReference();
 
         currentDeviceId = Settings.Secure.getString(getBaseContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
@@ -111,17 +107,18 @@ public class RegisterAc extends AppCompatActivity {
         getNum = num.getText().toString();
 
 
-        currentTokern = FirebaseInstanceId.getInstance().getToken();
+        currentToken = FirebaseInstanceId.getInstance().getToken();
 
 
         long currentDateTime = System.currentTimeMillis();
         timeString = String.valueOf(currentDateTime);
 
 
-        if (!TextUtils.isEmpty(getName) && !TextUtils.isEmpty(getEmail) && !TextUtils.isEmpty(getPass)) {//&& getNum.trim().length()>123456789
-
+        if (!TextUtils.isEmpty(getName) && !TextUtils.isEmpty(getEmail) && !TextUtils.isEmpty(getPass) && getNum.trim().length() == 10) {
 
             prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
+
+            prefs.edit().putString("name", getName).apply();
             prefs.edit().putString("email", "register").apply();
 
             mprogress.setMessage("Signing Up");
@@ -136,14 +133,9 @@ public class RegisterAc extends AppCompatActivity {
                                 current_user = FirebaseAuth.getInstance().getCurrentUser();
                                 current_uid = current_user.getUid();
 
-                                mDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+                                imgUpload();
 
-                                if (stringUrl == null) {
-                                    image = "default";
-                                } else {
-                                    image = stringUrl;
-
-                                }
+                                mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
 
 
                                 HashMap<String, String> userMap = new HashMap<>();
@@ -153,7 +145,7 @@ public class RegisterAc extends AppCompatActivity {
                                 userMap.put(FeedReaderContract.FeedEntry.EMAIL, getEmail);
                                 userMap.put(FeedReaderContract.FeedEntry.PASSWORD, getPass);
                                 userMap.put(FeedReaderContract.FeedEntry.NUMBER, "default");
-                                userMap.put(FeedReaderContract.FeedEntry.IMAGE, image);
+                                userMap.put(FeedReaderContract.FeedEntry.IMAGE, "default");
                                 userMap.put(FeedReaderContract.FeedEntry.ADMIN, "default");
                                 userMap.put(FeedReaderContract.FeedEntry.CHAT, "default");
                                 userMap.put(FeedReaderContract.FeedEntry.CAMPS, "default");
@@ -165,14 +157,9 @@ public class RegisterAc extends AppCompatActivity {
                                 userMap.put(FeedReaderContract.FeedEntry.ONLINE, "true");
                                 userMap.put(FeedReaderContract.FeedEntry.PHONE, getNum);
                                 userMap.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID, currentDeviceId);
-                                userMap.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN, currentTokern);
+                                userMap.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN, currentToken);
 
-
-                                mDatabase.setValue(userMap);
-
-
-                                prefs.edit().putString("name", getName).apply();
-                                prefs.edit().putString("image", image).apply();
+                                mUserDatabase.setValue(userMap);
 
 
 
@@ -183,7 +170,7 @@ public class RegisterAc extends AppCompatActivity {
 
 
         } else {
-            if (getNum.trim().length() > 123456789) {
+            if (getNum.trim().length() != 10) {
                 Toast.makeText(RegisterAc.this, "הכנס מספר פלאפון תקין", Toast.LENGTH_LONG).show();
 
             } else {
@@ -249,6 +236,7 @@ public class RegisterAc extends AppCompatActivity {
 
     private void gallery() {
 
+        //open media activity for image --
         CropImage.activity()
                 .setGuidelines(CropImageView.Guidelines.ON)
                 .start(this);
@@ -261,7 +249,7 @@ public class RegisterAc extends AppCompatActivity {
         if (requestCode == GALLERY && resultCode == RESULT_OK) {
             Uri imageUri = data.getData();
 
-            CropImage.activity(imageUri)
+            CropImage.activity(imageUri)//crop image activity after shot
                     .setAspectRatio(1, 1)
                     .start(this);
 
@@ -271,37 +259,10 @@ public class RegisterAc extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 resultUri = result.getUri();
+                Picasso.get().load(resultUri).error(R.drawable.admin_btn_logo).into(imageView);
 
-                Picasso.get().load(result.getUri()).error(R.drawable.admin_btn_logo).into(imageView);
 
                 filePath = mImageStorage.child("profile_images").child(resultUri.getLastPathSegment());
-
-                filePath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-
-                        filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-
-                                stringUrl = String.valueOf(uri);
-
-                                if (stringUrl == null) {
-                                    mprogress.dismiss();
-                                    return;
-
-                                } else {
-
-                                    mprogress.dismiss();
-                                    Toast.makeText(RegisterAc.this, "Success", Toast.LENGTH_LONG).show();
-
-
-                                }
-
-                            }
-                        });
-                    }
-                });
 
 
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
@@ -311,6 +272,39 @@ public class RegisterAc extends AppCompatActivity {
 
             }
         }
+
+    }
+
+    private void imgUpload() {
+
+        if (resultUri == null) {
+            return;
+        }
+
+        filePath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+
+                filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+
+                        stringUrl = String.valueOf(uri);
+
+                        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+
+                        Map<String, Object> mapCampsUpdates = new HashMap<>();
+                        mapCampsUpdates.put(FeedReaderContract.FeedEntry.IMAGE, stringUrl);
+                        prefs.edit().putString("image", resultUri.toString()).apply();
+
+                        mUserDatabase.updateChildren(mapCampsUpdates);
+                        mprogress.dismiss();
+
+
+                    }
+                });
+            }
+        });
 
 
     }

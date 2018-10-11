@@ -53,13 +53,11 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.View
         imageString = equipment.getImage();
 
 
-
-
         holder.pContent.setText(equipment.getContent());
-            holder.pMount.setText(equipment.getMount());
-            holder.pMountCurrnet.setText(equipment.getMountCurrent());
-            holder.pNameProd.setText(equipment.getNameProd());
-            holder.pTime.setText(equipment.getTime());
+        holder.pMount.setText(equipment.getMount());
+        holder.pMountCurrnet.setText(equipment.getMountCurrent());
+        holder.pNameProd.setText(equipment.getNameProd());
+        holder.pTime.setText(equipment.getTime());
 
         if (imageString.equals("default")) {
             Glide.with(context).load(R.drawable.midburn_logo).into(holder.pImage);
@@ -84,12 +82,12 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.View
         public ViewHolder(View itemView) {
             super(itemView);
 
-            pNameProd =  itemView.findViewById(R.id.nameEquip);
-            pContent =  itemView.findViewById(R.id.contentEquip);
-            pTime =  itemView.findViewById(R.id.timeEquip);
-            pImage =  itemView.findViewById(R.id.imageEquip);
-            pMountCurrnet =  itemView.findViewById(R.id.tvMountCurrnetEquip);
-            pMount =  itemView.findViewById(R.id.tvMountEquip);
+            pNameProd = itemView.findViewById(R.id.nameEquip);
+            pContent = itemView.findViewById(R.id.contentEquip);
+            pTime = itemView.findViewById(R.id.timeEquip);
+            pImage = itemView.findViewById(R.id.imageEquip);
+            pMountCurrnet = itemView.findViewById(R.id.tvMountCurrnetEquip);
+            pMount = itemView.findViewById(R.id.tvMountEquip);
 
 
             itemView.setOnClickListener(new View.OnClickListener() {

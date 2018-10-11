@@ -1,27 +1,25 @@
+//done ido
 package com.example.omer.midburneo;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.nfc.Tag;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.omer.midburneo.Tabs.MainPageAc;
-import com.google.android.gms.flags.Flag;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
 import static com.example.omer.midburneo.RegisterAc.SHPRF;
+import static com.example.omer.midburneo.RegisterAc.prefs;
 
 
 public class LoginAc extends AppCompatActivity {
@@ -30,12 +28,10 @@ public class LoginAc extends AppCompatActivity {
 
 
     EditText loginUserName, loginUserPassword;
-    Button signinBtn;
-    TextView signUpBtn;
     String email, password;
     SharedPreferences prefs;
     private FirebaseAuth mAuth;
-    public String checkEmailReg;
+    public String uidKeySP, emailSP;
 
     private FirebaseAuth.AuthStateListener mAuthLis;
 
@@ -46,66 +42,87 @@ public class LoginAc extends AppCompatActivity {
 
         loginUserName = findViewById(R.id.LoginUserName);
         loginUserPassword = findViewById(R.id.LoginPassword);
-        signUpBtn = findViewById(R.id.SignUpBtn);
-        signinBtn = findViewById(R.id.SignInBtn);
+
+        prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
 
         mAuth = FirebaseAuth.getInstance();
 
+
+
+        //listener check if user is logged in
         mAuthLis = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
 
                 try {
-                    prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
+                    emailSP = prefs.getString("email", null);
 
-                    checkEmailReg = prefs.getString("email", null);
-                    if (checkEmailReg != "register"){
-                        checkEmailReg = "main";
-                    }
-
-                } catch (NullPointerException e) {
-
+                }catch (NullPointerException e){
+                    e.printStackTrace();
                 }
 
                 if (firebaseAuth.getCurrentUser() == null) {
 
-
-                } else {
-
-                    if (checkEmailReg.equals("register")) {
-                        // startActivity(new Intent(LoginAc.this, CampsAc.class));
-                        Intent intent = new Intent(LoginAc.this, CampsAc.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
-                        finish();
-
-                    } else {
+                    if(emailSP != (null) || emailSP == ""){
                         Intent intent = new Intent(LoginAc.this, MainPageAc.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
                         finish();
 
+                    }else {
+                        return;
                     }
+
+                } else {
+
+                    try {
+
+                        if (emailSP.equals("register")){
+
+
+                            Intent intent = new Intent(LoginAc.this, CampsAc.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent);
+                            finish();
+
+
+                        }else {
+
+                            uidKeySP = prefs.getString("email", null);
+
+                            if (uidKeySP == null) {
+                                //this is the first time the user is logging in
+
+                                Intent intent = new Intent(LoginAc.this, CampsAc.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                startActivity(intent);
+                                finish();
+
+                            } else {
+                                prefs.edit().putString(firebaseAuth.getCurrentUser().getUid(), firebaseAuth.getCurrentUser().getUid()).apply();
+
+                                Intent intent = new Intent(LoginAc.this, MainPageAc.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                startActivity(intent);
+                                finish();
+
+                            }
+                        }
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+
 
                 }
             }
         };
-    }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
+        //assign the listener to the auth object
         mAuth.addAuthStateListener(mAuthLis);
-    }
-
-    @Override
-    protected void onDestroy() {
-        Log.e(TAG, "succ");
-
-        super.onDestroy();
-
 
     }
+
 
     public void RegisterBtn(View view) {
 
@@ -136,33 +153,31 @@ public class LoginAc extends AppCompatActivity {
                 public void onComplete(@NonNull Task<AuthResult> task) {
 
                     if (task.isSuccessful()) {
-                        // there was an erroromer
-                        Toast.makeText(LoginAc.this,
-                                "signin with email in LoginAc", //ADD THIS
-                                Toast.LENGTH_SHORT).show();
+
+                        //if the user logged in successfully
                         Intent intent = new Intent(LoginAc.this, MainPageAc.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
                         finish();
 
                     } else {
+                        Toast.makeText(LoginAc.this,
+                                task.getException().toString(), //ADD THIS
+                                Toast.LENGTH_SHORT).show();
 
-                        if (password.length() < 6) {
-
-                            Toast.makeText(LoginAc.this,
-                                    "Your Password must be set with 6 charcter", //ADD THIS
-                                    Toast.LENGTH_SHORT).show();
-                        } else {
-
-                            Toast.makeText(LoginAc.this,
-                                    "Can't recognize the Users, Please Register", //ADD THIS
-                                    Toast.LENGTH_SHORT).show();
-                        }
                     }
 
                 }
             });
 
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        Log.e(TAG,"onDestroy");
+
     }
 }

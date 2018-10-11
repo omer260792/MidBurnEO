@@ -46,31 +46,26 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.omer.midburneo.RegisterAc.REQUEST_PHONE_CALL;
 import static com.example.omer.midburneo.RegisterAc.SHPRF;
-import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
+import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 public class ChatAc extends AppCompatActivity {
-
-
-
 
     private final String TAG = "ChatAc";
 
     private RecyclerView recyclerView;
     private TextView nameCampTv;
     private CircleImageView imageView;
-    private UtilHelper utilHelper;
 
-    public String current_uid, currentImageSP, currentNameSP, currentChatSP, currentstatusSP, currentCampSP, getUid, getUidUsers, get_lastmsg, get_phone, get_device, get_token, get_chat, getNameReceiver, get_image, get_msg_uid, name;
+    public String current_uid, getUid, getUidUsers, get_lastmsg, get_phone, get_device, get_token, get_chat, getNameReceiver, get_image, name;
     public long countSqlLite;
     public int num = 1;
 
     RecyclerView.Adapter mAdapter;
     RecyclerView.LayoutManager layoutManager;
-    public DBHelper db;
+    public DBHelper dbHelper;
     private DatabaseReference mUserDatabase;
-    public SQLiteDatabase dbSql;
+    public SQLiteDatabase db;
     List<Friend> personUtilsList;
-    SharedPreferences prefs;
 
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -81,21 +76,12 @@ public class ChatAc extends AppCompatActivity {
         imageView = findViewById(R.id.imgChatUser);
         recyclerView = findViewById(R.id.recycler_Expand);
 
+        nameCampTv.setText(firebaseUserModel.getCamp());
 
-        prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
-        currentNameSP = prefs.getString("name", null);
-        currentImageSP = prefs.getString("image", null);
-        currentCampSP = prefs.getString("camps", null);
-        currentstatusSP = prefs.getString("status", null);
-        currentChatSP = prefs.getString("chat", null);
-
-        nameCampTv.setText(currentCampSP);
-
-        db = new DBHelper(getApplicationContext());
-        //utilHelper = new UtilHelper();
+        dbHelper = new DBHelper(getApplicationContext());
 
         try {
-            Picasso.get().load(currentImageSP).error(R.drawable.midburn_logo).into(imageView);
+            Picasso.get().load(firebaseUserModel.getImage()).error(R.drawable.midburn_logo).into(imageView);
 
 
         } catch (NullPointerException e) {
@@ -131,7 +117,7 @@ public class ChatAc extends AppCompatActivity {
 
     public void getmsg() {
 
-        personUtilsList.addAll(db.getAllFriend());
+        personUtilsList.addAll(dbHelper.getAllFriend());
         mAdapter = new FriendsAdapter(this, personUtilsList);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
@@ -144,13 +130,12 @@ public class ChatAc extends AppCompatActivity {
 
     public long getProfilesCount() {
         String countQuery = "SELECT  * FROM " + FeedReaderContract.FeedEntry.TABLE_NAME;
-        SQLiteDatabase dbr = db.getReadableDatabase();
+        SQLiteDatabase dbr = dbHelper.getReadableDatabase();
         Cursor cursor = dbr.rawQuery(countQuery, null);
         long count = cursor.getCount();
         countSqlLite = (long) count;
         cursor.close();
-        Log.d("getProfilesCount", String.valueOf(countSqlLite));
-
+        Log.d(TAG, String.valueOf(countSqlLite));
 
         return countSqlLite;
     }
@@ -159,13 +144,13 @@ public class ChatAc extends AppCompatActivity {
     public void UpdateSqliteFromFireBase() {
 
 
-        if (currentCampSP.equals(null)) {
+        if (firebaseUserModel.getCamp().equals(null)) {
             return;
         } else {
             DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
             DatabaseReference discussionRoomsRef = rootRef.child("Users");
 
-            Query query = discussionRoomsRef.orderByChild("camps").equalTo(currentCampSP);
+            Query query = discussionRoomsRef.orderByChild("camps").equalTo(firebaseUserModel.getCamp());
             ValueEventListener valueEventListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -174,10 +159,10 @@ public class ChatAc extends AppCompatActivity {
 
                         if (countSqlLite < FBCount) {
 
-                            getNameReceiver = ds.child("name").getValue(String.class);
-                            get_image = ds.child("image").getValue(String.class);
-                            get_lastmsg = ds.child("lastmsg").getValue(String.class);
-                            get_phone = ds.child("phone").getValue(String.class);
+                            getNameReceiver = ds.child(FeedReaderContract.FeedEntry.NAME).getValue(String.class);
+                            get_image = ds.child(FeedReaderContract.FeedEntry.IMAGE).getValue(String.class);
+                            get_lastmsg = ds.child(FeedReaderContract.FeedEntry.LASTMSG).getValue(String.class);
+                            get_phone = ds.child(FeedReaderContract.FeedEntry.PHONE).getValue(String.class);
                             get_device = ds.child(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID).getValue(String.class);
                             get_chat = ds.child(FeedReaderContract.FeedEntry.CHAT).getValue(String.class);
                             get_token = ds.child(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN).getValue(String.class);
@@ -199,11 +184,11 @@ public class ChatAc extends AppCompatActivity {
                                 getMyKeyMsg = UUID.randomUUID().toString();
 
 
-                                if (getNameReceiver.equals(current_camp_static)){
+                                if (getNameReceiver.equals(firebaseUserModel.getCamp())) {
                                     getMyKeyMsg = get_chat;
                                     saveUserChatFirebase(getMyKeyMsg);
 
-                                }else {
+                                } else {
                                     saveUserChatFirebase(getMyKeyMsg);
 
                                 }
@@ -212,18 +197,19 @@ public class ChatAc extends AppCompatActivity {
                             }
                             try {
 
-                                if (getNameReceiver.equals(current_camp_static)){
-                                    getMyKeyMsg = get_chat;
-                                    db.SaveDBSqliteUser(getNameReceiver, currentCampSP, getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
-                                        Log.e(TAG,"changeKeyChat");
-                                        Log.e(TAG,getMyKeyMsg);
-                                        Log.e(TAG,get_chat);
-                                }else {
-                                    db.SaveDBSqliteUser(getNameReceiver, currentCampSP, getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
 
-                                    Log.e(TAG,"NOtt-  changeKeyChat");
-                                    Log.e(TAG,getMyKeyMsg);
-                                    Log.e(TAG,get_chat);
+                                if (getNameReceiver.equals(firebaseUserModel.getCamp())) {
+                                    getMyKeyMsg = get_chat;
+                                    dbHelper.SaveDBSqliteUser(getNameReceiver, firebaseUserModel.getCamp(), getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
+                                    Log.e(TAG, "changeKeyChat");
+                                    Log.e(TAG, getMyKeyMsg);
+                                    Log.e(TAG, get_chat);
+                                } else {
+                                    dbHelper.SaveDBSqliteUser(getNameReceiver, firebaseUserModel.getCamp(), getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
+
+                                    Log.e(TAG, "NOtt-  changeKeyChat");
+                                    Log.e(TAG, getMyKeyMsg);
+                                    Log.e(TAG, get_chat);
                                 }
 
 

@@ -1,7 +1,6 @@
 package com.example.omer.midburneo.Tabs;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -12,7 +11,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,12 +26,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -44,7 +38,6 @@ import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -53,7 +46,7 @@ import static com.example.omer.midburneo.RegisterAc.GALLERY;
 import static com.example.omer.midburneo.RegisterAc.SHPRF;
 import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
 import static com.example.omer.midburneo.RegisterAc.prefs;
-import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
+import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 public class ProfileAc extends AppCompatActivity {
 
@@ -82,17 +75,6 @@ public class ProfileAc extends AppCompatActivity {
         setContentView(R.layout.tab_profile);
 
 
-        try {
-
-            String test = getIntent().getStringExtra("test");
-            Log.e(TAG, test);
-
-
-        }catch (Exception e){
-
-        }
-
-
         txtViewName = (TextView) findViewById(R.id.txtViewName);
         editTxtStatus = (EditText) findViewById(R.id.statusFieldProfile);
         editTxtRole = (EditText) findViewById(R.id.roleFieldProfile);
@@ -102,6 +84,13 @@ public class ProfileAc extends AppCompatActivity {
 
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         mImageStorage = FirebaseStorage.getInstance().getReference();
+
+
+        txtViewName.setText(firebaseUserModel.getName());
+        editTxtRole.setText(firebaseUserModel.getRole());
+        editTxtStatus.setText(firebaseUserModel.getStatus());
+
+        Picasso.get().load(firebaseUserModel.getImage()).error(R.drawable.admin_btn_logo).into(imageView);
 
 
         signOutBtn.setOnClickListener(new View.OnClickListener() {
@@ -124,48 +113,47 @@ public class ProfileAc extends AppCompatActivity {
 
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
-
-        mUserDatabase.addValueEventListener(new ValueEventListener() {
-            @SuppressLint("CommitPrefEdits")
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                name = dataSnapshot.child("name").getValue().toString();
-                image = dataSnapshot.child("image").getValue().toString();
-                role = dataSnapshot.child("role").getValue().toString();
-                status = dataSnapshot.child("status").getValue().toString();
-
-                txtViewName.setText(name);
-                editTxtRole.setText(role);
-                editTxtStatus.setText(status);
-
-                if (image.equals("default") || image == null) {
-                    Picasso.get().load(R.drawable.cmv_arrow).error(R.drawable.admin_btn_logo).into(imageView);
-
-                } else {
-                    Picasso.get().load(image).error(R.drawable.admin_btn_logo).into(imageView);
-
-                    prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
-                    prefs.edit().putString("image", image).apply();
-
-
-                }
-
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
+//    @Override
+//    protected void onStart() {
+//        super.onStart();
+//
+//        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+//
+//        mUserDatabase.addValueEventListener(new ValueEventListener() {
+//            @SuppressLint("CommitPrefEdits")
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//
+//                name = dataSnapshot.child("name").getValue().toString();
+//                image = dataSnapshot.child("image").getValue().toString();
+//                role = dataSnapshot.child("role").getValue().toString();
+//                status = dataSnapshot.child("status").getValue().toString();
+//
+//                txtViewName.setText(name);
+//                editTxtRole.setText(role);
+//                editTxtStatus.setText(status);
+//
+//                if (image.equals("default") || image == null) {
+//                    Picasso.get().load(R.drawable.cmv_arrow).error(R.drawable.admin_btn_logo).into(imageView);
+//
+//                } else {
+//                    Picasso.get().load(image).error(R.drawable.admin_btn_logo).into(imageView);
+//
+//                    prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
+//                    prefs.edit().putString("image", image).apply();
+//
+//
+//                }
+//
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
+//    }
 
     public void changePic(View view) {
 
@@ -203,13 +191,6 @@ public class ProfileAc extends AppCompatActivity {
 
     private void gallery() {
 
-
-//        Intent galleryIntent = new Intent();
-//        galleryIntent.setType("image/*");
-//        galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
-//
-//        startActivityForResult(Intent.createChooser(galleryIntent, "Select Image"), GALLERY);
-
         CropImage.activity()
                 .setGuidelines(CropImageView.Guidelines.ON)
                 .start(this);
@@ -232,7 +213,13 @@ public class ProfileAc extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 Uri resultUri = result.getUri();
+
+
                 Picasso.get().load(resultUri).error(R.drawable.admin_btn_logo).into(imageView);
+
+
+                String imageS = String.valueOf(resultUri);
+                firebaseUserModel.setImage(imageS);
 
                 //Progress Dialog
                 mProgressDialog = new ProgressDialog(this);
@@ -258,9 +245,8 @@ public class ProfileAc extends AppCompatActivity {
                                     stringUrl = String.valueOf(uri);
 
 
-
                                     mProgressDialog.dismiss();
-                                    Toast.makeText(ProfileAc.this, "Success", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(ProfileAc.this, "התמונה העלתה בהצלחה", Toast.LENGTH_LONG).show();
 
 
                                 }
@@ -274,7 +260,7 @@ public class ProfileAc extends AppCompatActivity {
 
                         } else {
 
-                            Toast.makeText(ProfileAc.this, "not", Toast.LENGTH_LONG).show();
+                            Toast.makeText(ProfileAc.this, "לא הצליח לעלות תמונה", Toast.LENGTH_LONG).show();
 
 
                         }
@@ -288,14 +274,6 @@ public class ProfileAc extends AppCompatActivity {
             }
         }
 
-//        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("ChatRooms").child(camp).child(current_uid);
-//
-//        Map<String, Object> mapUserUpdates1 = new HashMap<>();
-//        mapUserUpdates1.put("image", stringUrl);
-//
-//
-//
-//        mUserDatabase.updateChildren(mapUserUpdates1);
     }
 
 
@@ -306,9 +284,9 @@ public class ProfileAc extends AppCompatActivity {
         status = editTxtStatus.getText().toString();
 
 
-        if (!name.equals("") && !role.equals("") && !status.equals("")){
+        if (!name.equals("") && !role.equals("") && !status.equals("")) {
 
-            if (!stringUrl.equals(null)){
+            if (!stringUrl.equals(null)) {
                 mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
 
                 Map<String, Object> mapUserUpdates = new HashMap<>();
@@ -322,16 +300,20 @@ public class ProfileAc extends AppCompatActivity {
 
 
                 Toast.makeText(ProfileAc.this, "נשמר בהצלחה", Toast.LENGTH_LONG).show();
-            }else {
+
+                firebaseUserModel.setRole(role);
+                firebaseUserModel.setStatus(status);
+                firebaseUserModel.setName(name);
+
+            } else {
                 Toast.makeText(ProfileAc.this, "תעלה תמונה שוב", Toast.LENGTH_LONG).show();
 
             }
 
-        }else {
+        } else {
             Toast.makeText(ProfileAc.this, "מלא פרטים חסרים", Toast.LENGTH_LONG).show();
 
         }
-
 
 
     }
@@ -340,7 +322,8 @@ public class ProfileAc extends AppCompatActivity {
 
         long currentDateTime = System.currentTimeMillis();
         String timeString = String.valueOf(currentDateTime);
-
+        prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
+        prefs.edit().putString("email", "ome").apply();
 
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
 

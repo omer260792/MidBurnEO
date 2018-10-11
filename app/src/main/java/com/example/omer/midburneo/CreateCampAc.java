@@ -36,8 +36,9 @@ public class CreateCampAc extends AppCompatActivity {
     public Button confirmCreateCamp;
     public String camp_name, camptheme, name, current_uid, current_name, current_camp_user, randomNumString;
 
-    DatabaseReference mUserDatabase;
-    SharedPreferences prefs;
+    private DatabaseReference mUserDatabase;
+    private SharedPreferences prefs;
+    private FirebaseDatabase database;
 
     public String num = "1";
 
@@ -69,7 +70,7 @@ public class CreateCampAc extends AppCompatActivity {
 
                 if (camp_name != null && camptheme != null) {
 
-                    final FirebaseDatabase database = FirebaseDatabase.getInstance();
+                    database = FirebaseDatabase.getInstance();
 
                     DatabaseReference mUserDatabase1 = database.getReference().child("Camps");
 
@@ -85,13 +86,12 @@ public class CreateCampAc extends AppCompatActivity {
                                 e.printStackTrace();
                             }
 
-                            if (camp_name == name) {
+                            if (camp_name.equals(name)) {
                                 Toast.makeText(CreateCampAc.this, "The name allready exist", Toast.LENGTH_LONG).show();
 
                             } else {
 
                                 SaveDBFireBase();
-                             //   SaveDBSqlite();
 
                                 prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
                                 prefs.edit().putString("camps", camp_name).apply();
@@ -112,60 +112,11 @@ public class CreateCampAc extends AppCompatActivity {
                     });
                 }
 
+
+
+
             }
         });
-    }
-
-
-    public void SaveDBSqlite() {
-
-
-        DBHelper mDbHelper = new DBHelper(getApplicationContext());
-
-        db = mDbHelper.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(FeedReaderContract.FeedEntry.ADMIN, "admin");
-        values.put(FeedReaderContract.FeedEntry.CAMPS, camp_name);
-
-        String selection = FeedReaderContract.FeedEntry.NAME + " = ?";
-        String[] selectionArgs = {current_name};
-
-        db.update(
-                FeedReaderContract.FeedEntry.TABLE_NAME,
-                values,
-                selection,
-                selectionArgs);
-
-
-
-//        ContentValues valuess = new ContentValues();
-//
-//        valuess.put(FeedReaderContract.FeedEntry.ADMIN, "default");
-//        valuess.put(FeedReaderContract.FeedEntry.CAMPS, camp_name);
-//        valuess.put(FeedReaderContract.FeedEntry.CHAT, "default");
-//        valuess.put(FeedReaderContract.FeedEntry.EMAIL, "default");
-//        valuess.put(FeedReaderContract.FeedEntry.IMAGE, "default");
-//        valuess.put(FeedReaderContract.FeedEntry.NAME, camp_name);
-//        valuess.put(FeedReaderContract.FeedEntry.NUMBER, "default");
-//        valuess.put(FeedReaderContract.FeedEntry.PASSWORD, "default");
-//        valuess.put(FeedReaderContract.FeedEntry.STATUS, "default");
-//        valuess.put(FeedReaderContract.FeedEntry.TIME, "default");
-//        valuess.put(FeedReaderContract.FeedEntry.UID_id, "default");
-//        valuess.put(FeedReaderContract.FeedEntry.UID, "default");
-//        valuess.put(FeedReaderContract.FeedEntry.LASTMSG, "default");
-//
-//        long result = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, valuess);
-//        Log.i("iaiaiaiaiaiaia", String.valueOf(result));
-
-
-
-        prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
-        prefs.edit().putString("camp", camp_name).apply();
-
-        num = "2";
-
-
     }
 
     public void SaveDBFireBase() {
@@ -217,8 +168,6 @@ public class CreateCampAc extends AppCompatActivity {
 
 
                 mUserDatabase.updateChildren(userMapCamp);
-
-
 
 
             }

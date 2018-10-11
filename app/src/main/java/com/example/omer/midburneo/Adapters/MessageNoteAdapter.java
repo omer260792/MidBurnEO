@@ -12,6 +12,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -49,7 +51,7 @@ import java.util.Map;
 
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_NOTE;
 import static com.example.omer.midburneo.RegisterAc.prefs;
-import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
+import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.ViewHolder> {
 
@@ -117,11 +119,10 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
                     Toast.makeText(context, "ture", Toast.LENGTH_SHORT).show();
                     holder.relativeLayout.setBackgroundColor(R.color.red);
 
-                    current_camp_static = prefs.getString("camps", null);
 
                     String count = messageNote.getCount();
 
-                    UpdateFirebase(current_camp_static, messageNote.getUidMsg());
+                    UpdateFirebase(firebaseUserModel.getCamp(), messageNote.getUidMsg());
                     getLastMsg(count);
 
 
@@ -153,7 +154,8 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
 
         public TextView pTitle, pContent, pDate, pDateEnd;
         public CheckBox checkBox;
-        public RelativeLayout relativeLayout, parentRelative;
+        public CardView relativeLayout;
+        public ConstraintLayout parentRelative;
 
 
         public ViewHolder(View itemView) {

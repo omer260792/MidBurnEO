@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.omer.midburneo.Class.Calendar;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.R;
@@ -24,7 +25,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
+import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
 
     private Context context;
     private ArrayList<Calendar> CalendarNoteList;
-    private String time, sender;
+    private String time, sender, image;
     private int count;
     private DatabaseReference mUserDatabase;
     public DBHelper dbHelper;
@@ -61,10 +62,30 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
 
         Calendar calendar = CalendarNoteList.get(position);
 
+        image = calendar.getImage();
 
+
+
+//        if (image.equals("default")){
+//
+//            holder.pMsg.setText(calendar.getMsg());
+//            holder.pSender.setText(calendar.getName());
+//            holder.pTime.setText(calendar.getTimeSet());
+//        }else {
+//
+//
+//            holder.pMsg.setText(calendar.getMsg());
+//            holder.pSender.setText(calendar.getName());
+//            holder.pTime.setText(calendar.getTimeSet());
+//            Glide.with(context).load(calendar.getImage()).into(holder.pImg);
+//
+//        }
         holder.pMsg.setText(calendar.getMsg());
-        holder.pSender.setText(calendar.getSender());
+        holder.pSender.setText(calendar.getName());
         holder.pTime.setText(calendar.getTimeSet());
+        Glide.with(context).load(calendar.getImage()).into(holder.pImg);
+
+
 
         count = Integer.parseInt(calendar.getCountRaw());
         time = calendar.getTime();
@@ -84,6 +105,7 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         public TextView pMsg, pSender, pTime;
+        public ImageView pImg;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -91,6 +113,7 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
             pMsg = itemView.findViewById(R.id.tvContentNotePreview);
             pSender = itemView.findViewById(R.id.tvNameNotePreview);
             pTime = itemView.findViewById(R.id.tvTimeNotePreview);
+            pImg = itemView.findViewById(R.id.tvImageNotePreview);
 
 
             itemView.setOnClickListener(new View.OnClickListener() {
@@ -115,7 +138,6 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
 
                         public void onClick(DialogInterface dialog, int id) {
 
-                            current_camp_static = prefs.getString("camps", null);
 
 
                             Calendar calendar = (Calendar) v.getTag();
@@ -153,7 +175,7 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
 
 
         mUserDatabase = FirebaseDatabase.getInstance().getReference();
-        mUserDatabase.child("Camps").child(current_camp_static).child("Calendar").orderByKey().equalTo(sender).addListenerForSingleValueEvent(new ValueEventListener() {
+        mUserDatabase.child("Camps").child(firebaseUserModel.getCamp()).child("Calendar").orderByKey().equalTo(sender).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 

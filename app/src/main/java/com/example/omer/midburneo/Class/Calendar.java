@@ -7,16 +7,9 @@ public class Calendar {
     public String time;
     public String msguid;
     public String timeSet;
-
-    public String getCountRaw() {
-        return countRaw;
-    }
-
-    public String setCountRaw(String countRaw) {
-        this.countRaw = countRaw;
-        return countRaw;
-    }
-
+    public String name;
+    public String image;
+    public String uidSender;
     public String countRaw;
 
 
@@ -28,7 +21,7 @@ public class Calendar {
         this.timeSet = timeSet;
     }
 
-    public Calendar(){
+    public Calendar() {
 
     }
 
@@ -63,8 +56,9 @@ public class Calendar {
         return msguid;
     }
 
-    public void setMsguid(String msguid) {
+    public String setMsguid(String msguid) {
         this.msguid = msguid;
+        return msguid;
     }
 
 
@@ -75,6 +69,42 @@ public class Calendar {
     public String setTimeSet(String timeSet) {
         this.timeSet = timeSet;
         return timeSet;
+    }
+
+    public String getCountRaw() {
+        return countRaw;
+    }
+
+    public String setCountRaw(String countRaw) {
+        this.countRaw = countRaw;
+        return countRaw;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String setName(String name) {
+        this.name = name;
+        return name;
+    }
+
+    public String getUidSender() {
+        return uidSender;
+    }
+
+    public void setUidSender(String uidSender) {
+        this.uidSender = uidSender;
+    }
+
+
+    public String getImage() {
+        return image;
+    }
+
+    public String setImage(String image) {
+        this.image = image;
+        return image;
     }
 
 }

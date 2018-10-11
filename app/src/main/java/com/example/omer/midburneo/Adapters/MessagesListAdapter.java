@@ -28,9 +28,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Random;
 
-import static com.example.omer.midburneo.RegisterAc.prefs;
-import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
-
 
 public class MessagesListAdapter extends ArrayAdapter<MessageCell> {
     MessageCell[] cellItem = null;
@@ -42,7 +39,7 @@ public class MessagesListAdapter extends ArrayAdapter<MessageCell> {
     public String randomNumString;
 
     public MessagesListAdapter(Context context, MessageCell[] resource) {
-        super(context, R.layout.test_message_cell, resource);
+        super(context, R.layout.message_cell, resource);
         // TODO Auto-generated constructor stub
         this.context = context;
         this.cellItem = resource;
@@ -72,12 +69,12 @@ public class MessagesListAdapter extends ArrayAdapter<MessageCell> {
             if (cellItem[position].getSender()) {
                 VIEW_TYPE=0;
 
-                convertView = inflater.inflate(R.layout.test_message_cell, parent, false);
+                convertView = inflater.inflate(R.layout.message_cell, parent, false);
 
             } else {
                 VIEW_TYPE=1;
 
-                convertView = inflater.inflate(R.layout.test_sender_message_cell, parent, false);
+                convertView = inflater.inflate(R.layout.sender_message_cell, parent, false);
 
             }
         }

@@ -44,10 +44,9 @@ import java.util.ArrayList;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
 import static com.example.omer.midburneo.DataBase.DBEquipment.DATABASE_NAME_EQUIPMENT;
 import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
-import static com.example.omer.midburneo.RegisterAc.prefs;
 import static com.example.omer.midburneo.Tabs.EquipmentEditAc.directory_path;
-import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
-import static com.example.omer.midburneo.Tabs.MainPageAc.current_name_static;
+
+import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 public class EquipmentAc extends AppCompatActivity {
 
@@ -75,25 +74,12 @@ public class EquipmentAc extends AppCompatActivity {
 
         Log.e(TAG, "onCreate");
 
-
         recyclerView = findViewById(R.id.recycler_Equipment);
         etSearchEquipment = findViewById(R.id.etSearchEquipment);
 
         dbEquipment = new DBEquipment(getApplicationContext());
         dbHelper = new DBHelper(getApplicationContext());
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        try {
-            current_camp_static = prefs.getString("camps", null);
-            current_name_static = prefs.getString("name", null);
-
-
-            Log.e(TAG, current_name_static);
-            Log.e(TAG, current_camp_static);
-
-        } catch (NullPointerException e) {
-
-        }
 
 
         layoutManager = new LinearLayoutManager(EquipmentAc.this);
@@ -135,7 +121,6 @@ public class EquipmentAc extends AppCompatActivity {
 
             }
         }
-        //  getEquipment(boolRecycler);
 
         etSearchEquipment.addTextChangedListener(new TextWatcher() {
             @Override
@@ -182,15 +167,6 @@ public class EquipmentAc extends AppCompatActivity {
 
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.e(TAG, "onstart");
-
-
-
-
-    }
 
     public void getEquipment(Boolean bool) {
 
@@ -238,15 +214,15 @@ public class EquipmentAc extends AppCompatActivity {
     }
 
     public void UpdateDateFromFireBaseToSQLiteEquipment() {
-        if (current_camp_static.equals(null)) {
+        if (firebaseUserModel.getCamp().equals(null)) {
 
-            Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + if");
+            Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment == null");
 
             return;
         } else {
             getRawCountSql();
             DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-            DatabaseReference discussionRoomsRef = rootRef.child("Camps").child(current_camp_static).child("Equipment");
+            DatabaseReference discussionRoomsRef = rootRef.child("Camps").child(firebaseUserModel.getCamp()).child("Equipment");
             Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + else");
 
             discussionRoomsRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -270,7 +246,7 @@ public class EquipmentAc extends AppCompatActivity {
                             dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
                             Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + countSqlLite == 0");
 
-                            dbEquipment.SaveDBSqliteToEquipmentExcel(name, content, amount, amountCurrent, time, image, current_name_static);
+                            dbEquipment.SaveDBSqliteToEquipmentExcel(name, content, amount, amountCurrent, time, image, firebaseUserModel.getName());
 
                         }
 
@@ -304,7 +280,7 @@ public class EquipmentAc extends AppCompatActivity {
 
                                 dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
 
-                                dbEquipment.SaveDBSqliteToEquipmentExcel(name, content, amount, amountCurrent, time, image, current_name_static);
+                                dbEquipment.SaveDBSqliteToEquipmentExcel(name, content, amount, amountCurrent, time, image, firebaseUserModel.getName());
 
 
                             }
@@ -351,7 +327,7 @@ public class EquipmentAc extends AppCompatActivity {
         PermissionManager.check(EquipmentAc.this, Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
 
         File file = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOCUMENTS), "/"+current_camp_static+".xls"); //    "/users.xls"
+                Environment.DIRECTORY_DOCUMENTS), "/"+firebaseUserModel.getCamp()+".xls"); //    "/users.xls"
         if (!file.exists()) {
 
             try {
@@ -386,13 +362,13 @@ public class EquipmentAc extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.item_equipment) {
-            current_admin = prefs.getString("admin", null);
+            current_admin = firebaseUserModel.getAdmin();
 
             if (current_admin.equals("admin")) {
                 Intent i = new Intent(EquipmentAc.this, EquipmentEditAc.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 i.putExtra("UidEquipment", current_uid);
-                i.putExtra("nameSenderEquipment", current_name_static);
+                i.putExtra("nameSenderEquipment", firebaseUserModel.getName());
                 startActivity(i);
                 finish();
             } else {
@@ -424,7 +400,7 @@ public class EquipmentAc extends AppCompatActivity {
         dbEquipment.open();
         SQLiteToExcel sqLiteToExcel = new SQLiteToExcel(getApplicationContext(), DATABASE_NAME_EQUIPMENT, directory_path);
 
-        sqLiteToExcel.exportAllTables(current_camp_static+".xls", new SQLiteToExcel.ExportListener() {
+        sqLiteToExcel.exportAllTables(firebaseUserModel.getCamp()+".xls", new SQLiteToExcel.ExportListener() {
             @Override
             public void onStart() {
 

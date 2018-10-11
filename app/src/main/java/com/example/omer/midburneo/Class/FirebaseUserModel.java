@@ -1,5 +1,11 @@
 package com.example.omer.midburneo.Class;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import static android.content.Context.MODE_PRIVATE;
+import static com.example.omer.midburneo.RegisterAc.SHPRF;
+
 public class FirebaseUserModel {
 
 
@@ -20,6 +26,100 @@ public class FirebaseUserModel {
     String time = "";
     String email = "";
     String status = "";
+
+
+
+
+
+    public static Boolean saveDataInSharedPre(FirebaseUserModel firebaseUserModel, Context context) {
+
+        SharedPreferences prefs;
+        String SHPRF = "User";
+        String image = "";
+        String role = "";
+        String deviceId;
+        String admin = "";
+        String number = "";
+        String camp = "";
+        String phone = "";
+        String chat = "";
+        String deviceToken = "";
+        String name = "";
+        String time = "";
+        String email = "";
+
+        image = firebaseUserModel.getImage();
+        role = firebaseUserModel.getRole();
+        deviceId = firebaseUserModel.getDeviceId();
+        admin = firebaseUserModel.getAdmin();
+        number = firebaseUserModel.getNumber();
+        camp = firebaseUserModel.getCamp();
+        phone = firebaseUserModel.getPhone();
+        chat = firebaseUserModel.getChat();
+        deviceToken = firebaseUserModel.getDeviceToken();
+        name = firebaseUserModel.getName();
+        time = firebaseUserModel.getTime();
+        email = firebaseUserModel.getEmail();
+
+
+        prefs = context.getSharedPreferences(SHPRF, MODE_PRIVATE);
+
+        prefs.edit().putString(image, firebaseUserModel.getImage()).apply();
+        prefs.edit().putString(role , firebaseUserModel.getRole()).apply();
+        prefs.edit().putString(deviceId, firebaseUserModel.getDeviceId()).apply();
+        prefs.edit().putString(admin, firebaseUserModel.getAdmin()).apply();
+        prefs.edit().putString(number, firebaseUserModel.getNumber()).apply();
+        prefs.edit().putString(camp, firebaseUserModel.getCamp()).apply();
+        prefs.edit().putString(phone, firebaseUserModel.getPhone()).apply();
+        prefs.edit().putString(chat, firebaseUserModel.getChat()).apply();
+        prefs.edit().putString(deviceToken, firebaseUserModel.getDeviceToken()).apply();
+        prefs.edit().putString(name, firebaseUserModel.getName()).apply();
+        prefs.edit().putString(time, firebaseUserModel.getTime()).apply();
+        prefs.edit().putString(email, firebaseUserModel.getEmail()).apply();
+
+        return true;
+    }
+
+
+    public static Boolean getSPToFirebaseUserModel(FirebaseUserModel firebaseUserModel, Context context) {
+
+        SharedPreferences prefs;
+        prefs = context.getSharedPreferences(SHPRF, MODE_PRIVATE);
+
+
+        String SHPRF = "User";
+        String image = "";
+        String role = "";
+        String deviceId = "";
+        String admin = "";
+        String number = "";
+        String camp = "";
+        String phone = "";
+        String chat = "";
+        String deviceToken = "";
+        String name = "";
+        String time = "";
+        String email = "";
+
+
+
+        firebaseUserModel.setName(prefs.getString(image, null));
+        firebaseUserModel.setDeviceId(prefs.getString(role, null));
+        firebaseUserModel.setDeviceToken(prefs.getString(deviceId, null));
+        firebaseUserModel.setImage(prefs.getString(admin, null));
+        firebaseUserModel.setRole(prefs.getString(number, null));
+        firebaseUserModel.setDeviceId(prefs.getString(camp, null));
+        firebaseUserModel.setAdmin(prefs.getString(phone, null));
+        firebaseUserModel.setNumber(prefs.getString(chat, null));
+        firebaseUserModel.setCamp(prefs.getString(deviceToken, null));
+        firebaseUserModel.setPhone(prefs.getString(name, null));
+        firebaseUserModel.setChat(prefs.getString(time, null));
+        firebaseUserModel.setStatus(prefs.getString(email, null));
+
+
+
+        return true;
+    }
 
 
     public String getAdmin() {

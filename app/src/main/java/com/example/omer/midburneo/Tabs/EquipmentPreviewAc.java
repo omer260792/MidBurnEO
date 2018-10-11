@@ -20,8 +20,7 @@ import com.squareup.picasso.Picasso;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.example.omer.midburneo.RegisterAc.prefs;
-import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
+import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 public class EquipmentPreviewAc extends AppCompatActivity {
 
@@ -47,7 +46,6 @@ public class EquipmentPreviewAc extends AppCompatActivity {
         etTimePre = findViewById(R.id.etTimedPre);
 
         dbHelper = new DBHelper(getApplicationContext());
-        current_camp_static = prefs.getString("camps", null);
 
 
         nameProdPre = getIntent().getStringExtra("nameProdEquipment");
@@ -102,11 +100,10 @@ public class EquipmentPreviewAc extends AppCompatActivity {
     }
 
     public void UpdateDataToFireBaseEquipment() {
-        // Update SQLite
 
         Log.e("*******************", "UpdateDataToFireBaseEquipment");
 
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(current_camp_static).child("Equipment").child(get_msg_uid);
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getCamp()).child("Equipment").child(get_msg_uid);
 
         Map<String, Object> stringObjectHashMap = new HashMap<>();
         stringObjectHashMap.put("mountCurrent", mountCurrentPre);

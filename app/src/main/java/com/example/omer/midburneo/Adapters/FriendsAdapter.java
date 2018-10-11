@@ -35,8 +35,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.omer.midburneo.RegisterAc.prefs;
 import static com.example.omer.midburneo.Tabs.ChatAc.callPhoneChatAc;
-import static com.example.omer.midburneo.Tabs.MainPageAc.current_admin_static;
-import static com.example.omer.midburneo.Tabs.MainPageAc.current_camp_static;
+import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHolder> {
 
@@ -204,9 +203,8 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                 @Override
                 public void onClick(View v) {
 
-                    current_admin_static = prefs.getString("admin", null);
 
-                    if (current_admin_static.equals("admin")) {
+                    if (firebaseUserModel.getAdmin().equals("admin")) {
                         UpdateUserAdmin(friend.getUidReceiver());
 
                     } else {
@@ -222,9 +220,8 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                 @Override
                 public void onClick(View v) {
                     dbHelper = new DBHelper(context);
-                    current_camp_static = prefs.getString("camps", null);
 
-                    if (friend.getName().equals(current_camp_static)) {
+                    if (friend.getName().equals(firebaseUserModel.getCamp())) {
                         dbHelper.DeleteTableSqliteDB(current_uid);
 
                     } else {

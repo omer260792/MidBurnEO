@@ -22,9 +22,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.PermissionManager;
 import com.example.omer.midburneo.R;
+import com.example.omer.midburneo.RegisterAc;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -34,6 +36,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -51,31 +54,30 @@ import static com.example.omer.midburneo.RegisterAc.CAMERA;
 import static com.example.omer.midburneo.RegisterAc.GALLERY;
 import static com.example.omer.midburneo.RegisterAc.SHPRF;
 import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
+import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 public class AdminAc extends AppCompatActivity {
 
     private static final String TAG = "AdminAc";
-
 
     public EditText statusFieldAdmin;
     private TextView tvNameAdmin;
     public Button saveButton;
     private CircleImageView circleImageView;
 
-    public SharedPreferences prefs;
 
-    public String current_uid, current_camp, current_camp_uid, camp, status, date, title, content, image, stringUrl;
+    public String current_uid, camp, status, date, title, content, image, stringUrl;
     public long currentDateTime;
+    private Uri resultUri;
 
+    public SharedPreferences prefs;
     private DatabaseReference mUserDatabase;
-
     public DBHelper dbHelper;
     public SQLiteDatabase db;
 
 
     private StorageReference mImageStorage;
-    private ProgressDialog mProgressDialog;
-    private StorageReference filrpath;
+    private StorageReference filePath;
 
 
     private ProgressDialog mprogress;
@@ -91,8 +93,6 @@ public class AdminAc extends AppCompatActivity {
         saveButton = findViewById(R.id.saveBtnAdmin);
 
         prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
-        current_camp = prefs.getString("camps", null);
-        current_camp_uid = prefs.getString("chat", null);
 
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
@@ -110,27 +110,49 @@ public class AdminAc extends AppCompatActivity {
                 camp = tvNameAdmin.getText().toString();
 
 
+
                 if (!status.equals("") && !camp.equals("")) {
 
+                    if (!stringUrl.equals(null) && !camp.equals(firebaseUserModel.getName()) || !status.equals(firebaseUserModel.getStatus())) {
 
-                    if (!stringUrl.equals(null)) {
-                        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_camp_uid);
+                        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+                        DatabaseReference discussionRoomsRef = rootRef.child("Users");
 
-                        Map<String, Object> mapUserUpdates = new HashMap<>();
-                        mapUserUpdates.put("name", camp);
-                        mapUserUpdates.put("status", status);
-                        mapUserUpdates.put("camps", camp);
-                        mapUserUpdates.put("image", stringUrl);
+                        Query query = discussionRoomsRef.orderByChild("camps").equalTo(firebaseUserModel.getCamp());
+                        ValueEventListener valueEventListener = new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
 
-                        mUserDatabase.updateChildren(mapUserUpdates);
+                                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                                    long FBCount = dataSnapshot.getChildrenCount();
 
-                       // prefs.edit().putString("image", image).apply();
+                                    String uidUser = ds.getKey();
 
-                        if (!current_camp.equals(camp)) {
-                            prefs.edit().putString("camps", camp).apply();
+                                    mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(uidUser);
 
-                            // firebase
+                                    Map<String, Object> mapUserUpdates = new HashMap<>();
+                                    mapUserUpdates.put("name", camp);
+                                    mapUserUpdates.put("status", status);
+                                    mapUserUpdates.put("camps", camp);
+                                    mapUserUpdates.put("image", stringUrl);
 
+                                    mUserDatabase.updateChildren(mapUserUpdates);
+
+
+                                }
+                                // need to change Name Table ----> Camps->"name change"->calendar.......
+
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        };
+
+
+                        if (!firebaseUserModel.getCamp().equals(camp)) {
+
+                            firebaseUserModel.setCamp(camp);
                         }
                         Toast.makeText(AdminAc.this, "נשמר בהצלחה", Toast.LENGTH_LONG).show();
 
@@ -220,25 +242,20 @@ public class AdminAc extends AppCompatActivity {
     private void gallery() {
 
 
-//        Intent galleryIntent = new Intent();
-//        galleryIntent.setType("image/*");
-//        galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
-//
-//        startActivityForResult(Intent.createChooser(galleryIntent, "Select Image"), GALLERY);
-
         CropImage.activity()
                 .setGuidelines(CropImageView.Guidelines.ON)
                 .start(this);
     }
 
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) { ////clear final in intent
+    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == GALLERY && resultCode == RESULT_OK) {
             Uri imageUri = data.getData();
 
-            CropImage.activity(imageUri)
+            CropImage.activity(imageUri)//crop image activity after shot
                     .setAspectRatio(1, 1)
                     .start(this);
 
@@ -247,69 +264,27 @@ public class AdminAc extends AppCompatActivity {
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
-                Uri resultUri = result.getUri();
+
+                resultUri = result.getUri();
                 Picasso.get().load(resultUri).error(R.drawable.admin_btn_logo).into(circleImageView);
 
-                //Progress Dialog
-                mProgressDialog = new ProgressDialog(this);
-                mProgressDialog.setTitle("Uploading Image...");
-                mProgressDialog.setMessage("please wait while we upload and process the image");
-                mProgressDialog.setCanceledOnTouchOutside(false);
-                mProgressDialog.show();
 
+                filePath = mImageStorage.child("profile_images").child(resultUri.getLastPathSegment());
+                imgUpload();
 
-                filrpath = mImageStorage.child("profile_images").child(resultUri.getLastPathSegment());//(random() + ".jpg")
-
-
-                filrpath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-
-                        if (task.isSuccessful()) {
-
-
-                            filrpath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                @Override
-                                public void onSuccess(Uri uri) {
-
-                                    mProgressDialog.dismiss();
-                                    stringUrl = String.valueOf(uri);
-
-
-                                    Toast.makeText(AdminAc.this, "Success", Toast.LENGTH_LONG).show();
-
-
-                                }
-                            }).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception exception) {
-                                    // Handle any errors
-                                }
-                            });
-
-
-                        } else {
-
-                            Toast.makeText(AdminAc.this, "not", Toast.LENGTH_LONG).show();
-
-
-                        }
-                    }
-                });
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
 
-                Toast.makeText(AdminAc.this, "error", Toast.LENGTH_LONG).show();
+                Toast.makeText(AdminAc.this, "תנסה לצלם שוב פעם תמונה", Toast.LENGTH_LONG).show();
 
             }
         }
-
 
     }
 
     public void getProfile() {
 
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_camp_uid);
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(firebaseUserModel.getChat());
 
         mUserDatabase.addValueEventListener(new ValueEventListener() {
             @Override
@@ -339,6 +314,34 @@ public class AdminAc extends AppCompatActivity {
 
             }
         });
+
+    }
+
+    private void imgUpload() {
+        mprogress.show();
+        if (resultUri == null) {
+            return;
+        }
+
+        filePath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+
+                filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+
+                        stringUrl = String.valueOf(uri);
+
+
+                        mprogress.dismiss();
+
+
+                    }
+                });
+            }
+        });
+
 
     }
 

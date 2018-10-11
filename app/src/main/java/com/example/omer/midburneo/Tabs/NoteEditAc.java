@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static com.example.omer.midburneo.RegisterAc.SHPRF;
+import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 public class NoteEditAc extends AppCompatActivity {
 
@@ -58,14 +59,11 @@ public class NoteEditAc extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.item_note);
 
-        etTitleNote =  findViewById(R.id.etTitleNote);
-        etContentNote =  findViewById(R.id.etContentNote);
+        etTitleNote = findViewById(R.id.etTitleNote);
+        etContentNote = findViewById(R.id.etContentNote);
         saveButton = findViewById(R.id.saveButtonNote);
         TimeButtonNote = findViewById(R.id.TimeButtonNote);
 
-        prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
-        current_camp = prefs.getString("camps", null);
-        current_name = prefs.getString("name", null);
 
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
@@ -111,7 +109,6 @@ public class NoteEditAc extends AppCompatActivity {
         };
 
 
-
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -132,7 +129,7 @@ public class NoteEditAc extends AppCompatActivity {
                     UidRandom = UUID.randomUUID().toString();
 
                     SaveFireBaseDB();
-                    dbHelper.SaveDBSqliteToNote(title, content, date, timeMilliString, "false", current_name, current_camp, UidRandom);
+                    dbHelper.SaveDBSqliteToNote(title, content, date, timeMilliString, "false", firebaseUserModel.getName(), firebaseUserModel.getCamp(), UidRandom);
 
                     etTitleNote.setText("");
                     etContentNote.setText("");
@@ -151,13 +148,13 @@ public class NoteEditAc extends AppCompatActivity {
 
     public void SaveFireBaseDB() {
 
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(current_camp).child("Note").child(UidRandom);
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getCamp()).child("Note").child(UidRandom);
         Map<String, Object> mapAdminUpdate = new HashMap<>();
         mapAdminUpdate.put("title", title);
         mapAdminUpdate.put("content", content);
         mapAdminUpdate.put("date", date);
         mapAdminUpdate.put("dateEnd", timeMilliString);
-        mapAdminUpdate.put("sender", current_name);
+        mapAdminUpdate.put("sender", firebaseUserModel.getName());
         mapAdminUpdate.put("dateBool", "false");
         mUserDatabase.updateChildren(mapAdminUpdate);
     }
