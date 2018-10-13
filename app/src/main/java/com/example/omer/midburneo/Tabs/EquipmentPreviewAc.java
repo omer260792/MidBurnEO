@@ -1,16 +1,24 @@
 package com.example.omer.midburneo.Tabs;
 
+import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.omer.midburneo.Class.Calendar;
+import com.example.omer.midburneo.Class.Equipment;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.R;
 import com.google.firebase.database.DatabaseReference;
@@ -26,12 +34,16 @@ public class EquipmentPreviewAc extends AppCompatActivity {
 
     private Button addEquipmentBtnPre;
     private EditText etNameProdPre, etContentPre, etMountPre, etMountCurrentPre, etTimePre;
-    private ImageView imagePre;
+    private TextView txtclose;
+    private ImageView imagePre, pImgPop;
     public String nameProdPre, contentPre, mountPre, mountCurrentPre, timePre, imgPre, current_uid, get_msg_uid;
     private DatabaseReference mUserDatabase;
     public DBHelper dbHelper;
 
+    public Dialog myDialog;
 
+
+    @SuppressLint("ClickableViewAccessibility")
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.equipment_preview_activity);
@@ -57,14 +69,48 @@ public class EquipmentPreviewAc extends AppCompatActivity {
         current_uid = getIntent().getStringExtra("senderUidEquipment");
         get_msg_uid = getIntent().getStringExtra("msgUidEquipment");
 
-        if (imgPre == null || imgPre == "default") {
+        if (imgPre.equals("default")) {
 
-            Picasso.get().load(R.drawable.midburn_logo).error(R.drawable.midburn_logo).into(imagePre);
+            imagePre.setVisibility(View.GONE);
 
         } else {
             Picasso.get().load(imgPre).error(R.drawable.midburn_logo).into(imagePre);
 
         }
+
+        myDialog = new Dialog(this);
+
+        imagePre.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                myDialog.setContentView(R.layout.item_image_popup);
+                txtclose = myDialog.findViewById(R.id.txtclose);
+                pImgPop = myDialog.findViewById(R.id.imgPopUp);
+
+
+                try {
+                    Picasso.get().load(imgPre).resize(800, 1000).error(R.drawable.midburn_logo).into(pImgPop);
+
+                } catch (NullPointerException e) {
+                }
+
+
+                myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                myDialog.show();
+
+                txtclose.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        myDialog.dismiss();
+
+
+                    }
+                });
+
+                return false;
+            }
+        });
         etNameProdPre.setText(nameProdPre);
         etContentPre.setText(contentPre);
         etMountPre.setText(mountPre);
@@ -85,8 +131,6 @@ public class EquipmentPreviewAc extends AppCompatActivity {
                     UpdateDataToFireBaseEquipment();
 
 
-
-
                 } else {
                     Toast.makeText(EquipmentPreviewAc.this,
                             "בבקשה תמלא את הפרטים ",
@@ -103,7 +147,7 @@ public class EquipmentPreviewAc extends AppCompatActivity {
 
         Log.e("*******************", "UpdateDataToFireBaseEquipment");
 
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getCamp()).child("Equipment").child(get_msg_uid);
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getChat()).child("Equipment").child(get_msg_uid);
 
         Map<String, Object> stringObjectHashMap = new HashMap<>();
         stringObjectHashMap.put("mountCurrent", mountCurrentPre);

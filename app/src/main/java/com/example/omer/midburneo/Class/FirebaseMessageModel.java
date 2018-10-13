@@ -13,16 +13,18 @@ public class FirebaseMessageModel {
     private Long createdDate;
     private String senderName;
     private String Id;
+    private String image;
+
 
     public String getImage() {
         return image;
     }
 
-    public void setImage(String image) {
+    public String setImage(String image) {
         this.image = image;
+        return image;
     }
 
-    private String image;
 
     public String getReceiverId() {
         return receiverId;

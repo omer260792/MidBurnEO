@@ -43,9 +43,10 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.omer.midburneo.RegisterAc.CAMERA;
 import static com.example.omer.midburneo.RegisterAc.GALLERY;
-import static com.example.omer.midburneo.RegisterAc.SHPRF;
+import static com.example.omer.midburneo.Tabs.MainPageAc.SHPRF;
+import static com.example.omer.midburneo.Tabs.MainPageAc.prefs;;
 import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
-import static com.example.omer.midburneo.RegisterAc.prefs;
+
 import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 public class ProfileAc extends AppCompatActivity {
@@ -65,9 +66,6 @@ public class ProfileAc extends AppCompatActivity {
     private EditText editTxtRole, editTxtStatus;
     private Button signOutBtn, saveBtn;
     private CircleImageView imageView;
-
-
-    SharedPreferences prefs;
 
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -320,10 +318,16 @@ public class ProfileAc extends AppCompatActivity {
 
     public void SignOutProfile() {
 
+
+
+        prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
+
+
+        prefs.edit().putString("email", "default").apply();
+
         long currentDateTime = System.currentTimeMillis();
         String timeString = String.valueOf(currentDateTime);
-        prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
-        prefs.edit().putString("email", "ome").apply();
+
 
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
 

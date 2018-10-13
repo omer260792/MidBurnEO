@@ -1,14 +1,19 @@
 package com.example.omer.midburneo.Adapters;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -17,6 +22,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.omer.midburneo.Class.Calendar;
+import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.R;
 import com.google.firebase.database.DataSnapshot;
@@ -24,7 +30,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
+import static com.example.omer.midburneo.Tabs.ChatAc.callPhoneChatAc;
 import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 
@@ -64,28 +72,27 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
 
         image = calendar.getImage();
 
+        if (image.equals("default")) {
+
+            holder.pMsg.setText(calendar.getMsg());
+            holder.pSender.setText(calendar.getName());
+            holder.pTime.setText(calendar.getTimeSet());
+            holder.pImg.setVisibility(View.GONE);
+        } else {
 
 
-//        if (image.equals("default")){
-//
-//            holder.pMsg.setText(calendar.getMsg());
-//            holder.pSender.setText(calendar.getName());
-//            holder.pTime.setText(calendar.getTimeSet());
-//        }else {
-//
-//
-//            holder.pMsg.setText(calendar.getMsg());
-//            holder.pSender.setText(calendar.getName());
-//            holder.pTime.setText(calendar.getTimeSet());
-//            Glide.with(context).load(calendar.getImage()).into(holder.pImg);
-//
-//        }
-        holder.pMsg.setText(calendar.getMsg());
-        holder.pSender.setText(calendar.getName());
-        holder.pTime.setText(calendar.getTimeSet());
-        Glide.with(context).load(calendar.getImage()).into(holder.pImg);
+            holder.pMsg.setText(calendar.getMsg());
+            holder.pSender.setText(calendar.getName());
+            holder.pTime.setText(calendar.getTimeSet());
+            Glide.with(context).load(calendar.getImage()).into(holder.pImg);
 
-
+        }
+//        holder.pMsg.setText(calendar.getMsg());
+//        holder.pSender.setText(calendar.getName());
+//        holder.pTime.setText(calendar.getTimeSet());
+//        Glide.with(context).load(calendar.getImage()).into(holder.pImg);
+//
+//
 
         count = Integer.parseInt(calendar.getCountRaw());
         time = calendar.getTime();
@@ -104,9 +111,13 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        public TextView pMsg, pSender, pTime;
-        public ImageView pImg;
+        public TextView pMsg, pSender, pTime, txtclose;
+        public ImageView pImg,pImgPop;
 
+        public Dialog myDialog;
+
+
+        @SuppressLint("ClickableViewAccessibility")
         public ViewHolder(View itemView) {
             super(itemView);
 
@@ -116,9 +127,49 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
             pImg = itemView.findViewById(R.id.tvImageNotePreview);
 
 
+            myDialog = new Dialog(context);
+
+
+
+
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+
+
+
+                    if (!image.equals("default")) {
+                        Calendar calendar = (Calendar) view.getTag();
+
+                        myDialog.setContentView(R.layout.item_image_popup);
+                        txtclose = myDialog.findViewById(R.id.txtclose);
+                        pImgPop = myDialog.findViewById(R.id.imgPopUp);
+
+
+                        try {
+                            Picasso.get().load(calendar.getImage()).resize(800, 1000).error(R.drawable.midburn_logo).into(pImgPop);
+
+                        } catch (NullPointerException e) {
+                        }
+
+
+                        myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                        myDialog.show();
+
+                        txtclose.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                myDialog.dismiss();
+
+
+                            }
+                        });
+                    }else {
+                        return;
+                    }
+
+
+
 
 
                 }
@@ -137,7 +188,6 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
                     alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "מחק הודעה ", new DialogInterface.OnClickListener() {
 
                         public void onClick(DialogInterface dialog, int id) {
-
 
 
                             Calendar calendar = (Calendar) v.getTag();

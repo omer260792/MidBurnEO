@@ -3,10 +3,8 @@ package com.example.omer.midburneo.Tabs;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -14,7 +12,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -66,13 +63,14 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import cz.msebera.android.httpclient.HttpHeaders;
 import cz.msebera.android.httpclient.entity.StringEntity;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static com.example.omer.midburneo.Adapters.MessagesListAdapter.VIEW_TYPE_PICTURE;
 import static com.example.omer.midburneo.RegisterAc.CAMERA;
 import static com.example.omer.midburneo.RegisterAc.GALLERY;
 import static com.example.omer.midburneo.RegisterAc.REQUEST_PHONE_RECORD;
@@ -111,8 +109,9 @@ public class ChatListAc extends AppCompatActivity {
 
 
     public static ChatListAc chatListAc;
-    public String nameUserIntent, campUserIntent, uidUserIntent, chatRoomsUserIntent, imageUserIntent, statusUserIntent, deviceUserIntent, tokenUserIntent, countUserIntent, timeUserIntent, onilneUserIntent, current_image, current_uid, current_name, current_device, table;
+    public String nameUserIntent, campUserIntent, uidUserIntent, chatRoomsUserIntent, imageUserIntent, statusUserIntent, deviceUserIntent, tokenUserIntent, countUserIntent, timeUserIntent, onilneUserIntent, current_uid, current_name, current_device, table;
     public String stringUrl = "stringUrl";
+    public String uidMsg;
     public int num = 1;
 
     JSONArray registration_ids = new JSONArray();
@@ -121,7 +120,7 @@ public class ChatListAc extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.chtting_layout);
+        setContentView(R.layout.tab_chatting);
 
 
         listView = (ListView) findViewById(R.id.chattingList);
@@ -148,6 +147,7 @@ public class ChatListAc extends AppCompatActivity {
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         mImageStorage = FirebaseStorage.getInstance().getReference();
+        filePath = FirebaseStorage.getInstance().getReference();
         database = FirebaseDatabase.getInstance();
 
         usersRef = database.getReference("Users");
@@ -172,27 +172,25 @@ public class ChatListAc extends AppCompatActivity {
         }
 
         CheckUserIfOnline();
-
-
-        //*******************888888888888888888************
-        //## need to add permision file
-        /// ActivityCompat.requestPermissions(ChatListAc.this, permissions, REQUEST_PHONE_RECORD);
         PermissionManager.check(ChatListAc.this, Manifest.permission.RECORD_AUDIO, REQUEST_PHONE_RECORD);
-        mFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recording.3gp";
+
 
         mRecordButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    startRecording();
-
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-
-                    stopRecording();
-
-                }
+//                mFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recording.3gp";
+//
+//
+//
+//                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+//                    startRecording();
+//
+//                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+//
+//                    stopRecording();
+//
+//                }
 
 
                 return false;
@@ -241,15 +239,14 @@ public class ChatListAc extends AppCompatActivity {
                     FirebaseMessageModel firebaseMessageModel = postSnapshot.getValue(FirebaseMessageModel.class);
                     firebaseMessageModel.setId(postSnapshot.getKey());
 
-                    String sender = postSnapshot.child("senderId").getValue().toString();
-                    String receiver = postSnapshot.child("receiverId").getValue().toString();
-                    String image = postSnapshot.child("image").getValue().toString();
 
+                    Log.e("ssss", postSnapshot.getKey());
+                    String image = firebaseMessageModel.setImage((postSnapshot.child("image").getValue().toString()));
+                    String sender = firebaseMessageModel.setSenderId(postSnapshot.child("senderId").getValue().toString());
+                    String createDate = firebaseMessageModel.setCreatedDate(Long.valueOf(postSnapshot.child("createdDate").getValue().toString()));
 
-                    if (image.equals("default")) {
-                        VIEW_TYPE_PICTURE = 2;
+                    String status = firebaseMessageModel.setStatus(postSnapshot.child("status").getValue().toString());
 
-                    }
 
                     firebaseMessageModel.setId(postSnapshot.getKey());
 
@@ -376,11 +373,14 @@ public class ChatListAc extends AppCompatActivity {
         MessageCell[] messageCells;
         messageCells = new MessageCell[totalWishes];
 
+        //   try {
+
+
         for (int counter = 0; counter < totalWishes; counter++) {
-            final FirebaseMessageModel firebaseMessageModel = messages.get(counter);
+            FirebaseMessageModel firebaseMessageModel = messages.get(counter);
 
             MessageCell messageCell = new MessageCell(firebaseMessageModel.getSenderName(), firebaseMessageModel.getText(),
-                    getDate(firebaseMessageModel.getCreatedDateLong()), firebaseMessageModel.getSenderId().equals(current_uid), firebaseMessageModel.getImage());
+                    getDate(firebaseMessageModel.getCreatedDateLong()), firebaseMessageModel.getSenderId().equals(current_uid), firebaseMessageModel.getImage(), firebaseMessageModel.getSenderId());
 
             messageCells[counter] = messageCell;
         }
@@ -393,6 +393,13 @@ public class ChatListAc extends AppCompatActivity {
         listView.setSelection(listView.getCount() - 1);
 
         listView.requestFocus();
+
+//
+//        } catch (Exception e) {
+//
+//        }
+
+
     }
 
 
@@ -444,36 +451,6 @@ public class ChatListAc extends AppCompatActivity {
     }
 
 
-    public void loadImagebtn(View view) {
-
-        PermissionManager.check(ChatListAc.this, android.Manifest.permission.READ_EXTERNAL_STORAGE, GALLERY);
-        PermissionManager.check(ChatListAc.this, android.Manifest.permission.CAMERA, CAMERA);
-        PermissionManager.check(ChatListAc.this, Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
-
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-
-        alertDialog.setTitle("Profile Photo");
-        alertDialog.setMessage("Please Pick A Method");
-        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Gallery", new DialogInterface.OnClickListener() {
-
-            public void onClick(DialogInterface dialog, int id) {
-
-                gallery();
-
-            }
-        });
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", new DialogInterface.OnClickListener() {
-
-            public void onClick(DialogInterface dialog, int id) {
-
-                return;
-
-            }
-        });
-
-        alertDialog.show();
-    }
-
     private void gallery() {
         CropImage.activity()
                 .setGuidelines(CropImageView.Guidelines.ON)
@@ -498,31 +475,10 @@ public class ChatListAc extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 resultUri = result.getUri();
 
-
                 filePath = mImageStorage.child("msg_images").child(resultUri.getLastPathSegment());
 
-                filePath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-
-                        filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-
-                                stringUrl = String.valueOf(uri);
-
-                                if (stringUrl != null) {
-
-                                    hideKeyboard();
-                                    sendMsgWithNotification();
-
-
-                                }
-
-                            }
-                        });
-                    }
-                });
+                hideKeyboard();
+                sendMsgWithNotification();
 
 
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
@@ -539,118 +495,123 @@ public class ChatListAc extends AppCompatActivity {
     public void sendMsgWithNotification() {
 
         final String wishMessage = textComment.getText().toString().trim();
-        if (stringUrl.equals("stringUrl") && wishMessage.isEmpty()) {
-            return;
-        } else {
-            // send text as wish
 
-            if (stringUrl.equals("stringUrl")) {
-
-                current_image = "default";
-            } else {
-                current_image = stringUrl;
-            }
-
-            final FirebaseMessageModel firebaseMessageModel = new FirebaseMessageModel();
-            firebaseMessageModel.setText(wishMessage);
-            firebaseMessageModel.setSenderId(current_uid);
-            firebaseMessageModel.setSenderName(current_name);
-            firebaseMessageModel.setReceiverId(uidUserIntent);
-            firebaseMessageModel.setImage(current_image);
-            firebaseMessageModel.setStatus("false");
-
-            updateListView();
-
-
-            final ProgressDialog Dialog = new ProgressDialog(chatListAc);
-            Dialog.setMessage("Please wait..");
-            Dialog.setCancelable(false);
-            Dialog.show();
-
-            final DatabaseReference newRef = messagesRef.push();
-            newRef.setValue(firebaseMessageModel, new DatabaseReference.CompletionListener() {
-                @Override
-                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-
-                    if (databaseError != null) {
-                        Log.i(TAG, databaseError.toString());
-                    } else {
-                        textComment.setText("");
-
-                        long currentDateTime = System.currentTimeMillis();
-
-                        String time = String.valueOf(currentDateTime);
-                        if (nameUserIntent.equals(firebaseUserModel.getCamp())) {
-
-                            table = current_uid;
-
-                        } else {
-                            table = uidUserIntent;
-
-                        }
-                        // need to find uid msg
-                        dbHelper.SaveDBSqliteMsgUser(wishMessage, uidUserIntent, current_uid, current_name, time, time, "false", table);
-
-                        if (registration_ids.length() > 0) {
-
-
-                            String url = "https://fcm.googleapis.com/fcm/send";
-                            AsyncHttpClient client = new AsyncHttpClient();
-
-                            client.addHeader(HttpHeaders.AUTHORIZATION, "key=AIzaSyDV08bsa0Cdtnzt4EJkm29qsvs-3giVFbc");
-                            client.addHeader(HttpHeaders.CONTENT_TYPE, RequestParams.APPLICATION_JSON);
-
-                            try {
-
-
-                                JSONObject params = new JSONObject();
-
-                                params.put("registration_ids", registration_ids);
-
-                                JSONObject notificationObject = new JSONObject();
-                                notificationObject.put("body", wishMessage);
-                                notificationObject.put("title", "MidBurnEO");
-
-                                params.put("notification", notificationObject);
-
-                                StringEntity entity = new StringEntity(params.toString());
-
-                                Log.i(TAG, String.valueOf(entity));
-                                Log.i(TAG, params.toString());
-                                Log.i(TAG, String.valueOf(notificationObject));
-
-                                client.post(getApplicationContext(), url, entity, RequestParams.APPLICATION_JSON, new TextHttpResponseHandler() {
-                                    @Override
-                                    public void onFailure(int statusCode, cz.msebera.android.httpclient.Header[] headers, String responseString, Throwable throwable) {
-                                        Dialog.dismiss();
-                                        Log.i(TAG, responseString);
-
-
-                                    }
-
-                                    @Override
-                                    public void onSuccess(int statusCode, cz.msebera.android.httpclient.Header[] headers, String responseString) {
-                                        Dialog.dismiss();
-                                        Log.i(TAG + "succccc", responseString);
-
-                                        Log.i(TAG, String.valueOf(statusCode));
-                                        Log.i(TAG, String.valueOf(headers));
-                                    }
-                                });
-
-                            } catch (Exception e) {
-
-                            }
-                        }
-
-                    }
-                    Dialog.dismiss();
-
-                }
-            });
-            num = 2;
+        if (resultUri == null) {
+            resultUri = Uri.parse("default");
 
         }
+
+        current_name = firebaseUserModel.getName();
+
+        final FirebaseMessageModel firebaseMessageModel = new FirebaseMessageModel();
+        firebaseMessageModel.setText(wishMessage);
+        firebaseMessageModel.setSenderId(current_uid);
+        firebaseMessageModel.setSenderName(current_name);
+        firebaseMessageModel.setReceiverId(uidUserIntent);
+        firebaseMessageModel.setImage(String.valueOf(resultUri));
+        firebaseMessageModel.setStatus("false");
+
+        updateListView();
+
+
+        final ProgressDialog Dialog = new ProgressDialog(chatListAc);
+        Dialog.setMessage("Please wait..");
+        Dialog.setCancelable(false);
+        Dialog.show();
+
+        final DatabaseReference newRef = messagesRef.push();
+        newRef.setValue(firebaseMessageModel, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+
+                uidMsg = databaseReference.getKey();
+                loadimageFirebase(uidMsg, chatRoomsUserIntent);
+                if (firebaseMessageModel.getImage().equals(resultUri)) {
+
+
+                }
+
+
+                if (databaseError != null) {
+                    Log.i(TAG, databaseError.toString());
+                } else {
+                    textComment.setText("");
+
+                    long currentDateTime = System.currentTimeMillis();
+
+                    String time = String.valueOf(currentDateTime);
+                    if (nameUserIntent.equals(firebaseUserModel.getCamp())) {
+
+                        table = current_uid;
+
+                    } else {
+                        table = uidUserIntent;
+
+                    }
+                    String status = "false";
+                    // need to find uid msg
+                    //     dbHelper.SaveDBSqliteMsgUser(wishMessage, uidUserIntent, current_uid, current_name, time, time, status, table);
+
+                    if (registration_ids.length() > 0) {
+
+
+                        String url = "https://fcm.googleapis.com/fcm/send";
+                        AsyncHttpClient client = new AsyncHttpClient();
+
+                        client.addHeader(HttpHeaders.AUTHORIZATION, "key=AIzaSyDV08bsa0Cdtnzt4EJkm29qsvs-3giVFbc");
+                        client.addHeader(HttpHeaders.CONTENT_TYPE, RequestParams.APPLICATION_JSON);
+
+                        try {
+
+
+                            JSONObject params = new JSONObject();
+
+                            params.put("registration_ids", registration_ids);
+
+                            JSONObject notificationObject = new JSONObject();
+                            notificationObject.put("body", wishMessage);
+                            notificationObject.put("title", "MidBurnEO");
+
+                            params.put("notification", notificationObject);
+
+                            StringEntity entity = new StringEntity(params.toString());
+
+                            Log.i(TAG, String.valueOf(entity));
+                            Log.i(TAG, params.toString());
+                            Log.i(TAG, String.valueOf(notificationObject));
+
+                            client.post(getApplicationContext(), url, entity, RequestParams.APPLICATION_JSON, new TextHttpResponseHandler() {
+                                @Override
+                                public void onFailure(int statusCode, cz.msebera.android.httpclient.Header[] headers, String responseString, Throwable throwable) {
+                                    Dialog.dismiss();
+                                    Log.i(TAG, responseString);
+
+
+                                }
+
+                                @Override
+                                public void onSuccess(int statusCode, cz.msebera.android.httpclient.Header[] headers, String responseString) {
+                                    Dialog.dismiss();
+                                    Log.i(TAG + "succccc", responseString);
+
+                                    Log.i(TAG, String.valueOf(statusCode));
+                                    Log.i(TAG, String.valueOf(headers));
+                                }
+                            });
+
+                        } catch (Exception e) {
+
+                        }
+                    }
+
+                }
+                Dialog.dismiss();
+
+            }
+        });
+        num = 2;
+
+
     }
 
     private void startRecording() {
@@ -691,6 +652,7 @@ public class ChatListAc extends AppCompatActivity {
                 progressDialog.dismiss();
                 progressDialog.setMessage("סיים לעלות הקלטה");
 
+
             }
         });
 
@@ -709,6 +671,67 @@ public class ChatListAc extends AppCompatActivity {
     }
 
 
+    public void loadImagebtnChat(View view) {
+
+        PermissionManager.check(ChatListAc.this, android.Manifest.permission.READ_EXTERNAL_STORAGE, GALLERY);
+        PermissionManager.check(ChatListAc.this, android.Manifest.permission.CAMERA, CAMERA);
+        PermissionManager.check(ChatListAc.this, Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
+
+        gallery();
+
+//        AlertDialog alertDialog = new AlertDialog.Builder(getApplicationContext()).create();
+//
+//        alertDialog.setTitle("Profile Photo");
+//        alertDialog.setMessage("Please Pick A Method");
+//        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Gallery", new DialogInterface.OnClickListener() {
+//
+//            public void onClick(DialogInterface dialog, int id) {
+//
+//                gallery();
+//
+//            }
+//        });
+//        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", new DialogInterface.OnClickListener() {
+//
+//            public void onClick(DialogInterface dialog, int id) {
+//
+//                return;
+//
+//            }
+//        });
+//
+//        alertDialog.show();
+    }
+
+    public void loadimageFirebase(String uidMsg, String getchat) {
+        filePath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+
+                filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+
+                        stringUrl = String.valueOf(uri);
+
+                        if (stringUrl != null) {
+
+                            mUserDatabase = FirebaseDatabase.getInstance().getReference().child("ChatRooms").child(getchat).child(uidMsg);
+
+
+                            Map<String, Object> mapCampsUpdates = new HashMap<>();
+                            mapCampsUpdates.put("image", stringUrl);
+
+
+                            mUserDatabase.updateChildren(mapCampsUpdates);
+
+                        }
+
+                    }
+                });
+            }
+        });
+    }
 }
 
 

@@ -103,42 +103,51 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
         holder.pDateEnd.setText(dateEnd);
         holder.checkBox.setBackgroundColor(android.R.drawable.checkbox_off_background);
 
+
+         String checkBool = messageNote.getDateBool();
+
         uidMsgString = messageNote.getUidMsg();
 
-        holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @SuppressLint("ResourceAsColor")
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (checkBool.equals("true")){
+            int btnDrawable = android.R.drawable.checkbox_on_background;
+            holder.checkBox.setButtonDrawable(btnDrawable);
+
+        }else {
+            holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @SuppressLint("ResourceAsColor")
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
 
-                // holder.checkBox.setChecked(false);
-                holder.checkBox.isChecked();
-                if (isChecked) {
-                    int btnDrawable = android.R.drawable.checkbox_on_background;
-                    holder.checkBox.setButtonDrawable(btnDrawable);
-                    Toast.makeText(context, "ture", Toast.LENGTH_SHORT).show();
-                    holder.relativeLayout.setBackgroundColor(R.color.red);
+                    // holder.checkBox.setChecked(false);
+                    holder.checkBox.isChecked();
+                    if (isChecked) {
+                        int btnDrawable = android.R.drawable.checkbox_on_background;
+                        holder.checkBox.setButtonDrawable(btnDrawable);
+                        Toast.makeText(context, "ture", Toast.LENGTH_SHORT).show();
+                        holder.relativeLayout.setBackgroundColor(R.color.red);
 
 
-                    String count = messageNote.getCount();
+                        String count = messageNote.getCount();
 
-                    UpdateFirebase(firebaseUserModel.getCamp(), messageNote.getUidMsg());
-                    getLastMsg(count);
+                        UpdateFirebase(firebaseUserModel.getCamp(), messageNote.getUidMsg());
+                        getLastMsg(count);
+                        //  viewGroup.removeView(holder.parentRelative);
 
+                    } else {
+                        //checkBox clicked and unchecked
+                        int btnDrawable = android.R.drawable.checkbox_off_background;
+                        Toast.makeText(context, "fa", Toast.LENGTH_SHORT).show();
+                        holder.checkBox.setButtonDrawable(btnDrawable);
+                        holder.relativeLayout.setBackgroundColor(R.color.colorAccent);
 
-                  //  viewGroup.removeView(holder.parentRelative);
-
-                } else {
-                    //checkBox clicked and unchecked
-                    int btnDrawable = android.R.drawable.checkbox_off_background;
-                    Toast.makeText(context, "fa", Toast.LENGTH_SHORT).show();
-                    holder.checkBox.setButtonDrawable(btnDrawable);
-                    holder.relativeLayout.setBackgroundColor(R.color.colorAccent);
+                    }
 
                 }
+            });
+        }
 
-            }
-        });
+
 
 
 

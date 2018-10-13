@@ -5,13 +5,11 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.example.omer.midburneo.Class.FirebaseUserModel;
-import com.example.omer.midburneo.Class.UserTest;
+import com.example.omer.midburneo.Class.User;
 import com.firebase.client.Firebase;
-import com.google.firebase.FirebaseError;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 
 /**
@@ -24,7 +22,7 @@ public class MyFirebaseInstanceIdService extends FirebaseInstanceIdService {
     private FirebaseDatabase database;
     private DatabaseReference usersRef;
 
-    UserTest user = UserTest.getInstance();
+    User user = User.getInstance();
 
     @Override
     public void onTokenRefresh() {

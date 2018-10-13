@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -44,7 +45,7 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.View
     }
 
     @Override
-    public void onBindViewHolder(@NonNull EquipmentAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.itemView.setTag(EquipmentNoteList.get(position));
 
 
@@ -60,7 +61,7 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.View
         holder.pTime.setText(equipment.getTime());
 
         if (imageString.equals("default")) {
-            Glide.with(context).load(R.drawable.midburn_logo).into(holder.pImage);
+            holder.pImage.setVisibility(View.GONE);
 
         } else {
             Glide.with(context).load(imageString).into(holder.pImage);

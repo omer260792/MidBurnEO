@@ -18,7 +18,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.ajts.androidmads.library.ExcelToSQLite;
 import com.ajts.androidmads.library.SQLiteToExcel;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.DataBase.DBEquipment;
@@ -26,7 +25,6 @@ import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.PermissionManager;
 import com.example.omer.midburneo.R;
 
-import com.example.omer.midburneo.RegisterAc;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -34,6 +32,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -44,6 +43,7 @@ import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -60,18 +60,28 @@ public class EquipmentEditAc extends AppCompatActivity {
     private static final String TAG = "EquipmentEditAc";
 
 
-    private Button addEquipmentBtnPre;
+    private Button addEquipmentBtnPre, addBtnfirendEditEquip;
     private EditText etNameProdPre, etContentPre, etMountPre;
     private ImageView imagePre;
     private String nameProdPre, contentPre, mountPre, timePre, current_uid, get_msg_uid;
     private String imgPre = "default";
+    private String imgLocalPath = "default";
     private ProgressDialog mprogress;
     private DatabaseReference mUserDatabase;
     private DBHelper dbHelper;
     private DBEquipment dbEquipment;
     private StorageReference mImageStorage, filePath;
+    private int num = 1;
 
     private Uri resultUri;
+
+
+    String[] listItems;
+    String[] listItemsKey;
+    boolean[] checkedItems;
+    ArrayList<Integer> mUserItems = new ArrayList<>();
+    Map<String, Object> stringObjectHashMapEquipment = new HashMap<>();
+
 
     public static String directory_path = Environment.getExternalStoragePublicDirectory(
             Environment.DIRECTORY_DOCUMENTS).getAbsolutePath();
@@ -87,6 +97,7 @@ public class EquipmentEditAc extends AppCompatActivity {
         etContentPre = findViewById(R.id.etContetEditEquip);
         etMountPre = findViewById(R.id.etMountEditEquip);
         imagePre = findViewById(R.id.imageEditEquip);
+        addBtnfirendEditEquip = findViewById(R.id.addBtnfirendEditEquip);
 
         mprogress = new ProgressDialog(this);
         dbHelper = new DBHelper(getApplicationContext());
@@ -97,6 +108,8 @@ public class EquipmentEditAc extends AppCompatActivity {
 
         current_uid = getIntent().getStringExtra("UidEquipment");
         PermissionManager.check(EquipmentEditAc.this, Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
+
+        getNamesUsersFromFireBase();
 
 
         File file = new File(Environment.getExternalStoragePublicDirectory(
@@ -115,50 +128,84 @@ public class EquipmentEditAc extends AppCompatActivity {
         }
 
 
-        addEquipmentBtnPre.setOnClickListener(new View.OnClickListener() {
+
+
+        addBtnfirendEditEquip.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(final View v) {
-
-                imgUpload();
+            public void onClick(View v) {
 
 
-                nameProdPre = etNameProdPre.getText().toString();
-                contentPre = etContentPre.getText().toString();
-                mountPre = etMountPre.getText().toString();
+                num = 2;
+                android.support.v7.app.AlertDialog.Builder mBuilder = new android.support.v7.app.AlertDialog.Builder(EquipmentEditAc.this);
+                mBuilder.setTitle("סמן חברים");
+                mBuilder.setMultiChoiceItems(listItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int position, boolean isChecked) {
 
-                mprogress.setMessage("שולח בקשה");
-                mprogress.show();
-
-
-
-                if (!nameProdPre.isEmpty() && !contentPre.isEmpty() && !mountPre.isEmpty()) {
-
-                    get_msg_uid = UUID.randomUUID().toString();
-
-                    long currentDateTime = System.currentTimeMillis();
-                    timePre = String.valueOf(currentDateTime);
+                        if (isChecked) {
+                            mUserItems.add(position);
 
 
-                    SaveDataToFireBaseEquipment();
-                    dbHelper.SaveDBSqliteToEquipment(nameProdPre, contentPre, mountPre, "0", timePre, imgPre, current_uid, get_msg_uid);
-                    dbEquipment.SaveDBSqliteToEquipmentExcel(nameProdPre, contentPre, mountPre, "0", timePre, imgPre, firebaseUserModel.getName());
+                        } else {
+                            mUserItems.remove((Integer.valueOf(position)));
+                        }
+                    }
+                });
 
-                    SQLiteToExcel();
+                mBuilder.setCancelable(false);
+                mBuilder.setPositiveButton("אישור", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        String item = "";
 
-                    Intent i = new Intent(EquipmentEditAc.this, EquipmentAc.class);
-                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(i);
+                                            for (int i = 0; i < mUserItems.size(); i++) {
 
-                } else {
-                    Toast.makeText(EquipmentEditAc.this,
-                            "בבקשה תמלא את הפרטים ", //ADD THIS
-                            Toast.LENGTH_SHORT).show();
-                }
+                            String listItemString = listItems[mUserItems.get(i)];
+                            String listItemKeyString = listItemsKey[mUserItems.get(i)];
 
-                mprogress.dismiss();
+                            stringObjectHashMapEquipment.put(listItemKeyString, listItemString);
+
+                            item = item + listItems[mUserItems.get(i)];
+
+                            if (i != mUserItems.size() - 1) {
+                                item = item + ", ";
+                            }
+                        }
+
+
+                        Log.e("ADDNoteAc", String.valueOf(stringObjectHashMapEquipment));
+                        //  mItemSelected.setText(item);
+                    }
+                });
+
+                mBuilder.setNegativeButton("חזור", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+
+                mBuilder.setNeutralButton("בחר הכל", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        for (int i = 0; i < checkedItems.length; i++) {
+                            checkedItems[i] = true;
+
+                            // Todo not dismiss
+//                            mUserItems.size();
+
+                            //   mItemSelected.setText("");
+                        }
+                    }
+                });
+
+                android.support.v7.app.AlertDialog mDialog = mBuilder.create();
+                mDialog.show();
+
 
             }
         });
+
 
 
     }
@@ -167,7 +214,7 @@ public class EquipmentEditAc extends AppCompatActivity {
 
         Log.e(TAG, "SaveDataToFireBaseEquipment");
 
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getCamp()).child("Equipment").child(get_msg_uid);
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getChat()).child("Equipment").child(get_msg_uid);
 
         Map<String, Object> stringObjectHashMap = new HashMap<>();
 
@@ -178,6 +225,7 @@ public class EquipmentEditAc extends AppCompatActivity {
         stringObjectHashMap.put("mountCurrent", "0");
         stringObjectHashMap.put("time", timePre);
         stringObjectHashMap.put("sender", current_uid);
+        stringObjectHashMap.put(FeedReaderContract.FeedEntry.TAG_USER, stringObjectHashMapEquipment);
 
         mUserDatabase.updateChildren(stringObjectHashMap);
 
@@ -269,7 +317,7 @@ public class EquipmentEditAc extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 resultUri = result.getUri();
                 Picasso.get().load(resultUri).error(R.drawable.admin_btn_logo).into(imagePre);
-                imgPre =String.valueOf(resultUri) ;
+                imgLocalPath =String.valueOf(resultUri) ;
 
                 filePath = mImageStorage.child("profile_images").child(resultUri.getLastPathSegment());
 
@@ -300,7 +348,7 @@ public class EquipmentEditAc extends AppCompatActivity {
 
                         imgPre = String.valueOf(uri);
 
-                        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getCamp()).child("Equipment").child(get_msg_uid);
+                        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getChat()).child("Equipment").child(get_msg_uid);
 
                         Map<String, Object> mapCampsUpdates = new HashMap<>();
                         mapCampsUpdates.put(FeedReaderContract.FeedEntry.IMAGE, imgPre);
@@ -319,6 +367,131 @@ public class EquipmentEditAc extends AppCompatActivity {
 
     }
 
+
+    public void addEquipmentBtn(View view) {
+
+
+        nameProdPre = etNameProdPre.getText().toString();
+        contentPre = etContentPre.getText().toString();
+        mountPre = etMountPre.getText().toString();
+
+        mprogress.setMessage("שולח בקשה");
+        mprogress.show();
+
+
+
+        if (!nameProdPre.isEmpty() && !contentPre.isEmpty() && !mountPre.isEmpty()) {
+            imgUpload();
+
+
+            if (num == 1){
+                for (int i = 0; i < checkedItems.length; i++) {
+                    checkedItems[i] = true;
+
+                    mUserItems.add(i);
+                }
+                String item = "";
+                for (int i = 0; i < mUserItems.size(); i++) {
+
+                    String listItemString = listItems[mUserItems.get(i)];
+                    String listItemKeyString = listItemsKey[mUserItems.get(i)];
+
+                    stringObjectHashMapEquipment.put(listItemKeyString, listItemString);
+
+                    item = item + listItems[mUserItems.get(i)];
+
+                    if (i != mUserItems.size() - 1) {
+                        item = item + ", ";
+                    }
+                }
+            }
+
+
+
+            get_msg_uid = UUID.randomUUID().toString();
+
+            long currentDateTime = System.currentTimeMillis();
+            timePre = String.valueOf(currentDateTime);
+
+
+            SaveDataToFireBaseEquipment();
+            dbHelper.SaveDBSqliteToEquipment(nameProdPre, contentPre, mountPre, "0", timePre, imgLocalPath, current_uid, get_msg_uid);
+            dbEquipment.SaveDBSqliteToEquipmentExcel(nameProdPre, contentPre, mountPre, "0", timePre, imgLocalPath, firebaseUserModel.getName());
+
+            SQLiteToExcel();
+
+            Intent i = new Intent(EquipmentEditAc.this, EquipmentAc.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(i);
+
+        } else {
+            Toast.makeText(EquipmentEditAc.this,
+                    "בבקשה תמלא את הפרטים ", //ADD THIS
+                    Toast.LENGTH_SHORT).show();
+        }
+
+        mprogress.dismiss();
+
+    }
+
+
+    public void getNamesUsersFromFireBase() {
+
+
+        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference discussionRoomsRef = rootRef.child("Users");
+
+        String chatUid = firebaseUserModel.getChat();
+
+        Query query = discussionRoomsRef.orderByChild("chat").equalTo(chatUid);
+
+        ValueEventListener valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                ArrayList<String> contactsArray = new ArrayList<>();
+                ArrayList<String> keyArray = new ArrayList<>();
+
+                long FBCount = 0;
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+
+                    FBCount = dataSnapshot.getChildrenCount();
+
+                    String key = ds.getKey();
+
+
+                    if (!key.equals(firebaseUserModel.getChat())) {
+                        String name = ds.child("name").getValue().toString();
+
+
+                        contactsArray.add(name);
+                        keyArray.add(key);
+
+                    }
+                }
+
+
+                listItems = new String[contactsArray.size()];
+                listItems = contactsArray.toArray(listItems);
+
+                listItemsKey = new String[keyArray.size()];
+                listItemsKey = keyArray.toArray(listItemsKey);
+
+                // listItems = getResources().getStringArray((int) FBCount);
+                checkedItems = new boolean[listItems.length];
+
+
+
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        };
+        query.addValueEventListener(valueEventListener);
+
+    }
 
 }
 

@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.example.omer.midburneo.Adapters.ViewPagerAdapter;
+import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.DataBase.DBHelper;
 
 import com.example.omer.midburneo.Fragments.FragmentHistory;
@@ -93,24 +94,58 @@ public class NotesAc extends AppCompatActivity {
     }
 
     public void UpdateDateFromFireBaseToSQLiteNote() {
-        if (firebaseUserModel.getCamp().equals(null)) {
+        fragmentHistory = new FragmentHistory();
+        fragmentMain = new FragmentMain();
 
-            Log.e(TAG, "UpdateDateFromFireBaseToSQLiteNote = camp is null in Sqlite");
+        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference discussionRoomsRef = rootRef.child("Camps").child(firebaseUserModel.getChat()).child("Note");
+        Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + else");
 
-            return;
+        if (countSqlLite == 0) {
+            discussionRoomsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                        getUid = snapshot.getKey().toString();
+
+                        getTitle = snapshot.child("title").getValue(String.class);
+                        getContent = snapshot.child("content").getValue(String.class);
+                        getDate = snapshot.child("date").getValue(String.class);
+                        getDateEnd = snapshot.child("dateEnd").getValue(String.class);
+                        getBool = snapshot.child("dateBool").getValue(String.class);
+                        getSender = snapshot.child("sender").getValue(String.class);
+
+
+
+                        Boolean tagUser = snapshot.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
+                        if (tagUser.equals(true)){
+                            dbHelper.SaveDBSqliteToNote(getTitle, getContent, getDate, getDateEnd, getBool, getSender, current_uid, getUid);
+
+                        }
+
+
+
+                    }
+                    fragmentMain.getNoteMsg();
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
         } else {
-            fragmentHistory = new FragmentHistory();
-            fragmentMain = new FragmentMain();
+            discussionRoomsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-            DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-            DatabaseReference discussionRoomsRef = rootRef.child("Camps").child(firebaseUserModel.getCamp()).child("Note");
-            Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + else");
 
-            if (countSqlLite == 0) {
-                discussionRoomsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        long FBCount = dataSnapshot.getChildrenCount();
+
+                        if (countSqlLite < FBCount) {
 
                             getUid = snapshot.getKey().toString();
 
@@ -121,63 +156,41 @@ public class NotesAc extends AppCompatActivity {
                             getBool = snapshot.child("dateBool").getValue(String.class);
                             getSender = snapshot.child("sender").getValue(String.class);
 
-                            dbHelper.SaveDBSqliteToNote(getTitle, getContent, getDate, getDateEnd, getBool, getSender, current_uid, getUid);
-                            Log.e(TAG, "UpdateDateFromFireBaseToSQLiteNote After + countSqlLite == 0");
-
-
-                        }
-                        fragmentMain.getNoteMsg();
-
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
-            } else {
-                discussionRoomsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            long FBCount = dataSnapshot.getChildrenCount();
-
-                            if (countSqlLite < FBCount) {
-
-                                getUid = snapshot.getKey().toString();
-
-                                getTitle = snapshot.child("title").getValue(String.class);
-                                getContent = snapshot.child("content").getValue(String.class);
-                                getDate = snapshot.child("date").getValue(String.class);
-                                getDateEnd = snapshot.child("dateEnd").getValue(String.class);
-                                getBool = snapshot.child("dateBool").getValue(String.class);
-                                getSender = snapshot.child("sender").getValue(String.class);
-
+                            Boolean tagUser = snapshot.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
+                            if (tagUser.equals(true)){
                                 dbHelper.SaveDBSqliteToNote(getTitle, getContent, getDate, getDateEnd, getBool, getSender, current_uid, getUid);
-                                Log.e(TAG, "UpdateDateFromFireBaseToSQLiteNote After + countSqlLite == 0");
+
                             }
 
                         }
+
+                    }
 //                        if (getBool.equals("true")){
 //                            fragmentHistory.getNoteMsg();
 //
 //                        }else {
 //                            fragmentMain.getNoteMsg();
 //                        }
+                    try {
                         fragmentHistory.getNoteMsg();
+                    }catch (NullPointerException e){
+                        e.printStackTrace();
+                    }
+
+                    try {
                         fragmentMain.getNoteMsg();
-
+                    }catch (NullPointerException e){
+                        e.printStackTrace();
                     }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                }
 
-                    }
-                });
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
+                }
+            });
+
         }
 
 

@@ -97,14 +97,29 @@
 
 
                 </GridLayout>
+
+
             </RelativeLayout>
+
+
+            <Button
+                android:id="@+id/addBtnfirendDateNote"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/relativeLayoutTop2"
+                android:layout_marginTop="10dp"
+                android:drawableRight="@android:drawable/ic_input_get"
+                android:gravity="center"
+                android:text="בחר למי לפרסם"
+                android:textColor="@color/colorAccent"
+                android:textSize="16sp" />
 
 
             <Button
                 android:id="@+id/saveButtonNote"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/relativeLayoutTop2"
+                android:layout_below="@+id/addBtnfirendDateNote"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="15dp"
                 android:text="שמור"

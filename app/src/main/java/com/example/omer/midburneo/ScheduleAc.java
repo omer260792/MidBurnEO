@@ -34,6 +34,7 @@ import java.util.Calendar;
 
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR;
 import static com.example.omer.midburneo.RegisterAc.prefs;
+import static com.example.omer.midburneo.Tabs.MainPageAc.SHPRF;
 import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 public class ScheduleAc extends AppCompatActivity {
@@ -76,7 +77,6 @@ public class ScheduleAc extends AppCompatActivity {
             } catch (NullPointerException e) {
 
             }
-
         }
 
 
@@ -85,9 +85,7 @@ public class ScheduleAc extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                current_admin = prefs.getString("admin", null);
-
-                if (current_admin.equals("admin")) {
+                if (firebaseUserModel.getAdmin().equals("admin")) {
                     addNote();
 
                 } else {
@@ -175,18 +173,16 @@ public class ScheduleAc extends AppCompatActivity {
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
         discussionRoomsRef = rootRef.child("Camps").child(firebaseUserModel.getCamp()).child("Calendar");
 
-        long currentDateTime = System.currentTimeMillis();
-        current_time = String.valueOf(currentDateTime);
         if (countSqlLite == 0) {
 
 
 
-            getCalnderFromFireBase(current_time);
+            getCalnderFromFireBase();
 
         } else {
 
 
-            getCalnderFromFireBase(current_time);
+            getCalnderFromFireBase();
 
         }
 
@@ -278,9 +274,9 @@ public class ScheduleAc extends AppCompatActivity {
         });
     }
 
-    public void getCalnderFromFireBase(String ChildTime) {
+    public void getCalnderFromFireBase() {
 
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getCamp()).child("Calendar");
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getChat()).child("Calendar");
         mUserDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -296,12 +292,11 @@ public class ScheduleAc extends AppCompatActivity {
                         image = ds.child("image").getValue(String.class);
                         uid_msg = ds.getKey();
 
-                        Log.d("countSqlLite", String.valueOf(countSqlLite));
-                        Log.d("ghghg", String.valueOf(uid_msg));
-                        Log.d("FBCount", String.valueOf(FBCount));
+                        Boolean tagUser = ds.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
+                        if (tagUser.equals(true)){
+                            dbHelper.SaveDBSqliteToCalendar(msg, msg_sender, time, uid_msg, setTime,name_sender,image);
 
-
-                        dbHelper.SaveDBSqliteToCalendar(msg, msg_sender, time, uid_msg, setTime,name_sender,image);
+                        }
 
                         getCalendarPickerView();
                     }

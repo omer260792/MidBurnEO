@@ -19,7 +19,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
 import static com.example.omer.midburneo.RegisterAc.SHPRF;
-import static com.example.omer.midburneo.RegisterAc.prefs;
 
 
 public class LoginAc extends AppCompatActivity {
@@ -43,7 +42,6 @@ public class LoginAc extends AppCompatActivity {
         loginUserName = findViewById(R.id.LoginUserName);
         loginUserPassword = findViewById(R.id.LoginPassword);
 
-        prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -54,30 +52,35 @@ public class LoginAc extends AppCompatActivity {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
 
+                prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
+
+
                 try {
                     emailSP = prefs.getString("email", null);
 
                 }catch (NullPointerException e){
                     e.printStackTrace();
+
                 }
 
                 if (firebaseAuth.getCurrentUser() == null) {
-
-                    if(emailSP != (null) || emailSP == ""){
-                        Intent intent = new Intent(LoginAc.this, MainPageAc.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
-                        finish();
-
-                    }else {
-                        return;
-                    }
+//
+//                    if(emailSP != null && emailSP.equals("default")){
+//                        Intent intent = new Intent(LoginAc.this, MainPageAc.class);
+//                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                        startActivity(intent);
+//                        finish();
+//
+//                    }else {
+//                        return;
+//                    }
+                    return;
 
                 } else {
 
                     try {
 
-                        if (emailSP.equals("register")){
+                        if (emailSP == "register" ){
 
 
                             Intent intent = new Intent(LoginAc.this, CampsAc.class);
@@ -85,6 +88,9 @@ public class LoginAc extends AppCompatActivity {
                             startActivity(intent);
                             finish();
 
+
+                        }else if(emailSP.equals("default")){
+                            return;
 
                         }else {
 

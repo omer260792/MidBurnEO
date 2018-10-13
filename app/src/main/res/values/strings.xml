@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MidBurnEO</string>
+    <string name="app_name">MidCamp</string>
 
 
     <string name="get_date">Get date</string>
@@ -13,6 +13,10 @@
     <string name="action_list_note">הכנס מטלות</string>
     <string name="action_list_Equipment">הכנס ציוד</string>
     <string name="action_excel">פתח אקסל</string>
+    <string name="action_open_group">פתח קבוצה</string>
+
+
+
 
 
 </resources>

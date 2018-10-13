@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,6 +21,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
+import com.example.omer.midburneo.Class.FirebaseMessageModel;
 import com.example.omer.midburneo.R;
 import com.example.omer.midburneo.Class.MessageCell;
 
@@ -50,62 +52,106 @@ public class MessagesListAdapter extends ArrayAdapter<MessageCell> {
         // TODO Auto-generated method stub
         LayoutInflater inflater = ((Activity) context).getLayoutInflater();
 
-        if(VIEW_TYPE_PICTURE==2 && !cellItem[position].getImage().equals("default")){
+        FirebaseMessageModel firebaseMessageModel = new FirebaseMessageModel();
 
-            if (cellItem[position].getSender()) {
+
+        if (cellItem[position].getSender()) {
                 VIEW_TYPE=0;
 
-                convertView = inflater.inflate(R.layout.item_message_image_left, parent, false);
+                convertView = inflater.inflate(R.layout.message_cell_sender, parent, false);
 
             } else {
                 VIEW_TYPE=1;
-
-                convertView = inflater.inflate(R.layout.item_message_image_right, parent, false);
-
-            }
-
-        }else {
-
-            if (cellItem[position].getSender()) {
-                VIEW_TYPE=0;
 
                 convertView = inflater.inflate(R.layout.message_cell, parent, false);
 
-            } else {
-                VIEW_TYPE=1;
+            }
+        TextView nameSenderTv = (TextView) convertView.findViewById(R.id.tvNameItemMsg);
+        TextView messageTv = (TextView) convertView.findViewById(R.id.tvContentItemMsg);
+        TextView dateTimeTv = (TextView) convertView.findViewById(R.id.dateTimeItemMsg);
+        Button btnRecod = (Button)convertView.findViewById(R.id.btnRecordItemMsg);
+        ImageView imageView = (ImageView) convertView.findViewById(R.id.imageItemMsg);
 
-                convertView = inflater.inflate(R.layout.sender_message_cell, parent, false);
+        String image = cellItem[position].getImage();
+        String msg = cellItem[position].getMessageText();
+
+        String sender = cellItem[position].getStringSender();
+
+
+       // /String omer = firebaseMessageModel.getStatus();
+//        Log.e(sender,omer);
+
+        if (VIEW_TYPE == 0){
+
+            if (image.equals("default")){
+
+                messageTv.setText(cellItem[position].getMessageText());
+                dateTimeTv.setText(cellItem[position].getMessageDateTime());
+                imageView.setVisibility(View.GONE);
+                btnRecod.setVisibility(View.GONE);
+                nameSenderTv.setVisibility(View.GONE);
+
+            }else {
+
+                if (msg.equals("")){
+                    dateTimeTv.setText(cellItem[position].getMessageDateTime());
+                    Glide.with(context).load(cellItem[position].getImage()).into(imageView);
+                    messageTv.setVisibility(View.GONE);
+                    btnRecod.setVisibility(View.GONE);
+                    nameSenderTv.setVisibility(View.GONE);
+
+                }else{
+                    messageTv.setText(cellItem[position].getMessageText());
+                    dateTimeTv.setText(cellItem[position].getMessageDateTime());
+                    Glide.with(context).load(cellItem[position].getImage()).into(imageView);
+                    btnRecod.setVisibility(View.GONE);
+                    nameSenderTv.setVisibility(View.GONE);
+
+                }
+
 
             }
-        }
-
-        TextView sender = (TextView) convertView.findViewById(R.id.photoName);
-        TextView wish = (TextView) convertView.findViewById(R.id.wishMessage);
-        TextView dateTime = (TextView) convertView.findViewById(R.id.dateTime);
-        TextView text_message_time = (TextView) convertView.findViewById(R.id.text_message_time);
-        ImageView image_message_profile = (ImageView) convertView.findViewById(R.id.image_message_profile);
 
 
-
-        if (VIEW_TYPE_PICTURE==2 && !cellItem[position].getImage().equals("default")){
-
-            Glide.with(context).load(cellItem[position].getImage()).into(image_message_profile);
-            text_message_time.setText(cellItem[position].getMessageDateTime());
-
-           // VIEW_TYPE_PICTURE=1;
 
         }else {
-            wish.setText(cellItem[position].getMessageText());
-            dateTime.setText(cellItem[position].getMessageDateTime());
 
-            if (VIEW_TYPE==1){
+            if (image.equals("default")){
 
-                sender.setText(cellItem[position].getMessageSender());
 
-                VIEW_TYPE=0;
+                nameSenderTv.setText(cellItem[position].getMessageSender());
+                messageTv.setText(cellItem[position].getMessageText());
+                dateTimeTv.setText(cellItem[position].getMessageDateTime());
+                imageView.setVisibility(View.GONE);
+                btnRecod.setVisibility(View.GONE);
+
+            }else {
+
+                if (msg.equals("")){
+                    nameSenderTv.setText(cellItem[position].getMessageSender());
+                    messageTv.setVisibility(View.GONE);
+                    dateTimeTv.setText(cellItem[position].getMessageDateTime());
+                    Glide.with(context).load(cellItem[position].getImage()).into(imageView);
+                    btnRecod.setVisibility(View.GONE);
+
+                }else{
+                    nameSenderTv.setText(cellItem[position].getMessageSender());
+                    messageTv.setText(cellItem[position].getMessageText());
+                    dateTimeTv.setText(cellItem[position].getMessageDateTime());
+                    Glide.with(context).load(cellItem[position].getImage()).into(imageView);
+                    btnRecod.setVisibility(View.GONE);
+
+                }
+
+
             }
 
+
+
+
+
         }
+
 
 
         convertView.setOnLongClickListener(new View.OnLongClickListener() {

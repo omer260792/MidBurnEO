@@ -4,141 +4,74 @@ import android.content.SharedPreferences;
 
 public class User {
 
-    public String admin;
-    public String camps;
-    public String chat;
-    public String email;
-    public String image;
-    public String name;
-    public String number;
-    public String password;
-    public String status;
-    public String url;
-    public String uid;
-    public String time;
-    public String id;
 
+    private static final User user = new User();
 
-
-
-    public User(String admin, String camps, String chat, String email, String image, String name, String number, String password, String status, String url, String uid, String time, String id) {
-        this.admin = admin;
-        this.camps = camps;
-        this.chat = chat;
-        this.email = email;
-        this.image = image;
-        this.name = name;
-        this.number = number;
-        this.password = password;
-        this.status = status;
-        this.url = url;
-        this.uid = uid;
-        this.time = time;
-        this.id = id;
+    public static User getInstance() {
+        return user;
     }
 
-    public String getAdmin() {
-        return admin;
+    public String name = "";
+    public String deviceId = "";
+    public String deviceToken = "";
+    public String admin = "";
+    public String camp = "";
+    public String uidReceiver = "";
+    public String lastMsg = "";
+    public String status = "";
+    public String image = "";
+    public String uidCount = "";
+    public String role = "";
+    public String online = "";
+    public String phone = "";
+    public String time = "";
+    public String chat = "";
+    public String email = "";
+    public String number = "";
+    public String pass = "";
+
+
+    public static final String appPreferences = "ChattingAppPreferences";
+
+    public static final String Key = "keyKey";
+    public static final String Name = "nameKey";
+    public static final String DeviceToken = "deviceTokenKey";
+    public static final String DeviceId = "deviceIdKey";
+
+    public SharedPreferences sharedpreferences;
+
+    private User() {
     }
 
-    public void setAdmin(String admin) {
-        this.admin = admin;
+    public Boolean login(FirebaseUserModel firebaseUserModel) {
+
+
+
+
+        image = firebaseUserModel.getImage();
+        role = firebaseUserModel.getRole();
+        deviceId = firebaseUserModel.getDeviceId();
+        admin = firebaseUserModel.getAdmin();
+        number = firebaseUserModel.getNumber();
+        uidReceiver = firebaseUserModel.getUidReceiver();
+        camp = firebaseUserModel.getCamp();
+        pass = firebaseUserModel.getPass();
+        phone = firebaseUserModel.getPhone();
+        chat = firebaseUserModel.getChat();
+        deviceToken = firebaseUserModel.getDeviceToken();
+        name = firebaseUserModel.getName();
+        lastMsg = firebaseUserModel.getLastMsg();
+        online = firebaseUserModel.getOnline();
+        time = firebaseUserModel.getTime();
+        email = firebaseUserModel.getEmail();
+        status = firebaseUserModel.getStatus();
+
+
+
+
+
+        return true;
     }
 
-    public String getCamps() {
-        return camps;
-    }
 
-    public void setCamps(String camps) {
-        this.camps = camps;
-    }
-
-    public String getChat() {
-        return chat;
-    }
-
-    public void setChat(String chat) {
-        this.chat = chat;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getNumber() {
-        return number;
-    }
-
-    public void setNumber(String number) {
-        this.number = number;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getUid() {
-        return uid;
-    }
-
-    public void setUid(String uid) {
-        this.uid = uid;
-    }
-
-    public String getTime() {
-        return time;
-    }
-
-    public void setTime(String time) {
-        this.time = time;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 }
-

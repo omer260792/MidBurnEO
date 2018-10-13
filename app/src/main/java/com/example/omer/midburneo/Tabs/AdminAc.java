@@ -52,7 +52,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.omer.midburneo.RegisterAc.CAMERA;
 import static com.example.omer.midburneo.RegisterAc.GALLERY;
-import static com.example.omer.midburneo.RegisterAc.SHPRF;
+import static com.example.omer.midburneo.Tabs.MainPageAc.SHPRF;
 import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
 import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
@@ -66,9 +66,10 @@ public class AdminAc extends AppCompatActivity {
     private CircleImageView circleImageView;
 
 
-    public String current_uid, camp, status, date, title, content, image, stringUrl;
+    public String current_uid, camp, status, date, title, content, image, realName;
     public long currentDateTime;
     private Uri resultUri;
+    public String stringUrl = "default";
 
     public SharedPreferences prefs;
     private DatabaseReference mUserDatabase;
@@ -94,6 +95,8 @@ public class AdminAc extends AppCompatActivity {
 
         prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
 
+        realName = tvNameAdmin.getText().toString();
+
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         dbHelper = new DBHelper(this);
@@ -109,45 +112,32 @@ public class AdminAc extends AppCompatActivity {
                 status = statusFieldAdmin.getText().toString();
                 camp = tvNameAdmin.getText().toString();
 
-
-
                 if (!status.equals("") && !camp.equals("")) {
 
-                    if (!stringUrl.equals(null) && !camp.equals(firebaseUserModel.getName()) || !status.equals(firebaseUserModel.getStatus())) {
 
-                        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-                        DatabaseReference discussionRoomsRef = rootRef.child("Users");
+                    if (!stringUrl.equals("default")) {
 
-                        Query query = discussionRoomsRef.orderByChild("camps").equalTo(firebaseUserModel.getCamp());
-                        ValueEventListener valueEventListener = new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
+                        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(firebaseUserModel.getChat());
 
-                                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                                    long FBCount = dataSnapshot.getChildrenCount();
+                        Map<String, Object> mapUserUpdates = new HashMap<>();
+                        mapUserUpdates.put("name", camp);
+                        mapUserUpdates.put("status", status);
+                        mapUserUpdates.put("camps", camp);
+                        mapUserUpdates.put("image", stringUrl);
 
-                                    String uidUser = ds.getKey();
+                        mUserDatabase.updateChildren(mapUserUpdates);
+                    }else {
 
-                                    mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(uidUser);
+                        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(firebaseUserModel.getChat());
 
-                                    Map<String, Object> mapUserUpdates = new HashMap<>();
-                                    mapUserUpdates.put("name", camp);
-                                    mapUserUpdates.put("status", status);
-                                    mapUserUpdates.put("camps", camp);
-                                    mapUserUpdates.put("image", stringUrl);
+                        Map<String, Object> mapUserUpdates = new HashMap<>();
+                        mapUserUpdates.put("name", camp);
+                        mapUserUpdates.put("status", status);
+                        mapUserUpdates.put("camps", camp);
 
-                                    mUserDatabase.updateChildren(mapUserUpdates);
+                        mUserDatabase.updateChildren(mapUserUpdates);
+                    }
 
-
-                                }
-                                // need to change Name Table ----> Camps->"name change"->calendar.......
-
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-                            }
-                        };
 
 
                         if (!firebaseUserModel.getCamp().equals(camp)) {
@@ -156,16 +146,45 @@ public class AdminAc extends AppCompatActivity {
                         }
                         Toast.makeText(AdminAc.this, "נשמר בהצלחה", Toast.LENGTH_LONG).show();
 
-                    } else {
-                        Toast.makeText(AdminAc.this, "עדכן תמונה שוב", Toast.LENGTH_LONG).show();
 
-                    }
 
 
                 } else {
                     Toast.makeText(AdminAc.this, "מלא פרטים חסרים", Toast.LENGTH_LONG).show();
 
                 }
+
+                if (!camp.equals(firebaseUserModel.getName())) {
+
+                    DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+                    DatabaseReference discussionRoomsRef = rootRef.child("Users");
+
+                    Query query = discussionRoomsRef.orderByChild("chat").equalTo(firebaseUserModel.getChat());
+
+                    ValueEventListener valueEventListener = new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                                long FBCount = dataSnapshot.getChildrenCount();
+
+                                String key = ds.getKey();
+                                mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(key);
+
+                                Map<String, Object> mapUserUpdates = new HashMap<>();
+                                mapUserUpdates.put("name", camp);
+
+                                mUserDatabase.updateChildren(mapUserUpdates);
+
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    };
+                }
+
             }
         });
     }
@@ -284,7 +303,9 @@ public class AdminAc extends AppCompatActivity {
 
     public void getProfile() {
 
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(firebaseUserModel.getChat());
+        String chat = firebaseUserModel.getChat();
+
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(chat);
 
         mUserDatabase.addValueEventListener(new ValueEventListener() {
             @Override
@@ -311,6 +332,7 @@ public class AdminAc extends AppCompatActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
+                databaseError.getCode();
 
             }
         });

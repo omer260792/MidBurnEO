@@ -116,6 +116,9 @@ public class RegisterAc extends AppCompatActivity {
 
         if (!TextUtils.isEmpty(getName) && !TextUtils.isEmpty(getEmail) && !TextUtils.isEmpty(getPass) && getNum.trim().length() == 10) {
 
+
+
+
             prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
 
             prefs.edit().putString("name", getName).apply();
@@ -295,7 +298,6 @@ public class RegisterAc extends AppCompatActivity {
 
                         Map<String, Object> mapCampsUpdates = new HashMap<>();
                         mapCampsUpdates.put(FeedReaderContract.FeedEntry.IMAGE, stringUrl);
-                        prefs.edit().putString("image", resultUri.toString()).apply();
 
                         mUserDatabase.updateChildren(mapCampsUpdates);
                         mprogress.dismiss();

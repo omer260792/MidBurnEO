@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -17,16 +16,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.omer.midburneo.Adapters.FriendsAdapter;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.R;
-import com.example.omer.midburneo.Utils.UtilHelper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -45,8 +43,7 @@ import java.util.UUID;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.omer.midburneo.RegisterAc.REQUEST_PHONE_CALL;
-import static com.example.omer.midburneo.RegisterAc.SHPRF;
-import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
+;import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 public class ChatAc extends AppCompatActivity {
 
@@ -70,7 +67,7 @@ public class ChatAc extends AppCompatActivity {
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.tab_chat);
+        setContentView(R.layout.tab_user);
 
         nameCampTv = findViewById(R.id.nameCampUser);
         imageView = findViewById(R.id.imgChatUser);
@@ -144,13 +141,12 @@ public class ChatAc extends AppCompatActivity {
     public void UpdateSqliteFromFireBase() {
 
 
-        if (firebaseUserModel.getCamp().equals(null)) {
-            return;
+        if (firebaseUserModel.getCamp() == null) {
         } else {
             DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
             DatabaseReference discussionRoomsRef = rootRef.child("Users");
 
-            Query query = discussionRoomsRef.orderByChild("camps").equalTo(firebaseUserModel.getCamp());
+            Query query = discussionRoomsRef.orderByChild("chat").equalTo(firebaseUserModel.getChat());
             ValueEventListener valueEventListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -168,33 +164,36 @@ public class ChatAc extends AppCompatActivity {
                             get_token = ds.child(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN).getValue(String.class);
                             getUidUsers = ds.getKey();
 
-                            String getMyKeyMsg = ds.child(current_uid).getValue(String.class);
 
-                            int numm = 1;
+                            Boolean CheckUidEx;
+
+                            String getMyKeyMsg = UUID.randomUUID().toString();
 
                             try {
-                                if (getMyKeyMsg.equals(null)) {
+                                CheckUidEx = ds.child(current_uid).exists();
+                                if (CheckUidEx.equals(false)){
+
+                                    if (getNameReceiver.equals(firebaseUserModel.getCamp())) {
+                                        getMyKeyMsg = get_chat;
+                                        saveUserChatFirebase(getMyKeyMsg);
+
+                                    } else {
+                                        saveUserChatFirebase(getMyKeyMsg);
+
+
+                                    }
+
+
+
+                                }else {
+                                    getMyKeyMsg = ds.child(current_uid).getValue(String.class);
 
                                 }
-
-                            } catch (NullPointerException e) {
-                                e.printStackTrace();
-
-
-                                getMyKeyMsg = UUID.randomUUID().toString();
-
-
-                                if (getNameReceiver.equals(firebaseUserModel.getCamp())) {
-                                    getMyKeyMsg = get_chat;
-                                    saveUserChatFirebase(getMyKeyMsg);
-
-                                } else {
-                                    saveUserChatFirebase(getMyKeyMsg);
-
-                                }
-
+                            }catch (Exception e){
 
                             }
+
+
                             try {
 
 
@@ -232,7 +231,7 @@ public class ChatAc extends AppCompatActivity {
                 public void onCancelled(DatabaseError databaseError) {
                 }
             };
-            query.addValueEventListener(valueEventListener);
+            query.addListenerForSingleValueEvent(valueEventListener);
 
         }
 
@@ -272,5 +271,30 @@ public class ChatAc extends AppCompatActivity {
 
 
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_list_user, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        if (id == R.id.item_setting_user) {
+
+                Intent i = new Intent(ChatAc.this, EquipmentEditAc.class);
+                startActivity(i);
+
+
+            return true;
+        }
+
+
+        return super.onOptionsItemSelected(item);
+    }
+
 
 }

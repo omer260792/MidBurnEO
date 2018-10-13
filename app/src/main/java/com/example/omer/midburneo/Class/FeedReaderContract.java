@@ -7,7 +7,6 @@ public final class FeedReaderContract {
     private FeedReaderContract() {
     }
 
-    /* Inner class that defines the table contents */
     public static class FeedEntry implements BaseColumns {
 
         public static final String TABLE_NAME = "users";
@@ -30,7 +29,7 @@ public final class FeedReaderContract {
         public static final String TITLE = "title";
         public static final String UID = "uid";
         public static final String TIME = "time";
-        public static final String UID_id = "id";
+        public static final String TAG_USER = "tag_user";
         public static final String ROLE = "role";
         public static final String LASTMSG = "lastmsg";
         public static final String MESSAGE = "message";

@@ -1,8 +1,11 @@
 // done
 package com.example.omer.midburneo;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -32,6 +35,7 @@ import java.util.Map;
 
 import static com.example.omer.midburneo.RegisterAc.SHPRF;
 import static com.example.omer.midburneo.RegisterAc.prefs;
+import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 
 public class CampsAc extends AppCompatActivity {
@@ -40,8 +44,10 @@ public class CampsAc extends AppCompatActivity {
     private Spinner spinner;
     private DatabaseReference mUserDatabase;
     private FirebaseUser mCurrentUser;
+    private ProgressDialog mprogress;
 
-    public String current_uid, current_num, uid_camp, camp_name, get_name_camp;
+
+    public String current_uid, current_uid_camp, uid_camp, camp_name, get_name_camp;
     public long countFB;
     public int size;
 
@@ -57,6 +63,9 @@ public class CampsAc extends AppCompatActivity {
 
         mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
         current_uid = mCurrentUser.getUid();
+
+
+        mprogress = new ProgressDialog(this);
 
 
         getDataSpinner();
@@ -79,16 +88,35 @@ public class CampsAc extends AppCompatActivity {
         confirmCampBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mprogress.setMessage("מוריד מידע");
+                mprogress.show();
 
                 updateDataFireBase();
 
+
                 prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
                 prefs.edit().putString("camps", get_name_camp).apply();
+                prefs.edit().putString("chat", uid_camp).apply();
 
-                Intent intent = new Intent(CampsAc.this, MainPageAc.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                finish();
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+
+                        Intent intent = new Intent(CampsAc.this, MainPageAc.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        intent.putExtra("", "");
+                        startActivity(intent);
+                      //  mprogress.dismiss();
+                        finish();
+
+
+                        // yourMethod();
+                    }
+                }, 5000);   //
+
+
+
+
             }
         });
 
@@ -104,12 +132,10 @@ public class CampsAc extends AppCompatActivity {
     }
 
 
-
-
     //get camp list and set in spinner
     private void getDataSpinner() {
 
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps");
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child("AllCamps");
         //get value of camps table
         mUserDatabase.addValueEventListener(new ValueEventListener() {
             @Override
@@ -118,8 +144,12 @@ public class CampsAc extends AppCompatActivity {
                 ArrayList<ListCampAc> contacts = new ArrayList<>();
 
                 //running loop of all the children and getting key
-                for (DataSnapshot data : dataSnapshot.getChildren()) {
-                    camp_name = data.getKey();
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    camp_name = ds.getKey();
+
+
+                    current_uid_camp = String.valueOf(ds.getValue());
+
 
                     contacts.add(new ListCampAc(camp_name));
 
@@ -142,17 +172,27 @@ public class CampsAc extends AppCompatActivity {
 
 
     }
+
     public class ItemSelectedListener implements AdapterView.OnItemSelectedListener {
 
         //get strings of first item
 
 
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-            if ("Animal Bar".equals(spinner.getSelectedItem().toString())) {
+            if (camp_name.equals(spinner.getSelectedItem().toString())) {
                 // ToDo when first item is selected
                 Toast.makeText(parent.getContext(),
                         "ToDo when first item is selected: ",
                         Toast.LENGTH_LONG).show();
+
+                if (spinner.getSelectedItem().equals(1)) {
+//                        get_name_camp = parent.getItemAtPosition(pos).toString();
+//
+//                        Log.e("ItemSelectedListener",get_name_camp);
+//
+//                        getUidCamp();
+                }
+
 
             } else {
                 Toast.makeText(parent.getContext(),
@@ -161,6 +201,8 @@ public class CampsAc extends AppCompatActivity {
                 // Todo when item is selected by the user
 
                 get_name_camp = parent.getItemAtPosition(pos).toString();
+
+                Log.e("ItemSelectedListener", get_name_camp);
 
                 getUidCamp();
             }
@@ -172,7 +214,6 @@ public class CampsAc extends AppCompatActivity {
         }
 
     }
-
 
 
     public void getUidCamp() {
@@ -190,6 +231,8 @@ public class CampsAc extends AppCompatActivity {
 
                     countFB = dataSnapshot.getChildrenCount();
                     uid_camp = ds.child("chat").getValue(String.class);
+                    camp_name = ds.child("camps").getValue(String.class);
+
 
                 }
             }

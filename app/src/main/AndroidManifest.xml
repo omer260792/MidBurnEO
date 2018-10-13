@@ -11,7 +11,6 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
@@ -24,14 +23,14 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_midburn_apps"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
             android:name=".LoginAc"
-            android:label="הרשמה">
+            android:label="@string/app_name">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -40,6 +39,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".RegisterAc"
             android:label="התחברות">
@@ -48,6 +48,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".CampsAc"
             android:label="הרשמה מחנה נושא">
@@ -56,6 +57,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".CreateCampAc"
             android:label="יצירת מחנה נושא">
@@ -65,19 +67,30 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".Tabs.AdminAc">
+        <activity
+            android:name=".Tabs.AdminAc"
+            android:label="עריכת מחנה נושא">
+            >
+
             <intent-filter>
                 <action android:name="AdminAc" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".Tabs.MainPageAc">
+
+        <activity
+            android:name=".Tabs.MainPageAc"
+            android:label="עמוד ראשי">
+
             <intent-filter>
                 <action android:name="MainPageAc" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".ScheduleAc">
+
+        <activity
+            android:name=".ScheduleAc"
+            android:label="לוח פגישות">
             <intent-filter>
                 <action android:name="ScheduleAc" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -85,27 +98,35 @@
         </activity>
 
 
-        <activity android:name=".Tabs.ChatAc">
+        <activity
+            android:name=".Tabs.ChatAc"
+            android:label="אנשי קשר בקמפ">
             <intent-filter>
                 <action android:name="ChatAc" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".Tabs.EquipmentAc">
+        <activity
+            android:name=".Tabs.EquipmentAc"
+            android:label="רשימת ציוד">
             <intent-filter>
                 <action android:name="AdminAc" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".Tabs.NotesAc">
+        <activity
+            android:name=".Tabs.NotesAc"
+            android:label="רשימת מטלות">
             <intent-filter>
                 <action android:name="AdminAc" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".Tabs.ProfileAc">
+        <activity
+            android:name=".Tabs.ProfileAc"
+            android:label="פרופיל">
             <intent-filter>
                 <action android:name="AdminAc" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -119,18 +140,18 @@
 
         <activity
             android:name=".AddNoteActivity"
-            android:label="Standard calendar" />
+            android:label="הוסך פגישה" />
 
         <activity
             android:name=".NotePreviewActivity"
-            android:label="Standard calendar" />
+            android:label="דף הפגישה" />
         <activity
             android:name=".Tabs.EquipmentPreviewAc"
-            android:label="Standard calendar" />
+            android:label="דף הציוד" />
 
         <activity
             android:name=".Tabs.EquipmentEditAc"
-            android:label="Standard calendar" />
+            android:label="ציוד לעריכה" />
 
         <activity
             android:name=".Utils.UtilHelper"
@@ -138,12 +159,16 @@
 
         <activity
             android:name=".Utils.PopUpUser"
-            android:label="Standard calendar" />
+            android:label="" />
         <activity
             android:name=".Tabs.NoteEditAc"
-            android:label="Standard calendar" />
+            android:label="עריכת מטילה" />
 
-        <activity android:name=".Tabs.ChatListAc"></activity>
+        <activity
+            android:name=".Tabs.ChatListAc"
+            android:label="צ'אט">
+
+        </activity>
 
 
         <service android:name=".Service.MyFirebaseInstanceIdService">

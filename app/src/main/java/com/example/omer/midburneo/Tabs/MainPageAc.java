@@ -2,6 +2,9 @@ package com.example.omer.midburneo.Tabs;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,7 +17,7 @@ import android.widget.Toast;
 
 import com.example.omer.midburneo.Adapters.ImageAdapter;
 import com.example.omer.midburneo.Class.FirebaseUserModel;
-import com.example.omer.midburneo.Class.UserTest;
+import com.example.omer.midburneo.Class.User;
 import com.example.omer.midburneo.R;
 import com.example.omer.midburneo.ScheduleAc;
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,14 +31,17 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.example.omer.midburneo.RegisterAc.SHPRF;
-import static com.example.omer.midburneo.RegisterAc.prefs;
+import static com.example.omer.midburneo.DataBase.DBHelper.DATABASE_NAME;
+
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_MESSAGE;
 
 
 public class MainPageAc extends AppCompatActivity {
 
     private static final String TAG = "MainPageAc";
+
+    public static SharedPreferences prefs;
+    public static String SHPRF = "User";
 
 
     private DatabaseReference mUserDatabase;
@@ -44,36 +50,73 @@ public class MainPageAc extends AppCompatActivity {
     private ProgressDialog mprogress;
 
 
-    public String current_uid, current_image, current_name, image, current_camp, current_admin, current_uid_camp, timeString;
+    public String current_uid, current_image, current_name, image, current_camp, current_admin, timeString;
+    public String current_uid_camp = "";
     public static FirebaseUserModel firebaseUserModel;
+    private boolean isConnected;
 
-    static UserTest user = UserTest.getInstance();
+    static User user = User.getInstance();
     public static final String setImgUrlDefault = "https://firebasestorage.googleapis.com/v0/b/midburneo-6d072.appspot.com/o/profile_images%2Fcropped5081028198796683166.jpg?alt=media&token=8c49a7b9-2ee5-4ea6-b7c2-52199ef167f8";
 
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_page);
 
-        mAuth = FirebaseAuth.getInstance();
+
+        // Determine if you have an internet connection
+        ConnectivityManager cm = (ConnectivityManager)this.getSystemService(this.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+
         mprogress = new ProgressDialog(this);
 
         mprogress.setMessage("מוריד מידע");
         mprogress.show();
 
-        current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        TABLE_NAME_MESSAGE = current_uid;
-        firebaseUserModel = new FirebaseUserModel();
 
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main_page);
+
+        mAuth = FirebaseAuth.getInstance();
+
+     //   boolean isWiFi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
+
+        if (isConnected){
+            Log.e("ssssss", String.valueOf(isConnected));
+
+        }else {
+            Log.e("ssstttts", String.valueOf(isConnected));
+
+        }
+        Log.e("ssstttts", String.valueOf(isConnected));
+
+
+        try {
+
+
+            prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
+
+
+            current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            TABLE_NAME_MESSAGE = current_uid;
+            DATABASE_NAME = current_uid;
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+
+
+        firebaseUserModel = new FirebaseUserModel();
 
 
         GridView gridView = findViewById(R.id.grid_view);
         gridView.setAdapter(new ImageAdapter(this));
 
         try {
-            FirebaseUserModel.getSPToFirebaseUserModel(firebaseUserModel,getApplicationContext());
+            FirebaseUserModel.getSPToFirebaseUserModel(firebaseUserModel, getApplicationContext());
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -86,7 +129,6 @@ public class MainPageAc extends AppCompatActivity {
             e.printStackTrace();
 
         }
-
 
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -134,13 +176,13 @@ public class MainPageAc extends AppCompatActivity {
     }
 
 
-
     public void getUserDBFromFireBase() {
 
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
         mUserDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
 
                 current_image = dataSnapshot.child("image").getValue().toString();
                 current_admin = dataSnapshot.child("admin").getValue().toString();
@@ -154,6 +196,9 @@ public class MainPageAc extends AppCompatActivity {
                 String time = dataSnapshot.child("time").getValue().toString();
                 String role = dataSnapshot.child("role").getValue().toString();
                 String email = dataSnapshot.child("email").getValue().toString();
+
+
+
 
 
                 if (current_image.equals("default")) {
@@ -182,9 +227,9 @@ public class MainPageAc extends AppCompatActivity {
 
                 mprogress.dismiss();
 
-                FirebaseUserModel.saveDataInSharedPre(firebaseUserModel,getApplicationContext());
+                FirebaseUserModel.saveDataInSharedPre(firebaseUserModel, getApplicationContext());
 
-            Log.e("ffffff",firebaseUserModel.getAdmin());
+                Log.e("ffffff", firebaseUserModel.getAdmin());
                 prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
                 prefs.edit().putString("email", firebaseUserModel.getEmail()).apply();
 
@@ -197,7 +242,6 @@ public class MainPageAc extends AppCompatActivity {
         });
 
 
-
     }
 
     public void UpdateUserOnline() {
@@ -206,6 +250,8 @@ public class MainPageAc extends AppCompatActivity {
 
         Map<String, Object> mapCampsUpdates = new HashMap<>();
         mapCampsUpdates.put("online", "true");
+        Log.e("ADDNoteAc", String.valueOf(mapCampsUpdates));
+
 
         mUserDatabase.updateChildren(mapCampsUpdates);
 
@@ -218,7 +264,7 @@ public class MainPageAc extends AppCompatActivity {
 
         // before on destroy take all the data
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
-        Log.e(TAG,"onStop");
+        Log.e(TAG, "onStop");
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         long currentDateTime = System.currentTimeMillis();
         timeString = String.valueOf(currentDateTime);
@@ -227,27 +273,17 @@ public class MainPageAc extends AppCompatActivity {
     @Override
     protected void onDestroy() {
 
-//        new Thread(new Runnable() {
-//            public void run() {
 
-                Log.e(TAG,"onDestroy");
+        Log.e(TAG, "onDestroy");
 
-          //      mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+        //      mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
 
-                Map<String, Object> mapCampsUpdates = new HashMap<>();
-                mapCampsUpdates.put("time", timeString);
-                mapCampsUpdates.put("online", "false");
+        Map<String, Object> mapCampsUpdates = new HashMap<>();
+        mapCampsUpdates.put("time", timeString);
+        mapCampsUpdates.put("online", "false");
 
 
-
-                mUserDatabase.updateChildren(mapCampsUpdates);
-
-
-
-
-//
-//            }
-//        }).start();
+        mUserDatabase.updateChildren(mapCampsUpdates);
 
 
         super.onDestroy();
@@ -255,9 +291,9 @@ public class MainPageAc extends AppCompatActivity {
 
     }
 
-    }
+}
 
-    //                final FirebaseUserModel firebaseUserModel = new FirebaseUserModel();
+//                final FirebaseUserModel firebaseUserModel = new FirebaseUserModel();
 //                firebaseUserModel.setName(getName);
 //                firebaseUserModel.setEmail(getEmail);
 //                firebaseUserModel.setPass(getPass);

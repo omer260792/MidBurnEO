@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import static android.content.Context.MODE_PRIVATE;
-import static com.example.omer.midburneo.RegisterAc.SHPRF;
+import static com.example.omer.midburneo.Tabs.MainPageAc.SHPRF;
 
 public class FirebaseUserModel {
 
@@ -64,18 +64,18 @@ public class FirebaseUserModel {
 
         prefs = context.getSharedPreferences(SHPRF, MODE_PRIVATE);
 
-        prefs.edit().putString(image, firebaseUserModel.getImage()).apply();
-        prefs.edit().putString(role , firebaseUserModel.getRole()).apply();
-        prefs.edit().putString(deviceId, firebaseUserModel.getDeviceId()).apply();
-        prefs.edit().putString(admin, firebaseUserModel.getAdmin()).apply();
-        prefs.edit().putString(number, firebaseUserModel.getNumber()).apply();
-        prefs.edit().putString(camp, firebaseUserModel.getCamp()).apply();
-        prefs.edit().putString(phone, firebaseUserModel.getPhone()).apply();
-        prefs.edit().putString(chat, firebaseUserModel.getChat()).apply();
-        prefs.edit().putString(deviceToken, firebaseUserModel.getDeviceToken()).apply();
-        prefs.edit().putString(name, firebaseUserModel.getName()).apply();
-        prefs.edit().putString(time, firebaseUserModel.getTime()).apply();
-        prefs.edit().putString(email, firebaseUserModel.getEmail()).apply();
+        prefs.edit().putString(FeedReaderContract.FeedEntry.IMAGE, image);
+        prefs.edit().putString(FeedReaderContract.FeedEntry.ROLE , role);
+        prefs.edit().putString(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID,deviceId);
+        prefs.edit().putString(FeedReaderContract.FeedEntry.ADMIN, admin);
+        prefs.edit().putString(FeedReaderContract.FeedEntry.CAMPS, camp);
+        prefs.edit().putString(FeedReaderContract.FeedEntry.PHONE, phone);
+        prefs.edit().putString(FeedReaderContract.FeedEntry.NUMBER, number);
+        prefs.edit().putString(FeedReaderContract.FeedEntry.CHAT, chat);
+        prefs.edit().putString(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN, deviceToken);
+        prefs.edit().putString(FeedReaderContract.FeedEntry.NAME, name);
+        prefs.edit().putString(FeedReaderContract.FeedEntry.TIME, time);
+        prefs.edit().putString(FeedReaderContract.FeedEntry.EMAIL, email);
 
         return true;
     }
@@ -87,34 +87,21 @@ public class FirebaseUserModel {
         prefs = context.getSharedPreferences(SHPRF, MODE_PRIVATE);
 
 
-        String SHPRF = "User";
-        String image = "";
-        String role = "";
-        String deviceId = "";
-        String admin = "";
-        String number = "";
-        String camp = "";
-        String phone = "";
-        String chat = "";
-        String deviceToken = "";
-        String name = "";
-        String time = "";
-        String email = "";
 
 
 
-        firebaseUserModel.setName(prefs.getString(image, null));
-        firebaseUserModel.setDeviceId(prefs.getString(role, null));
-        firebaseUserModel.setDeviceToken(prefs.getString(deviceId, null));
-        firebaseUserModel.setImage(prefs.getString(admin, null));
-        firebaseUserModel.setRole(prefs.getString(number, null));
-        firebaseUserModel.setDeviceId(prefs.getString(camp, null));
-        firebaseUserModel.setAdmin(prefs.getString(phone, null));
-        firebaseUserModel.setNumber(prefs.getString(chat, null));
-        firebaseUserModel.setCamp(prefs.getString(deviceToken, null));
-        firebaseUserModel.setPhone(prefs.getString(name, null));
-        firebaseUserModel.setChat(prefs.getString(time, null));
-        firebaseUserModel.setStatus(prefs.getString(email, null));
+
+       String ss = firebaseUserModel.setName(prefs.getString(FeedReaderContract.FeedEntry.NAME, null));
+        firebaseUserModel.setDeviceId(prefs.getString(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID, null));
+        firebaseUserModel.setDeviceToken(prefs.getString(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN, null));
+        firebaseUserModel.setImage(prefs.getString(FeedReaderContract.FeedEntry.IMAGE, null));
+        firebaseUserModel.setRole(prefs.getString(FeedReaderContract.FeedEntry.ROLE, null));
+        firebaseUserModel.setAdmin(prefs.getString(FeedReaderContract.FeedEntry.ADMIN, null));
+        firebaseUserModel.setNumber(prefs.getString(FeedReaderContract.FeedEntry.NUMBER, null));
+        firebaseUserModel.setCamp(prefs.getString(FeedReaderContract.FeedEntry.CAMPS, null));
+        firebaseUserModel.setPhone(prefs.getString(FeedReaderContract.FeedEntry.PHONE, null));
+        firebaseUserModel.setChat(prefs.getString(FeedReaderContract.FeedEntry.CHAT, null));
+        firebaseUserModel.setStatus(prefs.getString(FeedReaderContract.FeedEntry.STATUS, null));
 
 
 
@@ -171,8 +158,9 @@ public class FirebaseUserModel {
         return name;
     }
 
-    public void setName(String name) {
+    public String setName(String name) {
         this.name = name;
+        return name;
     }
 
     public String getCamp() {

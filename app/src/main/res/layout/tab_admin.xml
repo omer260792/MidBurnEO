@@ -76,7 +76,21 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="החלף סטטוס:" />
+                    android:text=":החלף סטטוס" />
+
+                <EditText
+                    android:id="@+id/themeFieldAdmin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="...מלא את נושא המחנה"
+                    android:gravity="center"
+                    android:inputType="textEmailAddress" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=":נושא המחנה" />
             </GridLayout>
 
         </LinearLayout>

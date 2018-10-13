@@ -86,7 +86,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:gravity="right"
-                android:hint="MAC Address - The physical address of the WAN port, as seen from the Internet. IP Address"
+                android:hint="MAC Aress"
                 android:textColor="@color/daysLabelColor"
                 android:textSize="18sp"
                 android:typeface="sans"

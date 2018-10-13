@@ -5,9 +5,9 @@
     android:gravity="center_horizontal">
 
 
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/btnCoverCamp"
-        android:background="@drawable/ic_launcher_background"
+        android:background="@drawable/midburn_logo"
         android:layout_marginTop="60dp"
         android:layout_marginBottom="30dp"
         android:onClick="onImg"

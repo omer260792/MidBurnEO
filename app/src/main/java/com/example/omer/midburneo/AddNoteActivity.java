@@ -19,31 +19,30 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
 
-import com.applandeo.materialcalendarview.CalendarView;
-import com.applandeo.materialcalendarview.exceptions.OutOfDateRangeException;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.DataBase.DBHelper;
-import com.example.omer.midburneo.Tabs.EquipmentEditAc;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,21 +51,21 @@ import java.util.UUID;
 import static com.example.omer.midburneo.NotePreviewActivity.getFormattedDate;
 import static com.example.omer.midburneo.RegisterAc.CAMERA;
 import static com.example.omer.midburneo.RegisterAc.GALLERY;
-import static com.example.omer.midburneo.RegisterAc.SHPRF;
 import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
-import static com.example.omer.midburneo.RegisterAc.prefs;
+import static com.example.omer.midburneo.Tabs.MainPageAc.SHPRF;
+import static com.example.omer.midburneo.Tabs.MainPageAc.prefs;
 import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 public class AddNoteActivity extends AppCompatActivity {
 
     public DBHelper db;
-    public String current_uid, get_msg_uid, timeMilliString, addressString ;
+    public String current_uid, get_msg_uid, timeMilliString, addressString;
     private String imgPre = "default";
-    public String msg = "hello";
+    private String imgLocalPath = "default";
     private long timeMili = 123456789;
     public MyEventDay myEventDay;
     private DatabaseReference mUserDatabase;
-    private Button BtnTimeNoteEdit, addBtnDateCalEdit, addBtnLoctionCalEdit;
+    private Button BtnTimeNoteEdit, addBtnDateCalEdit, addBtnLoctionCalEdit, addBtnfirendCalEdit;
     private TimePickerDialog mTimeSetListener;
     private DatePickerDialog mDatePickerDialog;
     private Calendar c;
@@ -75,6 +74,14 @@ public class AddNoteActivity extends AppCompatActivity {
 
 
     private Uri resultUri;
+
+    String[] listItems;
+    String[] listItemsKey;
+    boolean[] checkedItems;
+    ArrayList<Integer> mUserItems = new ArrayList<>();
+    Map<String, Object> stringObjectHashMap = new HashMap<>();
+    private int num = 1;
+
 
 
     @Override
@@ -90,16 +97,17 @@ public class AddNoteActivity extends AppCompatActivity {
         mprogress = new ProgressDialog(this);
 
 
-
-        final CalendarView datePicker = (CalendarView) findViewById(R.id.datePicker);
         Button button = (Button) findViewById(R.id.addNoteButton);
         BtnTimeNoteEdit = findViewById(R.id.BtnTimeNoteEdit);
         addBtnDateCalEdit = findViewById(R.id.addBtnDateCalEdit);
         addBtnLoctionCalEdit = findViewById(R.id.addBtnLoctionCalEdit);
+        addBtnfirendCalEdit = findViewById(R.id.addBtnfirendCalEdit);
 
         final EditText noteEditText = (EditText) findViewById(R.id.noteEditText);
 
         String currentTimeIntent = getIntent().getStringExtra("currentDate");
+
+        getNameUserFromFireBase();
 
 
         addBtnLoctionCalEdit.setOnClickListener(new View.OnClickListener() {
@@ -124,8 +132,8 @@ public class AddNoteActivity extends AppCompatActivity {
                                 addressString = input.getText().toString();
                                 if (addressString.compareTo("") != 0) {
 
-                                        Toast.makeText(getApplicationContext(),
-                                                "הוכנס כתובת", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(),
+                                            "הוכנס כתובת", Toast.LENGTH_SHORT).show();
 
                                 }
                             }
@@ -150,12 +158,12 @@ public class AddNoteActivity extends AppCompatActivity {
 
 
                 // Get Current Date
-                 c = Calendar.getInstance();
+                c = Calendar.getInstance();
                 int year = c.get(Calendar.YEAR);
                 int month = c.get(Calendar.MONTH);
                 int day = c.get(Calendar.DAY_OF_MONTH);
 
-                mDatePickerDialog= new DatePickerDialog(AddNoteActivity.this, new DatePickerDialog.OnDateSetListener() {
+                mDatePickerDialog = new DatePickerDialog(AddNoteActivity.this, new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
 
@@ -165,29 +173,11 @@ public class AddNoteActivity extends AppCompatActivity {
                             c.set(Calendar.MONTH, view.getMonth());
                             c.set(Calendar.DAY_OF_MONTH, view.getDayOfMonth());
 
-//                            Calendar cal = Calendar.getInstance();
-//
-//                            SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
-//
-//                            timeMili = c.getTimeInMillis();
-//
-//                            realDate = sdf.format(timeMili);
-//
-//                            try {
-//                                cal.setTime(sdf.parse(realDate));
-//                            } catch (ParseException e) {
-//                                e.printStackTrace();
-//                            }
-//
-//
-//                            Log.i("ssssssssffffffssss", realDate);
-
 
                         }
                     }
-                },year,month,day);
+                }, year, month, day);
                 mDatePickerDialog.show();
-
 
 
             }
@@ -206,11 +196,6 @@ public class AddNoteActivity extends AppCompatActivity {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
                         // eReminderTime.setText( selectedHour + ":" + selectedMinute);
-
-                        Log.i("ssssssssffffffssss", String.valueOf(timePicker.getDrawingTime()));
-                        Log.i("ssssssssffffffssss", String.valueOf(selectedHour));
-                        Log.i("ssssssssffffffssss", String.valueOf(selectedMinute));
-
 
                         Calendar cal = Calendar.getInstance();
 
@@ -231,22 +216,81 @@ public class AddNoteActivity extends AppCompatActivity {
             }
         });
 
-//        Calendar cal = Calendar.getInstance();
-//        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
-//        try {
-//            cal.setTime(sdf.parse(currentTimeIntent));// all done
-//        } catch (ParseException e) {
-//            e.printStackTrace();
-//        }
-//
-//        myEventDay = new MyEventDay(cal, R.drawable.ic_send, msg);
-//
-//        try {
-//            datePicker.setDate(cal);
-//
-//        } catch (OutOfDateRangeException e) {
-//            e.printStackTrace();
-//        }
+
+        addBtnfirendCalEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                num = 2;
+                android.support.v7.app.AlertDialog.Builder mBuilder = new android.support.v7.app.AlertDialog.Builder(AddNoteActivity.this);
+                mBuilder.setTitle("סמן חברים");
+                mBuilder.setMultiChoiceItems(listItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int position, boolean isChecked) {
+
+                        if (isChecked) {
+                            mUserItems.add(position);
+
+
+                        } else {
+                            mUserItems.remove((Integer.valueOf(position)));
+                        }
+                    }
+                });
+
+                mBuilder.setCancelable(false);
+                mBuilder.setPositiveButton("אישור", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        String item = "";
+
+                        for (int i = 0; i < mUserItems.size(); i++) {
+
+                            String listItemString = listItems[mUserItems.get(i)];
+                            String listItemKeyString = listItemsKey[mUserItems.get(i)];
+
+                            stringObjectHashMap.put(listItemKeyString, listItemString);
+
+                            item = item + listItems[mUserItems.get(i)];
+
+                            if (i != mUserItems.size() - 1) {
+                                item = item + ", ";
+                            }
+                        }
+
+
+                        Log.e("ADDNoteAc", String.valueOf(stringObjectHashMap));
+                        //  mItemSelected.setText(item);
+                    }
+                });
+
+                mBuilder.setNegativeButton("חזור", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+
+                mBuilder.setNeutralButton("בחר הכל", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        for (int i = 0; i < checkedItems.length; i++) {
+                            checkedItems[i] = true;
+
+                            // Todo not dismiss
+//                            mUserItems.size();
+
+                            //   mItemSelected.setText("");
+                        }
+                    }
+                });
+
+                android.support.v7.app.AlertDialog mDialog = mBuilder.create();
+                mDialog.show();
+
+
+            }
+        });
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -259,6 +303,29 @@ public class AddNoteActivity extends AppCompatActivity {
 
                 } else {
                     imgUpload();
+
+                    if (num == 1){
+                        for (int i = 0; i < checkedItems.length; i++) {
+                            checkedItems[i] = true;
+
+                            mUserItems.add(i);
+                        }
+                        String item = "";
+                        for (int i = 0; i < mUserItems.size(); i++) {
+
+                            String listItemString = listItems[mUserItems.get(i)];
+                            String listItemKeyString = listItemsKey[mUserItems.get(i)];
+
+                            stringObjectHashMap.put(listItemKeyString, listItemString);
+
+                            item = item + listItems[mUserItems.get(i)];
+
+                            if (i != mUserItems.size() - 1) {
+                                item = item + ", ";
+                            }
+                        }
+                    }
+
 
                     Intent returnIntent = new Intent();
                     MyEventDay myEventDay = new MyEventDay(c,
@@ -274,8 +341,8 @@ public class AddNoteActivity extends AppCompatActivity {
                     String calendar = getFormattedDate(myEventDay.getCalendar().getTime());
 
 
-                    SaveInFireBase(msg, current_uid, calendar, get_msg_uid, timeMilliString, firebaseUserModel.getName(),imgPre);
-                    db.SaveDBSqliteToCalendar(msg, current_uid, calendar, get_msg_uid, timeMilliString, firebaseUserModel.getName(),imgPre);
+                    SaveInFireBase(msg, current_uid, calendar, get_msg_uid, timeMilliString, firebaseUserModel.getName(), imgPre);
+                    db.SaveDBSqliteToCalendar(msg, current_uid, calendar, get_msg_uid, timeMilliString, firebaseUserModel.getName(), imgLocalPath);
 
 
                     prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
@@ -290,10 +357,10 @@ public class AddNoteActivity extends AppCompatActivity {
         });
     }
 
-    public void SaveInFireBase(String msg, String sender, String time, String msguid, String timeMsg, String name,String image) {
+    public void SaveInFireBase(String msg, String sender, String time, String msguid, String timeMsg, String name, String image) {
 
         try {
-            mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getCamp()).child("Calendar").child(msguid);
+            mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getChat()).child("Calendar").child(msguid);
 
             Map<String, Object> mapCampsUpdates = new HashMap<>();
             mapCampsUpdates.put(FeedReaderContract.FeedEntry.MESSAGE, msg);
@@ -302,6 +369,7 @@ public class AddNoteActivity extends AppCompatActivity {
             mapCampsUpdates.put(FeedReaderContract.FeedEntry.TIME__SET, timeMsg);
             mapCampsUpdates.put(FeedReaderContract.FeedEntry.NAME, name);
             mapCampsUpdates.put(FeedReaderContract.FeedEntry.IMAGE, image);
+            mapCampsUpdates.put(FeedReaderContract.FeedEntry.TAG_USER, stringObjectHashMap);
 
             mUserDatabase.updateChildren(mapCampsUpdates);
         } catch (Exception e) {
@@ -366,7 +434,7 @@ public class AddNoteActivity extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 resultUri = result.getUri();
-                imgPre =String.valueOf(resultUri) ;
+                imgLocalPath = String.valueOf(resultUri);
 
                 filePath = mImageStorage.child("profile_images").child(resultUri.getLastPathSegment());
 
@@ -397,7 +465,7 @@ public class AddNoteActivity extends AppCompatActivity {
 
                         imgPre = String.valueOf(uri);
 
-                        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getCamp()).child("Equipment").child(get_msg_uid);
+                        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getChat()).child("Calendar").child(get_msg_uid);
 
                         Map<String, Object> mapCampsUpdates = new HashMap<>();
                         mapCampsUpdates.put(FeedReaderContract.FeedEntry.IMAGE, imgPre);
@@ -413,6 +481,67 @@ public class AddNoteActivity extends AppCompatActivity {
             }
         });
 
+
+    }
+
+    public void getNameUserFromFireBase() {
+
+
+        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference discussionRoomsRef = rootRef.child("Users");
+
+        String chatUid = firebaseUserModel.getChat();
+
+        Query query = discussionRoomsRef.orderByChild("chat").equalTo(chatUid);
+
+        ValueEventListener valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                ArrayList<String> contactsArray = new ArrayList<>();
+                ArrayList<String> keyArray = new ArrayList<>();
+
+                long FBCount = 0;
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+
+                    FBCount = dataSnapshot.getChildrenCount();
+
+                    String key = ds.getKey();
+
+
+                    if (!key.equals(firebaseUserModel.getChat())) {
+                        String name = ds.child("name").getValue().toString();
+
+
+                        contactsArray.add(name);
+                        keyArray.add(key);
+
+                    }
+                }
+
+
+                listItems = new String[contactsArray.size()];
+                listItems = contactsArray.toArray(listItems);
+
+                listItemsKey = new String[keyArray.size()];
+                listItemsKey = keyArray.toArray(listItemsKey);
+
+                // listItems = getResources().getStringArray((int) FBCount);
+                checkedItems = new boolean[listItems.length];
+
+
+
+                int count = (int) FBCount;
+
+
+                Log.i("ssssssssffffffssss", String.valueOf(listItems));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        };
+        query.addValueEventListener(valueEventListener);
 
     }
 

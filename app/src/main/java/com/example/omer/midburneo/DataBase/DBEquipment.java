@@ -20,7 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
-import static com.example.omer.midburneo.RegisterAc.prefs;
+import static com.example.omer.midburneo.Tabs.MainPageAc.SHPRF;
+import static com.example.omer.midburneo.Tabs.MainPageAc.prefs;
 
 public class DBEquipment extends SQLiteOpenHelper {
 

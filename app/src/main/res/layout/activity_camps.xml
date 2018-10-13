@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal">
 
 
@@ -11,25 +11,26 @@
         android:id="@+id/spinner2"
         android:layout_width="match_parent"
         android:layout_height="70dp"
-        android:backgroundTint="#d11f08"
-        android:layout_margin="15dp" />
+        android:layout_margin="15dp"
+        android:backgroundTint="#000000"
+        android:textAlignment="center" />
 
 
     <LinearLayout
-        app:layout_constraintTop_toBottomOf="@+id/spinner2"
         android:id="@+id/linearLayout1"
-        android:gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@+id/spinner2">
 
         <Button
             android:id="@+id/BtnCreate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="צור מחנה "
+            tools:ignore="MissingConstraints"
             tools:layout_editor_absoluteX="107dp"
-            tools:layout_editor_absoluteY="124dp"
-            tools:ignore="MissingConstraints" />
+            tools:layout_editor_absoluteY="124dp" />
 
         <Button
             android:id="@+id/confirmCampBtn"
@@ -37,12 +38,11 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/linearLayout1"
             android:layout_centerHorizontal="true"
-            android:text="אישור מחנה"/>
+            android:text="אישור מחנה" />
     </LinearLayout>
 
 
-
-    </android.support.constraint.ConstraintLayout>
+</android.support.constraint.ConstraintLayout>
 
 
 
