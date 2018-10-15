@@ -171,27 +171,6 @@ public class ChatAc extends AppCompatActivity {
                             getUidUsers = ds.getKey();
 
 
-//                            if (getUidUsers.equals(current_uid)){
-//
-//                                Boolean CheckUid = ds.child(FeedReaderContract.FeedEntry.GROUP).exists();
-//
-//                                if (CheckUid.equals(true)){
-//
-//                                    for (DataSnapshot dataSnapshot1 : ds.child(FeedReaderContract.FeedEntry.GROUP).getChildren()){
-//
-//                                      //  String test = ds.child(FeedReaderContract.FeedEntry.NAME).getValue(String.class);
-//
-//                                        String checkObject = dataSnapshot1.child(FeedReaderContract.FeedEntry.GROUP).getValue(String.class);
-//
-//
-//
-//                                    }
-//
-//
-//                                }
-//
-//                            }
-
                             Boolean CheckUidEx;
 
                             String getMyKeyMsg = UUID.randomUUID().toString();
@@ -224,7 +203,7 @@ public class ChatAc extends AppCompatActivity {
 
                                 Boolean check = query(getUidUsers, FeedReaderContract.FeedEntry.UID);
 
-                                if (getNameReceiver.equals(firebaseUserModel.getCamp())) {
+                                if (getUidUsers.equals(firebaseUserModel.getChat())) {
 
                                     if (check.equals(false)){
                                         getMyKeyMsg = get_chat;
@@ -235,7 +214,10 @@ public class ChatAc extends AppCompatActivity {
 
                                 } else {
                                     if (check.equals(false)) {
-                                        dbHelper.SaveDBSqliteUser(getNameReceiver, firebaseUserModel.getCamp(), getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
+                                        if (!current_uid.equals(getUidUsers)){
+                                            dbHelper.SaveDBSqliteUser(getNameReceiver, firebaseUserModel.getCamp(), getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
+
+                                        }
 
                                     }
 

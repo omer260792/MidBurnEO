@@ -40,6 +40,8 @@ import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 public class CampsAc extends AppCompatActivity {
 
+    private static final String TAG = "CampsAc";
+
     public Button confirmCampBtn, BtnCreate;
     private Spinner spinner;
     private DatabaseReference mUserDatabase;
@@ -88,15 +90,18 @@ public class CampsAc extends AppCompatActivity {
         confirmCampBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mprogress.setMessage("מוריד מידע");
-                mprogress.show();
+
 
                 updateDataFireBase();
 
+                mprogress.setMessage("מוריד מידע");
+                mprogress.show();
 
                 prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
                 prefs.edit().putString("camps", get_name_camp).apply();
-                prefs.edit().putString("chat", uid_camp).apply();
+                prefs.edit().putString("chat", current_uid_camp).apply();
+
+                Log.e(TAG,"confirmCampBtn"+current_uid_camp);
 
                 Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
@@ -111,7 +116,7 @@ public class CampsAc extends AppCompatActivity {
 
                         // yourMethod();
                     }
-                }, 5000);   //
+                }, 6000);   //
 
 
 
@@ -152,6 +157,10 @@ public class CampsAc extends AppCompatActivity {
 
                     contacts.add(new ListCampAc(camp_name));
 
+                    Log.e(TAG,"getDataSpinner"+current_uid_camp);
+                    Log.e(TAG, "getDataSpinner"+String.valueOf(contacts));
+                    Log.e(TAG, "getDataSpinner"+String.valueOf(camp_name));
+
                 }
 
 
@@ -185,11 +194,11 @@ public class CampsAc extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
 
                 if (spinner.getSelectedItem().equals(1)) {
-//                        get_name_camp = parent.getItemAtPosition(pos).toString();
-//
-//                        Log.e("ItemSelectedListener",get_name_camp);
-//
-//                        getUidCamp();
+                        get_name_camp = parent.getItemAtPosition(pos).toString();
+
+                        Log.e("ItemSelectedListener33",get_name_camp);
+
+                        getUidCamp();
                 }
 
 
@@ -231,7 +240,7 @@ public class CampsAc extends AppCompatActivity {
                     countFB = dataSnapshot.getChildrenCount();
                     uid_camp = ds.child("chat").getValue(String.class);
                     camp_name = ds.child("camps").getValue(String.class);
-
+                    return;
 
                 }
             }
@@ -254,8 +263,12 @@ public class CampsAc extends AppCompatActivity {
 
         Map<String, Object> mapUserUpdates = new HashMap<>();
         mapUserUpdates.put("camps", get_name_camp);
+        mapUserUpdates.put("chat", current_uid_camp);
         mapUserUpdates.put("number", lastCountString);
-        mapUserUpdates.put("chat", uid_camp);
+
+        Log.e(TAG, "updateDataFireBase"+String.valueOf(mapUserUpdates));
+
+
 
         mUserDatabase.updateChildren(mapUserUpdates);
 

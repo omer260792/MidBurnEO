@@ -137,8 +137,8 @@ public class RegisterAc extends AppCompatActivity {
             prefs.edit().putString("name", getName).apply();
             prefs.edit().putString("email", "register").apply();
 
-            mprogress.setMessage("Signing Up");
-            mprogress.show();
+            this.mprogress.setMessage("Signing Up");
+            this.mprogress.show();
 
             mAuth.createUserWithEmailAndPassword(getEmail, getPass)
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
