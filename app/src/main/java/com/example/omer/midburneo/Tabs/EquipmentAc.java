@@ -72,6 +72,7 @@ public class EquipmentAc extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tab_equipment);
 
+        Log.e(TAG, "onCreate");
 
         recyclerView = findViewById(R.id.recycler_Equipment);
         etSearchEquipment = findViewById(R.id.etSearchEquipment);
@@ -90,8 +91,8 @@ public class EquipmentAc extends AppCompatActivity {
 
 
         if (countSqlLite == 0) {
+            Log.e(TAG, "oncreat if " + String.valueOf(countSqlLite));
 
-            UpdateDateFromFireBaseToSQLiteEquipment();
 
         } else {
             String test = etSearchEquipment.getText().toString() + "";
@@ -165,13 +166,19 @@ public class EquipmentAc extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        UpdateDateFromFireBaseToSQLiteEquipment();
+
+    }
 
     public void getEquipment(Boolean bool) {
 
         Log.e(TAG, "getEquipment");
 
         try {
-            if (num == 1) {
+
                 equipmentUtilsList.addAll(dbHelper.getAllEquipment());
                 mAdapter = new EquipmentAdapter(EquipmentAc.this, equipmentUtilsList);
                 LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
@@ -180,9 +187,8 @@ public class EquipmentAc extends AppCompatActivity {
                 recyclerView.setAdapter(mAdapter);
                 Log.e(TAG, "getEquipment() + try");
 
-                UpdateDateFromFireBaseToSQLiteEquipment();
-                num = 2;
-            }
+              //  UpdateDateFromFireBaseToSQLiteEquipment();
+
 
 
         } catch (Exception e) {
@@ -221,7 +227,6 @@ public class EquipmentAc extends AppCompatActivity {
             getRawCountSql();
             DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
             DatabaseReference discussionRoomsRef = rootRef.child("Camps").child(firebaseUserModel.getChat()).child("Equipment");
-            Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + else");
 
             discussionRoomsRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -242,6 +247,16 @@ public class EquipmentAc extends AppCompatActivity {
                             String msgUid = ds.child(FeedReaderContract.FeedEntry.MESSAGE_UID).getKey();
 
 
+
+                            Boolean tagUserGroup = ds.child(FeedReaderContract.FeedEntry.TAG_USER).exists();
+                            if (tagUserGroup.equals(false)){
+                                dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
+
+                                dbEquipment.SaveDBSqliteToEquipmentExcel(name, content, amount, amountCurrent, time, image, firebaseUserModel.getName());
+                            }
+
+
+
                             Boolean tagUser = ds.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
                             if (tagUser.equals(true)){
                                 dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
@@ -254,18 +269,18 @@ public class EquipmentAc extends AppCompatActivity {
 
                         }
 
-//                        if (!etSearchEquipment.equals("")) {
-//
-//                            boolRecycler = false;
-//
-//                            getEquipment(boolRecycler);
-//
-//                        } else {
-//                            boolRecycler = true;
-//
-//                            getEquipment(boolRecycler);
-//
-//                        }
+                        if (!etSearchEquipment.equals("")) {
+
+                            boolRecycler = false;
+
+                            getEquipment(boolRecycler);
+
+                        } else {
+                            boolRecycler = true;
+
+                            getEquipment(boolRecycler);
+
+                        }
                     } else if (countSqlLite < FBCount) {
 
                         for (DataSnapshot ds : dataSnapshot.getChildren()) {
@@ -282,13 +297,27 @@ public class EquipmentAc extends AppCompatActivity {
                                 String msgUid = ds.child(FeedReaderContract.FeedEntry.MESSAGE_UID).getKey();
 
 
+                                Boolean tagUserGroup = ds.child(FeedReaderContract.FeedEntry.TAG_USER).exists();
+                                if (tagUserGroup.equals(false)){
+                                    dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
+
+                                    dbEquipment.SaveDBSqliteToEquipmentExcel(name, content, amount, amountCurrent, time, image, firebaseUserModel.getName());
+                                }
+
+
+
                                 Boolean tagUser = ds.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
                                 if (tagUser.equals(true)){
+                                    dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
+                                    Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + countSqlLite == 0");
+
                                     dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
 
                                     dbEquipment.SaveDBSqliteToEquipmentExcel(name, content, amount, amountCurrent, time, image, firebaseUserModel.getName());
 
+
                                 }
+
 
 
                             }

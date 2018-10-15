@@ -31,7 +31,7 @@ public class User {
     public String pass = "";
 
 
-    public static final String appPreferences = "ChattingAppPreferences";
+    public static final String appPreferences = "User";
 
     public static final String Key = "keyKey";
     public static final String Name = "nameKey";
@@ -40,37 +40,26 @@ public class User {
 
     public SharedPreferences sharedpreferences;
 
+    public static SharedPreferences prefs;
+    public static String SHPRF = "User";
+
     private User() {
     }
 
     public Boolean login(FirebaseUserModel firebaseUserModel) {
 
 
-
-
-        image = firebaseUserModel.getImage();
-        role = firebaseUserModel.getRole();
         deviceId = firebaseUserModel.getDeviceId();
-        admin = firebaseUserModel.getAdmin();
-        number = firebaseUserModel.getNumber();
-        uidReceiver = firebaseUserModel.getUidReceiver();
-        camp = firebaseUserModel.getCamp();
-        pass = firebaseUserModel.getPass();
-        phone = firebaseUserModel.getPhone();
-        chat = firebaseUserModel.getChat();
         deviceToken = firebaseUserModel.getDeviceToken();
-        name = firebaseUserModel.getName();
-        lastMsg = firebaseUserModel.getLastMsg();
-        online = firebaseUserModel.getOnline();
-        time = firebaseUserModel.getTime();
-        email = firebaseUserModel.getEmail();
-        status = firebaseUserModel.getStatus();
 
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        // editor.putString(Name, name);
+        editor.putString(DeviceId, deviceId);
 
-
-
+        editor.apply();
 
         return true;
+
     }
 
 

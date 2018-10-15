@@ -64,18 +64,18 @@ public class FirebaseUserModel {
 
         prefs = context.getSharedPreferences(SHPRF, MODE_PRIVATE);
 
-        prefs.edit().putString(FeedReaderContract.FeedEntry.IMAGE, image);
-        prefs.edit().putString(FeedReaderContract.FeedEntry.ROLE , role);
-        prefs.edit().putString(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID,deviceId);
-        prefs.edit().putString(FeedReaderContract.FeedEntry.ADMIN, admin);
-        prefs.edit().putString(FeedReaderContract.FeedEntry.CAMPS, camp);
-        prefs.edit().putString(FeedReaderContract.FeedEntry.PHONE, phone);
-        prefs.edit().putString(FeedReaderContract.FeedEntry.NUMBER, number);
-        prefs.edit().putString(FeedReaderContract.FeedEntry.CHAT, chat);
-        prefs.edit().putString(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN, deviceToken);
-        prefs.edit().putString(FeedReaderContract.FeedEntry.NAME, name);
-        prefs.edit().putString(FeedReaderContract.FeedEntry.TIME, time);
-        prefs.edit().putString(FeedReaderContract.FeedEntry.EMAIL, email);
+        prefs.edit().putString(FeedReaderContract.FeedEntry.IMAGE, image).apply();
+        prefs.edit().putString(FeedReaderContract.FeedEntry.ROLE , role).apply();
+        prefs.edit().putString(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID,deviceId).apply();
+        prefs.edit().putString(FeedReaderContract.FeedEntry.ADMIN, admin).apply();
+        prefs.edit().putString(FeedReaderContract.FeedEntry.CAMPS, camp).apply();
+        prefs.edit().putString(FeedReaderContract.FeedEntry.PHONE, phone).apply();
+        prefs.edit().putString(FeedReaderContract.FeedEntry.NUMBER, number).apply();
+        prefs.edit().putString(FeedReaderContract.FeedEntry.CHAT, chat).apply();
+        prefs.edit().putString(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN, deviceToken).apply();
+        prefs.edit().putString(FeedReaderContract.FeedEntry.NAME, name).apply();
+        prefs.edit().putString(FeedReaderContract.FeedEntry.TIME, time).apply();
+        prefs.edit().putString(FeedReaderContract.FeedEntry.EMAIL, email).apply();
 
         return true;
     }

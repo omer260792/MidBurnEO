@@ -8,21 +8,21 @@ public class MessageNote {
     public String dateEnd;
     public String sender;
     public String uidMsg;
-    public String camp;
+    public String uid;
     public String dateBool;
 
 
     public String count;
 
 
-    public MessageNote(String msg, String content, String date, String dateEnd, String sender, String uidMsg, String camp, String dateBool) {
+    public MessageNote(String msg, String content, String date, String dateEnd, String sender, String uidMsg, String uid, String dateBool) {
         this.msg = msg;
         this.content = content;
         this.date = date;
         this.dateEnd = dateEnd;
         this.sender = sender;
         this.uidMsg = uidMsg;
-        this.camp = camp;
+        this.uid = uid;
         this.dateBool = dateBool;
 
     }
@@ -113,14 +113,14 @@ public class MessageNote {
         this.uidMsg = uidMsg;
         return uidMsg;
     }
-
-    public String getCamp() {
-        return camp;
+    public String getUid() {
+        return uid;
     }
 
-    public String setCamp(String camp) {
-        this.camp = camp;
-        return camp;
+    public String setUid(String uid) {
+        this.uid = uid;
+        return uid;
     }
+
 
 }

@@ -7,8 +7,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.BaseColumns;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -42,6 +44,7 @@ import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
 import static com.example.omer.midburneo.RegisterAc.REQUEST_PHONE_CALL;
 ;import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
@@ -153,6 +156,9 @@ public class ChatAc extends AppCompatActivity {
                     for (DataSnapshot ds : dataSnapshot.getChildren()) {
                         long FBCount = dataSnapshot.getChildrenCount();
 
+                        getUidUsers = ds.getKey();
+
+
                         if (countSqlLite < FBCount) {
 
                             getNameReceiver = ds.child(FeedReaderContract.FeedEntry.NAME).getValue(String.class);
@@ -165,13 +171,34 @@ public class ChatAc extends AppCompatActivity {
                             getUidUsers = ds.getKey();
 
 
+//                            if (getUidUsers.equals(current_uid)){
+//
+//                                Boolean CheckUid = ds.child(FeedReaderContract.FeedEntry.GROUP).exists();
+//
+//                                if (CheckUid.equals(true)){
+//
+//                                    for (DataSnapshot dataSnapshot1 : ds.child(FeedReaderContract.FeedEntry.GROUP).getChildren()){
+//
+//                                      //  String test = ds.child(FeedReaderContract.FeedEntry.NAME).getValue(String.class);
+//
+//                                        String checkObject = dataSnapshot1.child(FeedReaderContract.FeedEntry.GROUP).getValue(String.class);
+//
+//
+//
+//                                    }
+//
+//
+//                                }
+//
+//                            }
+
                             Boolean CheckUidEx;
 
                             String getMyKeyMsg = UUID.randomUUID().toString();
 
                             try {
                                 CheckUidEx = ds.child(current_uid).exists();
-                                if (CheckUidEx.equals(false)){
+                                if (CheckUidEx.equals(false)) {
 
                                     if (getNameReceiver.equals(firebaseUserModel.getCamp())) {
                                         getMyKeyMsg = get_chat;
@@ -184,31 +211,35 @@ public class ChatAc extends AppCompatActivity {
                                     }
 
 
-
-                                }else {
+                                } else {
                                     getMyKeyMsg = ds.child(current_uid).getValue(String.class);
 
                                 }
-                            }catch (Exception e){
+                            } catch (Exception e) {
 
                             }
 
 
                             try {
 
+                                Boolean check = query(getUidUsers, FeedReaderContract.FeedEntry.UID);
 
                                 if (getNameReceiver.equals(firebaseUserModel.getCamp())) {
-                                    getMyKeyMsg = get_chat;
-                                    dbHelper.SaveDBSqliteUser(getNameReceiver, firebaseUserModel.getCamp(), getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
-                                    Log.e(TAG, "changeKeyChat");
-                                    Log.e(TAG, getMyKeyMsg);
-                                    Log.e(TAG, get_chat);
-                                } else {
-                                    dbHelper.SaveDBSqliteUser(getNameReceiver, firebaseUserModel.getCamp(), getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
 
-                                    Log.e(TAG, "NOtt-  changeKeyChat");
-                                    Log.e(TAG, getMyKeyMsg);
-                                    Log.e(TAG, get_chat);
+                                    if (check.equals(false)){
+                                        getMyKeyMsg = get_chat;
+                                        dbHelper.SaveDBSqliteUser(getNameReceiver, firebaseUserModel.getCamp(), getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
+
+                                    }
+
+
+                                } else {
+                                    if (check.equals(false)) {
+                                        dbHelper.SaveDBSqliteUser(getNameReceiver, firebaseUserModel.getCamp(), getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
+
+                                    }
+
+
                                 }
 
 
@@ -217,7 +248,41 @@ public class ChatAc extends AppCompatActivity {
                             }
 
 
+                        } else {
+
+                            if (getUidUsers.equals(current_uid)) {
+
+                                Boolean CheckUid = ds.child(FeedReaderContract.FeedEntry.GROUP).exists();
+
+                                if (CheckUid.equals(true)) {
+
+
+
+                                    for (DataSnapshot dataSnapshot1 : ds.child(FeedReaderContract.FeedEntry.GROUP).getChildren()) {
+
+                                        String key = dataSnapshot1.getKey();
+                                        String nameGroup = String.valueOf(dataSnapshot1.getValue());
+
+                                        Boolean check =  query(key, FeedReaderContract.FeedEntry.CHAT_ROOMS);
+
+                                        if (check.equals(false)) {
+
+                                            get_image = "default";
+                                            dbHelper.SaveDBSqliteUser(nameGroup, firebaseUserModel.getCamp(), current_uid, get_image, "default", "default", "default", "default", key);
+
+
+                                        }
+
+
+                                    }
+
+
+                                }
+
+                            }
                         }
+
+
                     }
                     if (num == 2) {
                         getmsg();
@@ -285,8 +350,8 @@ public class ChatAc extends AppCompatActivity {
 
         if (id == R.id.item_setting_user) {
 
-                Intent i = new Intent(ChatAc.this, EquipmentEditAc.class);
-                startActivity(i);
+            Intent i = new Intent(ChatAc.this, AddGroupAc.class);
+            startActivity(i);
 
 
             return true;
@@ -294,6 +359,71 @@ public class ChatAc extends AppCompatActivity {
 
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    public boolean CheckIsDataAlreadyInDBorNot(String TableName, String dbfield, String fieldValue) {
+
+        db = dbHelper.getReadableDatabase();
+
+
+        try {
+            String Query = "Select * from " + TableName + " where " + dbfield + " = " + fieldValue;
+            Cursor cursor = db.rawQuery(Query, null);
+            if (cursor == null) {
+                cursor.close();
+                return false;
+            }
+            cursor.close();
+        } catch (Exception e) {
+            return false;
+
+        }
+
+        return true;
+    }
+
+    private Boolean query(String selectionArgss, String selectio) {
+
+
+        String[] projection = {
+                BaseColumns._ID,
+                FeedReaderContract.FeedEntry.ADMIN,
+                FeedReaderContract.FeedEntry.CAMPS,
+                FeedReaderContract.FeedEntry.CHAT,
+                FeedReaderContract.FeedEntry.EMAIL,
+                FeedReaderContract.FeedEntry.IMAGE,
+                FeedReaderContract.FeedEntry.NAME,
+                FeedReaderContract.FeedEntry.NUMBER,
+                FeedReaderContract.FeedEntry.PASSWORD,
+                FeedReaderContract.FeedEntry.STATUS,
+                FeedReaderContract.FeedEntry.TIME,
+                FeedReaderContract.FeedEntry.UID,
+                FeedReaderContract.FeedEntry.LASTMSG,
+                FeedReaderContract.FeedEntry.ROLE,
+                FeedReaderContract.FeedEntry.PHONE,
+                FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID,
+                FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN,
+                FeedReaderContract.FeedEntry.CHAT_ROOMS
+
+        };
+
+        String selection = selectio + " = ?";
+        String[] selectionArgs = {selectionArgss};
+
+        SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
+        builder.setTables(TABLE_NAME);
+
+        Cursor cursor = builder.query(dbHelper.getReadableDatabase(),
+                projection, selection, selectionArgs, null, null, null);
+
+        if (cursor == null) {
+            return null;
+        } else if (!cursor.moveToFirst()) {
+            cursor.close();
+            return false;
+        }
+        return true;
     }
 
 

@@ -39,7 +39,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.mipmap.ic_midburn_app)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(messageBody)
                 .setAutoCancel(true)
@@ -54,11 +54,4 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     }
 
-    @Override
-    public void onDestroy() {
-
-        super.onDestroy();
-        Log.e(TAG,"succcccc");
-
-    }
 }

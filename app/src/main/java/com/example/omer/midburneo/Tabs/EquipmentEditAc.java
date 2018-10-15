@@ -105,7 +105,6 @@ public class EquipmentEditAc extends AppCompatActivity {
         mImageStorage = FirebaseStorage.getInstance().getReference();
 
 
-
         current_uid = getIntent().getStringExtra("UidEquipment");
         PermissionManager.check(EquipmentEditAc.this, Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
 
@@ -128,12 +127,11 @@ public class EquipmentEditAc extends AppCompatActivity {
         }
 
 
-
-
         addBtnfirendEditEquip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                stringObjectHashMapEquipment.put(current_uid, firebaseUserModel.getName());
 
                 num = 2;
                 android.support.v7.app.AlertDialog.Builder mBuilder = new android.support.v7.app.AlertDialog.Builder(EquipmentEditAc.this);
@@ -158,7 +156,7 @@ public class EquipmentEditAc extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int which) {
                         String item = "";
 
-                                            for (int i = 0; i < mUserItems.size(); i++) {
+                        for (int i = 0; i < mUserItems.size(); i++) {
 
                             String listItemString = listItems[mUserItems.get(i)];
                             String listItemKeyString = listItemsKey[mUserItems.get(i)];
@@ -173,7 +171,6 @@ public class EquipmentEditAc extends AppCompatActivity {
                         }
 
 
-                        Log.e("ADDNoteAc", String.valueOf(stringObjectHashMapEquipment));
                         //  mItemSelected.setText(item);
                     }
                 });
@@ -207,7 +204,6 @@ public class EquipmentEditAc extends AppCompatActivity {
         });
 
 
-
     }
 
     public void SaveDataToFireBaseEquipment() {
@@ -225,10 +221,13 @@ public class EquipmentEditAc extends AppCompatActivity {
         stringObjectHashMap.put("mountCurrent", "0");
         stringObjectHashMap.put("time", timePre);
         stringObjectHashMap.put("sender", current_uid);
-        stringObjectHashMap.put(FeedReaderContract.FeedEntry.TAG_USER, stringObjectHashMapEquipment);
+
+        if (num == 2){
+            stringObjectHashMap.put(FeedReaderContract.FeedEntry.TAG_USER, stringObjectHashMapEquipment);
+
+        }
 
         mUserDatabase.updateChildren(stringObjectHashMap);
-
 
 
     }
@@ -317,7 +316,7 @@ public class EquipmentEditAc extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 resultUri = result.getUri();
                 Picasso.get().load(resultUri).error(R.drawable.admin_btn_logo).into(imagePre);
-                imgLocalPath =String.valueOf(resultUri) ;
+                imgLocalPath = String.valueOf(resultUri);
 
                 filePath = mImageStorage.child("profile_images").child(resultUri.getLastPathSegment());
 
@@ -379,12 +378,11 @@ public class EquipmentEditAc extends AppCompatActivity {
         mprogress.show();
 
 
-
         if (!nameProdPre.isEmpty() && !contentPre.isEmpty() && !mountPre.isEmpty()) {
             imgUpload();
 
 
-            if (num == 1){
+            if (num == 1) {
                 for (int i = 0; i < checkedItems.length; i++) {
                     checkedItems[i] = true;
 
@@ -397,6 +395,8 @@ public class EquipmentEditAc extends AppCompatActivity {
                     String listItemKeyString = listItemsKey[mUserItems.get(i)];
 
                     stringObjectHashMapEquipment.put(listItemKeyString, listItemString);
+                    stringObjectHashMapEquipment.put(current_uid, firebaseUserModel.getName());
+
 
                     item = item + listItems[mUserItems.get(i)];
 
@@ -404,8 +404,9 @@ public class EquipmentEditAc extends AppCompatActivity {
                         item = item + ", ";
                     }
                 }
-            }
 
+
+            }
 
 
             get_msg_uid = UUID.randomUUID().toString();
@@ -460,11 +461,17 @@ public class EquipmentEditAc extends AppCompatActivity {
 
 
                     if (!key.equals(firebaseUserModel.getChat())) {
-                        String name = ds.child("name").getValue().toString();
+
+                        if (!key.equals(current_uid)){
+                            String name = ds.child("name").getValue().toString();
 
 
-                        contactsArray.add(name);
-                        keyArray.add(key);
+                            contactsArray.add(name);
+                            keyArray.add(key);
+                        }else {
+
+                        }
+
 
                     }
                 }
@@ -478,8 +485,6 @@ public class EquipmentEditAc extends AppCompatActivity {
 
                 // listItems = getResources().getStringArray((int) FBCount);
                 checkedItems = new boolean[listItems.length];
-
-
 
 
             }

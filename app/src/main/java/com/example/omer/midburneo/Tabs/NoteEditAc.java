@@ -62,13 +62,12 @@ public class NoteEditAc extends AppCompatActivity {
 
     private ProgressDialog mprogress;
 
-    String[] listItems;
+    private String[] listItems;
     String[] listItemsKey;
     boolean[] checkedItems;
     ArrayList<Integer> mUserItems = new ArrayList<>();
-    Map<String, Object> stringObjectHashMapNote = new HashMap<>();
+    private Map<String, Object> stringObjectHashMapNote = new HashMap<>();
     private int num = 1;
-
 
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -90,10 +89,10 @@ public class NoteEditAc extends AppCompatActivity {
         getNamesUsersFromFireBase();
 
 
-
         addBtnfirendDateNote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                stringObjectHashMapNote.put(current_uid, firebaseUserModel.getName());
 
                 num = 2;
                 android.support.v7.app.AlertDialog.Builder mBuilder = new android.support.v7.app.AlertDialog.Builder(NoteEditAc.this);
@@ -118,6 +117,7 @@ public class NoteEditAc extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int which) {
                         String item = "";
+                        String name = firebaseUserModel.getName();
 
                         for (int i = 0; i < mUserItems.size(); i++) {
 
@@ -125,13 +125,18 @@ public class NoteEditAc extends AppCompatActivity {
                             String listItemKeyString = listItemsKey[mUserItems.get(i)];
 
                             stringObjectHashMapNote.put(listItemKeyString, listItemString);
+                            stringObjectHashMapNote.put(current_uid, firebaseUserModel.getName());
+
 
                             item = item + listItems[mUserItems.get(i)];
 
                             if (i != mUserItems.size() - 1) {
                                 item = item + ", ";
                             }
+
                         }
+
+
 
 
                         Log.e("ADDNoteAc", String.valueOf(stringObjectHashMapNote));
@@ -218,7 +223,7 @@ public class NoteEditAc extends AppCompatActivity {
 
                 } else {
 
-                    if (num == 1){
+                    if (num == 1) {
                         for (int i = 0; i < checkedItems.length; i++) {
                             checkedItems[i] = true;
 
@@ -239,7 +244,6 @@ public class NoteEditAc extends AppCompatActivity {
                             }
                         }
                     }
-
                     mprogress.setMessage("שולח בקשה");
                     mprogress.show();
 
@@ -248,7 +252,7 @@ public class NoteEditAc extends AppCompatActivity {
                     UidRandom = UUID.randomUUID().toString();
 
                     SaveFireBaseDB();
-                    dbHelper.SaveDBSqliteToNote(title, content, date, timeMilliString, "false", firebaseUserModel.getName(), firebaseUserModel.getCamp(), UidRandom);
+                    dbHelper.SaveDBSqliteToNote(title, content, date, timeMilliString, "false", firebaseUserModel.getName(), current_uid, UidRandom);
 
                     etTitleNote.setText("");
                     etContentNote.setText("");
@@ -275,7 +279,12 @@ public class NoteEditAc extends AppCompatActivity {
         mapAdminUpdate.put("dateEnd", timeMilliString);
         mapAdminUpdate.put("sender", firebaseUserModel.getName());
         mapAdminUpdate.put("dateBool", "false");
-        mapAdminUpdate.put(FeedReaderContract.FeedEntry.TAG_USER, stringObjectHashMapNote);
+        mapAdminUpdate.put("uid", current_uid);
+
+        if (num == 2){
+            mapAdminUpdate.put(FeedReaderContract.FeedEntry.TAG_USER, stringObjectHashMapNote);
+
+        }
         mUserDatabase.updateChildren(mapAdminUpdate);
     }
 
@@ -300,18 +309,26 @@ public class NoteEditAc extends AppCompatActivity {
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
 
                     FBCount = dataSnapshot.getChildrenCount();
-
                     String key = ds.getKey();
 
 
                     if (!key.equals(firebaseUserModel.getChat())) {
-                        String name = ds.child("name").getValue().toString();
+
+                        if (!key.equals(current_uid)){
+                            String name = ds.child("name").getValue().toString();
 
 
-                        contactsArray.add(name);
-                        keyArray.add(key);
+                            contactsArray.add(name);
+                            keyArray.add(key);
+                        }else {
+
+                        }
+
 
                     }
+
+
+
                 }
 
 
@@ -323,7 +340,6 @@ public class NoteEditAc extends AppCompatActivity {
 
                 // listItems = getResources().getStringArray((int) FBCount);
                 checkedItems = new boolean[listItems.length];
-
 
 
                 int count = (int) FBCount;
@@ -340,7 +356,6 @@ public class NoteEditAc extends AppCompatActivity {
         query.addValueEventListener(valueEventListener);
 
     }
-
 
 
 }

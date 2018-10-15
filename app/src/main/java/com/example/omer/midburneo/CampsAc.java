@@ -103,8 +103,7 @@ public class CampsAc extends AppCompatActivity {
                     public void run() {
 
                         Intent intent = new Intent(CampsAc.this, MainPageAc.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        intent.putExtra("", "");
+                       //yuval intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
                       //  mprogress.dismiss();
                         finish();

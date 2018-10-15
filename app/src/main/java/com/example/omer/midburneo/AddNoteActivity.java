@@ -71,6 +71,7 @@ public class AddNoteActivity extends AppCompatActivity {
     private Calendar c;
     private StorageReference mImageStorage, filePath;
     private ProgressDialog mprogress;
+    public EditText noteEditText;
 
 
     private Uri resultUri;
@@ -103,7 +104,7 @@ public class AddNoteActivity extends AppCompatActivity {
         addBtnLoctionCalEdit = findViewById(R.id.addBtnLoctionCalEdit);
         addBtnfirendCalEdit = findViewById(R.id.addBtnfirendCalEdit);
 
-        final EditText noteEditText = (EditText) findViewById(R.id.noteEditText);
+       noteEditText = (EditText) findViewById(R.id.noteEditText);
 
         String currentTimeIntent = getIntent().getStringExtra("currentDate");
 
@@ -221,6 +222,9 @@ public class AddNoteActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+                stringObjectHashMap.put(current_uid, firebaseUserModel.getName());
+
+
                 num = 2;
                 android.support.v7.app.AlertDialog.Builder mBuilder = new android.support.v7.app.AlertDialog.Builder(AddNoteActivity.this);
                 mBuilder.setTitle("סמן חברים");
@@ -259,8 +263,6 @@ public class AddNoteActivity extends AppCompatActivity {
                         }
 
 
-                        Log.e("ADDNoteAc", String.valueOf(stringObjectHashMap));
-                        //  mItemSelected.setText(item);
                     }
                 });
 
@@ -277,10 +279,7 @@ public class AddNoteActivity extends AppCompatActivity {
                         for (int i = 0; i < checkedItems.length; i++) {
                             checkedItems[i] = true;
 
-                            // Todo not dismiss
-//                            mUserItems.size();
 
-                            //   mItemSelected.setText("");
                         }
                     }
                 });
@@ -299,7 +298,7 @@ public class AddNoteActivity extends AppCompatActivity {
 
                 if (timeMili == 123456789 || noteEditText.equals("")) {
 
-                    Toast.makeText(AddNoteActivity.this, "please typ time", Toast.LENGTH_LONG).show();
+                    Toast.makeText(AddNoteActivity.this, "בבקשה תמלא את כל השורות", Toast.LENGTH_LONG).show();
 
                 } else {
                     imgUpload();
@@ -318,14 +317,16 @@ public class AddNoteActivity extends AppCompatActivity {
 
                             stringObjectHashMap.put(listItemKeyString, listItemString);
 
+                            stringObjectHashMap.put(current_uid, firebaseUserModel.getName());
+
                             item = item + listItems[mUserItems.get(i)];
 
                             if (i != mUserItems.size() - 1) {
                                 item = item + ", ";
                             }
                         }
-                    }
 
+                    }
 
                     Intent returnIntent = new Intent();
                     MyEventDay myEventDay = new MyEventDay(c,
@@ -369,7 +370,11 @@ public class AddNoteActivity extends AppCompatActivity {
             mapCampsUpdates.put(FeedReaderContract.FeedEntry.TIME__SET, timeMsg);
             mapCampsUpdates.put(FeedReaderContract.FeedEntry.NAME, name);
             mapCampsUpdates.put(FeedReaderContract.FeedEntry.IMAGE, image);
-            mapCampsUpdates.put(FeedReaderContract.FeedEntry.TAG_USER, stringObjectHashMap);
+
+            if (num == 2){
+                mapCampsUpdates.put(FeedReaderContract.FeedEntry.TAG_USER, stringObjectHashMap);
+
+            }
 
             mUserDatabase.updateChildren(mapCampsUpdates);
         } catch (Exception e) {
@@ -472,7 +477,6 @@ public class AddNoteActivity extends AppCompatActivity {
 
                         mUserDatabase.updateChildren(mapCampsUpdates);
 
-
                         mprogress.dismiss();
 
 
@@ -493,31 +497,29 @@ public class AddNoteActivity extends AppCompatActivity {
         String chatUid = firebaseUserModel.getChat();
 
         Query query = discussionRoomsRef.orderByChild("chat").equalTo(chatUid);
-
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 ArrayList<String> contactsArray = new ArrayList<>();
                 ArrayList<String> keyArray = new ArrayList<>();
 
-                long FBCount = 0;
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
-
-                    FBCount = dataSnapshot.getChildrenCount();
 
                     String key = ds.getKey();
 
-
                     if (!key.equals(firebaseUserModel.getChat())) {
-                        String name = ds.child("name").getValue().toString();
+
+                        if (!key.equals(current_uid)){
+                            String name = ds.child("name").getValue().toString();
 
 
-                        contactsArray.add(name);
-                        keyArray.add(key);
+                            contactsArray.add(name);
+                            keyArray.add(key);
+                        }else {
 
+                        }
                     }
                 }
-
 
                 listItems = new String[contactsArray.size()];
                 listItems = contactsArray.toArray(listItems);
@@ -525,15 +527,7 @@ public class AddNoteActivity extends AppCompatActivity {
                 listItemsKey = new String[keyArray.size()];
                 listItemsKey = keyArray.toArray(listItemsKey);
 
-                // listItems = getResources().getStringArray((int) FBCount);
                 checkedItems = new boolean[listItems.length];
-
-
-
-                int count = (int) FBCount;
-
-
-                Log.i("ssssssssffffffssss", String.valueOf(listItems));
             }
 
             @Override

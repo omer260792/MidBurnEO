@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Tabs.ChatListAc">
+    >
 
 
     <RelativeLayout
@@ -89,14 +89,14 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent">
 
-        <ImageView
+        <Button
             android:id="@+id/imagebtnChat"
             android:layout_width="48dp"
             android:layout_height="match_parent"
             android:layout_gravity="center_vertical"
-            android:onClick="loadImagebtnChat"
             android:scaleType="center"
-            android:src="@android:drawable/ic_menu_camera" />
+            android:background="@android:drawable/ic_menu_camera"
+             />
 
         <EditText
             android:id="@+id/comment_text"

@@ -17,10 +17,10 @@ import com.example.omer.midburneo.Tabs.EquipmentPreviewAc;
 
 public class PopUpUser extends AppCompatActivity {
 
-    public Dialog myDialog;
+    private Dialog myDialog;
     public TextView txtclose;
     public Button btnFollow;
-    public View v;
+    private View v;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

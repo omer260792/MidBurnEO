@@ -22,9 +22,11 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.omer.midburneo.Class.Calendar;
+import com.example.omer.midburneo.Class.FirebaseUserModel;
 import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.R;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -45,7 +47,7 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
 
     private Context context;
     private ArrayList<Calendar> CalendarNoteList;
-    private String time, sender, image;
+    private String time, sender, image, uidMsg;
     private int count;
     private DatabaseReference mUserDatabase;
     public DBHelper dbHelper;
@@ -71,6 +73,7 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
         Calendar calendar = CalendarNoteList.get(position);
 
         image = calendar.getImage();
+        uidMsg = calendar.getMsguid();
 
         if (image.equals("default")) {
 
@@ -87,12 +90,6 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
             Glide.with(context).load(calendar.getImage()).into(holder.pImg);
 
         }
-//        holder.pMsg.setText(calendar.getMsg());
-//        holder.pSender.setText(calendar.getName());
-//        holder.pTime.setText(calendar.getTimeSet());
-//        Glide.with(context).load(calendar.getImage()).into(holder.pImg);
-//
-//
 
         count = Integer.parseInt(calendar.getCountRaw());
         time = calendar.getTime();
@@ -112,9 +109,9 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         public TextView pMsg, pSender, pTime, txtclose;
-        public ImageView pImg,pImgPop;
+        public ImageView pImg, pImgPop;
 
-        public Dialog myDialog;
+        private Dialog myDialog;
 
 
         @SuppressLint("ClickableViewAccessibility")
@@ -130,12 +127,9 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
             myDialog = new Dialog(context);
 
 
-
-
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
 
 
                     if (!image.equals("default")) {
@@ -164,12 +158,9 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
 
                             }
                         });
-                    }else {
+                    } else {
                         return;
                     }
-
-
-
 
 
                 }
@@ -179,28 +170,61 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
                 @Override
                 public boolean onLongClick(View v) {
 
+                    String current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-                    Toast.makeText(context, "please typ", Toast.LENGTH_LONG).show();
+                    Calendar calendar = (Calendar) v.getTag();
+                    uidMsg = calendar.getMsguid();
+
+                    String name = calendar.getName();
+                    String uid = calendar.getSender();
+
 
                     AlertDialog alertDialog = new AlertDialog.Builder(context).create();
 
                     alertDialog.setTitle("עריכת הודעה");
+
+
                     alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "מחק הודעה ", new DialogInterface.OnClickListener() {
 
                         public void onClick(DialogInterface dialog, int id) {
 
 
-                            Calendar calendar = (Calendar) v.getTag();
+                            if (current_uid.equals(uid)) {
 
-                            dbHelper = new DBHelper(context);
+                                dbHelper = new DBHelper(context);
 
-                            dbHelper.deleteRawFromTable(count, time, TABLE_NAME_CALENDAR);
+                                dbHelper.deleteRawFromTable(count, time, TABLE_NAME_CALENDAR);
 
-                            deleteRawFormFireBase();
+
+                            }
 
 
                         }
                     });
+
+
+                    if (current_uid.equals(uid)) {
+
+                        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "מחק לכולם", new DialogInterface.OnClickListener() {
+
+                            public void onClick(DialogInterface dialog, int id) {
+
+
+
+
+                                    deleteRawFormFireBase(uidMsg);
+                                    dbHelper = new DBHelper(context);
+
+                                    dbHelper.deleteRawFromTable(count, time, TABLE_NAME_CALENDAR);
+
+                                    // ToDo delete msg from firebase
+
+
+
+
+                            }
+                        });
+                    }
 
                     alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "חזור", new DialogInterface.OnClickListener() {
 
@@ -221,15 +245,15 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
         }
     }
 
-    public void deleteRawFormFireBase() {
+    private void deleteRawFormFireBase(String uidMsg) {
 
 
-        mUserDatabase = FirebaseDatabase.getInstance().getReference();
-        mUserDatabase.child("Camps").child(firebaseUserModel.getCamp()).child("Calendar").orderByKey().equalTo(sender).addListenerForSingleValueEvent(new ValueEventListener() {
+        mUserDatabase = FirebaseDatabase.getInstance().getReference()
+                .child("Camps").child(firebaseUserModel.getChat()).child("Calendar").child(uidMsg);
+        mUserDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                // String key = dataSnapshot.getKey();
                 dataSnapshot.getRef().removeValue();
             }
 

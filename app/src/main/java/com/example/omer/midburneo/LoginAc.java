@@ -64,16 +64,7 @@ public class LoginAc extends AppCompatActivity {
                 }
 
                 if (firebaseAuth.getCurrentUser() == null) {
-//
-//                    if(emailSP != null && emailSP.equals("default")){
-//                        Intent intent = new Intent(LoginAc.this, MainPageAc.class);
-//                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                        startActivity(intent);
-//                        finish();
-//
-//                    }else {
-//                        return;
-//                    }
+
                     return;
 
                 } else {
@@ -88,9 +79,6 @@ public class LoginAc extends AppCompatActivity {
                             startActivity(intent);
                             finish();
 
-
-                        }else if(emailSP.equals("default")){
-                            return;
 
                         }else {
 
@@ -116,6 +104,11 @@ public class LoginAc extends AppCompatActivity {
                         }
                     }catch (Exception e){
                         e.printStackTrace();
+                        Toast.makeText(LoginAc.this,
+                                "יש משתמש כזה במערת החלף מייל", //ADD THIS
+                                Toast.LENGTH_SHORT).show();
+
+
                     }
 
 
@@ -168,7 +161,7 @@ public class LoginAc extends AppCompatActivity {
 
                     } else {
                         Toast.makeText(LoginAc.this,
-                                task.getException().toString(), //ADD THIS
+                                "לא קיים שם משתמש במערכת", //ADD THIS
                                 Toast.LENGTH_SHORT).show();
 
                     }

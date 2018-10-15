@@ -28,12 +28,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.omer.midburneo.Class.Calendar;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.Class.MessageNote;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.R;
 import com.example.omer.midburneo.Tabs.NotesAc;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -49,6 +51,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_NOTE;
 import static com.example.omer.midburneo.RegisterAc.prefs;
 import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
@@ -59,8 +62,8 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
 
     private Context context;
     private final List<MessageNote> MessageNoteList;
-    public String senderString, uidMsgString, campString;
-    private int num = 1;
+    public String senderString, uidMsgString, time;
+    private int countMsg ;
 
     private FirebaseUser mCurrentUser;
     private DatabaseReference mUserDatabase;
@@ -104,15 +107,18 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
         holder.checkBox.setBackgroundColor(android.R.drawable.checkbox_off_background);
 
 
-         String checkBool = messageNote.getDateBool();
+        String checkBool = messageNote.getDateBool();
 
         uidMsgString = messageNote.getUidMsg();
+        senderString = messageNote.getUid();
+        countMsg = Integer.parseInt(messageNote.getCount());
+        time = messageNote.getTime();
 
-        if (checkBool.equals("true")){
+        if (checkBool.equals("true")) {
             int btnDrawable = android.R.drawable.checkbox_on_background;
             holder.checkBox.setButtonDrawable(btnDrawable);
 
-        }else {
+        } else {
             holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @SuppressLint("ResourceAsColor")
                 @Override
@@ -124,20 +130,19 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
                     if (isChecked) {
                         int btnDrawable = android.R.drawable.checkbox_on_background;
                         holder.checkBox.setButtonDrawable(btnDrawable);
-                        Toast.makeText(context, "ture", Toast.LENGTH_SHORT).show();
                         holder.relativeLayout.setBackgroundColor(R.color.red);
-
 
                         String count = messageNote.getCount();
 
-                        UpdateFirebase(firebaseUserModel.getCamp(), messageNote.getUidMsg());
+
+                        UpdateFirebase( messageNote.getUidMsg());
                         getLastMsg(count);
-                        //  viewGroup.removeView(holder.parentRelative);
+
+
 
                     } else {
                         //checkBox clicked and unchecked
                         int btnDrawable = android.R.drawable.checkbox_off_background;
-                        Toast.makeText(context, "fa", Toast.LENGTH_SHORT).show();
                         holder.checkBox.setButtonDrawable(btnDrawable);
                         holder.relativeLayout.setBackgroundColor(R.color.colorAccent);
 
@@ -146,10 +151,6 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
                 }
             });
         }
-
-
-
-
 
 
     }
@@ -179,8 +180,6 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
             parentRelative = itemView.findViewById(R.id.parentRelative);
 
 
-
-
             this.setIsRecyclable(false);
 
 
@@ -196,19 +195,42 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
                 @Override
                 public boolean onLongClick(View v) {
 
-
-                    Toast.makeText(context, "please typ", Toast.LENGTH_LONG).show();
+                    String current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
                     AlertDialog alertDialog = new AlertDialog.Builder(context).create();
-
                     alertDialog.setTitle("עריכת הודעה");
                     alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "מחק הודעה ", new DialogInterface.OnClickListener() {
 
                         public void onClick(DialogInterface dialog, int id) {
-                            deleteMsg();
+
+
+
+
+
+                            dbHelper = new DBHelper(context);
+
+                            dbHelper.deleteRawFromTableNote(countMsg, time, TABLE_NAME_NOTE);
+
 
                         }
                     });
+
+
+                    if (current_uid.equals(senderString)) {
+
+                        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "מחק לכולם", new DialogInterface.OnClickListener() {
+
+                            public void onClick(DialogInterface dialog, int id) {
+
+                                deleteRawFormFireBase();
+
+                                dbHelper = new DBHelper(context);
+
+                                dbHelper.deleteRawFromTableNote(countMsg, time, TABLE_NAME_NOTE);
+
+                            }
+                        });
+                    }
 
                     alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "חזור", new DialogInterface.OnClickListener() {
 
@@ -229,21 +251,33 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
         }
     }
 
-    private void deleteMsg() {
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Admin").child(campString).child("message");
+    private void UpdateFirebase( String uidMsgString) {
 
-        mUserDatabase.addValueEventListener(new ValueEventListener() {
+
+        long currentDateTime = System.currentTimeMillis();
+        String timeString = String.valueOf(currentDateTime);
+
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getChat()).child("Note").child(uidMsgString);
+
+        Map<String, Object> mapCampsUpdates = new HashMap<>();
+        mapCampsUpdates.put("dateEnd", timeString);
+        mapCampsUpdates.put("dateBool", "true");
+
+        mUserDatabase.updateChildren(mapCampsUpdates);
+    }
+
+
+
+    private void deleteRawFormFireBase() {
+
+//
+        mUserDatabase = FirebaseDatabase.getInstance().getReference()
+                .child("Camps").child(firebaseUserModel.getChat()).child("Note").child(uidMsgString);
+        mUserDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                mUserDatabase.child(uidMsgString).removeValue();
-
-                String test = dataSnapshot.getKey();
-
-
-                return;
-
-
+                dataSnapshot.getRef().removeValue();
             }
 
             @Override
@@ -252,21 +286,6 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
             }
         });
 
-    }
-
-    private void UpdateFirebase(String campString, String uidMsgString) {
-
-
-        long currentDateTime = System.currentTimeMillis();
-        String timeString = String.valueOf(currentDateTime);
-
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(campString).child("Note").child(uidMsgString);
-
-        Map<String, Object> mapCampsUpdates = new HashMap<>();
-        mapCampsUpdates.put("dateEnd", timeString);
-        mapCampsUpdates.put("dateBool", "true");
-
-        mUserDatabase.updateChildren(mapCampsUpdates);
     }
 
     public void getLastMsg(String countRaw) {
@@ -300,4 +319,6 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
 
 
     }
+
+
 }

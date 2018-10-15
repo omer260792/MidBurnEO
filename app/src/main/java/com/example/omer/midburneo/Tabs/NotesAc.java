@@ -74,23 +74,9 @@ public class NotesAc extends AppCompatActivity {
         tabLayout.setupWithViewPager(viewPager);
 
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.e(TAG, "onstart");
-
         getRawCountSql();
-        try {
 
-            UpdateDateFromFireBaseToSQLiteNote();
-
-        } catch (NullPointerException e) {
-
-        }
-
+        UpdateDateFromFireBaseToSQLiteNote();
     }
 
     public void UpdateDateFromFireBaseToSQLiteNote() {
@@ -99,7 +85,6 @@ public class NotesAc extends AppCompatActivity {
 
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
         DatabaseReference discussionRoomsRef = rootRef.child("Camps").child(firebaseUserModel.getChat()).child("Note");
-        Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + else");
 
         if (countSqlLite == 0) {
             discussionRoomsRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -117,17 +102,23 @@ public class NotesAc extends AppCompatActivity {
                         getSender = snapshot.child("sender").getValue(String.class);
 
 
-
-                        Boolean tagUser = snapshot.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
-                        if (tagUser.equals(true)){
+                        Boolean tagUserGroup = snapshot.child(FeedReaderContract.FeedEntry.TAG_USER).exists();
+                        if (tagUserGroup.equals(false)){
                             dbHelper.SaveDBSqliteToNote(getTitle, getContent, getDate, getDateEnd, getBool, getSender, current_uid, getUid);
 
                         }
 
 
+                        Boolean tagUser = snapshot.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
+                        if (tagUser.equals(true)) {
+                            dbHelper.SaveDBSqliteToNote(getTitle, getContent, getDate, getDateEnd, getBool, getSender, current_uid, getUid);
+
+                        }
+
 
                     }
                     fragmentMain.getNoteMsg();
+                    fragmentHistory.getNoteMsg();
 
                 }
 
@@ -156,31 +147,23 @@ public class NotesAc extends AppCompatActivity {
                             getBool = snapshot.child("dateBool").getValue(String.class);
                             getSender = snapshot.child("sender").getValue(String.class);
 
+
+
+                            Boolean tagUserGroup = snapshot.child(FeedReaderContract.FeedEntry.TAG_USER).exists();
+                            if (tagUserGroup.equals(false)){
+                                dbHelper.SaveDBSqliteToNote(getTitle, getContent, getDate, getDateEnd, getBool, getSender, current_uid, getUid);
+
+                            }
+
+
                             Boolean tagUser = snapshot.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
-                            if (tagUser.equals(true)){
+                            if (tagUser.equals(true)) {
                                 dbHelper.SaveDBSqliteToNote(getTitle, getContent, getDate, getDateEnd, getBool, getSender, current_uid, getUid);
 
                             }
 
                         }
 
-                    }
-//                        if (getBool.equals("true")){
-//                            fragmentHistory.getNoteMsg();
-//
-//                        }else {
-//                            fragmentMain.getNoteMsg();
-//                        }
-                    try {
-                        fragmentHistory.getNoteMsg();
-                    }catch (NullPointerException e){
-                        e.printStackTrace();
-                    }
-
-                    try {
-                        fragmentMain.getNoteMsg();
-                    }catch (NullPointerException e){
-                        e.printStackTrace();
                     }
 
                 }
@@ -203,7 +186,6 @@ public class NotesAc extends AppCompatActivity {
         cursor.moveToFirst();
         long count = cursor.getCount();
 
-        Log.e(TAG, "getrawCount:" + String.valueOf(count));
         countSqlLite = (int) count;
         cursor.close();
 

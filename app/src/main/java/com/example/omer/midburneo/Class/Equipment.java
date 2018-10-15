@@ -11,6 +11,7 @@ public class Equipment {
     public String mountCurrent;
     public String sender;
     public String uid;
+    public String count;
 
 
     public Equipment(String image, String nameProd, String content, String time, String mount, String mountCurrent, String sender, String uid) {
@@ -99,4 +100,14 @@ public class Equipment {
         this.uid = uid;
         return uid;
     }
+
+    public String getCount() {
+        return count;
+    }
+
+    public String setCount(String count) {
+        this.count = count;
+        return count;
+    }
+
 }

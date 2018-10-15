@@ -15,21 +15,37 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.omer.midburneo.Class.Calendar;
 import com.example.omer.midburneo.Class.Equipment;
 import com.example.omer.midburneo.Class.Friend;
+import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.R;
 import com.example.omer.midburneo.Tabs.EquipmentPreviewAc;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR;
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
+import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.ViewHolder> {
 
     private Context context;
     private ArrayList<Equipment> EquipmentNoteList;
-    public String imageString, uidMsgString, campString;
+    public String imageString, uidMsgString, uidUserString, timeSting;
+    private int countInt;
     private DatabaseReference mUserDatabase;
+    public DBHelper dbHelper;
+
 
     public EquipmentAdapter(Context context, ArrayList<Equipment> EquipmentNoteList) {
         this.context = context;
@@ -49,16 +65,28 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.View
         holder.itemView.setTag(EquipmentNoteList.get(position));
 
 
+
+
         Equipment equipment = EquipmentNoteList.get(position);
 
         imageString = equipment.getImage();
+        uidMsgString = equipment.getUid();
+        uidUserString = equipment.getSender();
+        timeSting = equipment.getTime();
+        countInt = Integer.parseInt(equipment.getCount());
+
+
+        long getTimeLong = Long.parseLong(timeSting);
+        DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm");
+        String timeFormat = getTimeHourMintus.format(getTimeLong);
+
 
 
         holder.pContent.setText(equipment.getContent());
         holder.pMount.setText(equipment.getMount());
         holder.pMountCurrnet.setText(equipment.getMountCurrent());
         holder.pNameProd.setText(equipment.getNameProd());
-        holder.pTime.setText(equipment.getTime());
+        holder.pTime.setText(timeFormat);
 
         if (imageString.equals("default")) {
             holder.pImage.setVisibility(View.GONE);
@@ -118,18 +146,48 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.View
                 public boolean onLongClick(View v) {
 
 
-                    Toast.makeText(context, "please typ", Toast.LENGTH_LONG).show();
+                    String current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
                     AlertDialog alertDialog = new AlertDialog.Builder(context).create();
 
                     alertDialog.setTitle("עריכת הודעה");
+
+
                     alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "מחק הודעה ", new DialogInterface.OnClickListener() {
 
                         public void onClick(DialogInterface dialog, int id) {
 
 
+                            if (current_uid.equals(uidUserString)) {
+
+                                dbHelper = new DBHelper(context);
+
+                                dbHelper.deleteRawFromTable(countInt, timeSting, TABLE_NAME_EQUIPMENT);
+
+
+                            }
+
+
                         }
                     });
+
+
+                    if (current_uid.equals(uidUserString)) {
+
+                        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "מחק לכולם", new DialogInterface.OnClickListener() {
+
+                            public void onClick(DialogInterface dialog, int id) {
+
+
+                                deleteRawFormFireBase(uidMsgString);
+                                dbHelper = new DBHelper(context);
+
+                                dbHelper.deleteRawFromTable(countInt, timeSting, TABLE_NAME_EQUIPMENT);
+
+
+                            }
+                        });
+                    }
 
                     alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "חזור", new DialogInterface.OnClickListener() {
 
@@ -154,4 +212,26 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.View
         EquipmentNoteList = filteredList;
         notifyDataSetChanged();
     }
+
+
+    private void deleteRawFormFireBase(String uidMsg) {
+
+
+        mUserDatabase = FirebaseDatabase.getInstance().getReference()
+                .child("Camps").child(firebaseUserModel.getChat()).child("Equipment").child(uidMsg);
+        mUserDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                dataSnapshot.getRef().removeValue();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
 }

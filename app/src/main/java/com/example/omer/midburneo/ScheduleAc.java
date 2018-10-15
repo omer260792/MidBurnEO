@@ -1,5 +1,6 @@
 package com.example.omer.midburneo;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -215,7 +216,7 @@ public class ScheduleAc extends AppCompatActivity {
                 Calendar cal = Calendar.getInstance();
                 Calendar cal1 = Calendar.getInstance();
 
-                SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+                @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
 
 
                 long currentDateTime = System.currentTimeMillis();
@@ -225,7 +226,7 @@ public class ScheduleAc extends AppCompatActivity {
 
                 try {
                     cal.setTime(sdf.parse(time));// all done
-                    cal1.setTime(sdf.parse(timeCurrent));// all done
+                    cal1.setTimeInMillis(currentDateTime);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -291,6 +292,12 @@ public class ScheduleAc extends AppCompatActivity {
                         name_sender = ds.child("name").getValue(String.class);
                         image = ds.child("image").getValue(String.class);
                         uid_msg = ds.getKey();
+
+                        Boolean tagUserGroup = ds.child(FeedReaderContract.FeedEntry.TAG_USER).exists();
+                        if (tagUserGroup.equals(false)){
+                            dbHelper.SaveDBSqliteToCalendar(msg, msg_sender, time, uid_msg, setTime,name_sender,image);
+
+                        }
 
                         Boolean tagUser = ds.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
                         if (tagUser.equals(true)){

@@ -5,6 +5,7 @@ package com.example.omer.midburneo;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -22,6 +23,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.omer.midburneo.Class.FeedReaderContract;
+import com.example.omer.midburneo.Class.FirebaseUserModel;
+import com.example.omer.midburneo.Class.User;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -63,8 +66,10 @@ public class RegisterAc extends AppCompatActivity {
 
     public static SharedPreferences prefs;
     public static String SHPRF = "User";
+    private FirebaseUserModel firebaseUserModel;
 
     public static final int CAMERA = 1, GALLERY = 2, WRITE_STORAGE = 3, REQUEST_PHONE_CALL = 4, REQUEST_PHONE_RECORD =5;
+    User user = User.getInstance();
 
 
     @Override
@@ -90,6 +95,8 @@ public class RegisterAc extends AppCompatActivity {
 
         mprogress = new ProgressDialog(this);
 
+        firebaseUserModel = new FirebaseUserModel();
+
 
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,8 +113,12 @@ public class RegisterAc extends AppCompatActivity {
         getPass = pass.getText().toString();
         getNum = num.getText().toString();
 
-
         currentToken = FirebaseInstanceId.getInstance().getToken();
+        firebaseUserModel.setDeviceToken(currentToken);
+        firebaseUserModel.setDeviceId(currentDeviceId);
+
+
+
 
 
         long currentDateTime = System.currentTimeMillis();
@@ -116,7 +127,9 @@ public class RegisterAc extends AppCompatActivity {
 
         if (!TextUtils.isEmpty(getName) && !TextUtils.isEmpty(getEmail) && !TextUtils.isEmpty(getPass) && getNum.trim().length() == 10) {
 
-
+            SharedPreferences sharedpreferences = getSharedPreferences(user.appPreferences, Context.MODE_PRIVATE);
+            user.sharedpreferences = sharedpreferences;
+            user.login(firebaseUserModel);
 
 
             prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
@@ -184,26 +197,7 @@ public class RegisterAc extends AppCompatActivity {
 
         }
 
-//
-//        String emailSubject = "emailSubject";
-//        String emailBody = "emailBody";
-//
-//
-//        String toEmails = ((TextView) findViewById(R.id.emailFieldReg))
-//                .getText().toString();
-//
-//        List<String> toEmailList = Arrays.asList(toEmails
-//                .split("\\s*,\\s*"));
-//
-//        try {
-//            new SendMailTask(RegisterAc.this).execute(getEmail,
-//                    getPass, toEmailList, emailSubject, emailBody);
-//
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//
-//        }
+
     }
 
     public void onImg(View view) {

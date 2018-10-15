@@ -10,6 +10,7 @@ import com.firebase.client.Firebase;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 
 /**
@@ -22,22 +23,24 @@ public class MyFirebaseInstanceIdService extends FirebaseInstanceIdService {
     private FirebaseDatabase database;
     private DatabaseReference usersRef;
 
+
     User user = User.getInstance();
+
+
+
 
     @Override
     public void onTokenRefresh() {
         // Get updated InstanceID token.
-        String refreshedToken = null;//FirebaseInstanceId.getInstance().getToken();
+       // String refreshedToken = null;
+        String refreshedToken = FirebaseInstanceId.getInstance().getToken();
         if (refreshedToken != null) {
             Log.d(TAG, "Refreshed token: " + refreshedToken);
 
 
-           try {
 
                sendTokenToServer(refreshedToken);
-           }catch (Exception e){
-               e.printStackTrace();
-           }
+
         }
     }
 
@@ -57,6 +60,7 @@ public class MyFirebaseInstanceIdService extends FirebaseInstanceIdService {
 
                     if (strToken != null && firebaseUserModel.getDeviceId().equals(user.deviceId) && !strToken.equals(firebaseUserModel.getDeviceToken())) {
                         user.deviceToken = strToken;
+
 
                         usersRef.child(userSnapshot.getKey()).child("device_token").setValue(strToken, new DatabaseReference.CompletionListener() {
                             @Override

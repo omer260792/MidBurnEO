@@ -2,22 +2,22 @@ package com.example.omer.midburneo.Tabs;
 
 
 import android.Manifest;
-import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.media.MediaRecorder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -34,6 +34,7 @@ import com.example.omer.midburneo.Class.MessageCell;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.PermissionManager;
 import com.example.omer.midburneo.R;
+import com.example.omer.midburneo.RegisterAc;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -85,10 +86,10 @@ public class ChatListAc extends AppCompatActivity {
 
     ListView listView;
     EditText textComment;
-    private ImageView btnSend, imagebtnChat;
+    private ImageView btnSend;
     private CircleImageView imageUser;
     TextView tvNameUser, tvTimeUser;
-    private Button mRecordButton;
+    private Button mRecordButton, imagebtnChat;
 
     List<FirebaseMessageModel> messages = new ArrayList<FirebaseMessageModel>();
 
@@ -108,7 +109,6 @@ public class ChatListAc extends AppCompatActivity {
     private String mFileName = null;
 
 
-    public static ChatListAc chatListAc;
     public String nameUserIntent, campUserIntent, uidUserIntent, chatRoomsUserIntent, imageUserIntent, statusUserIntent, deviceUserIntent, tokenUserIntent, countUserIntent, timeUserIntent, onilneUserIntent, current_uid, current_name, current_device, table;
     public String stringUrl = "stringUrl";
     public String uidMsg;
@@ -116,7 +116,6 @@ public class ChatListAc extends AppCompatActivity {
 
     JSONArray registration_ids = new JSONArray();
 
-    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -126,7 +125,7 @@ public class ChatListAc extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.chattingList);
         textComment = (EditText) findViewById(R.id.comment_text);
         btnSend = (ImageView) findViewById(R.id.send_button);
-        imagebtnChat = (ImageView) findViewById(R.id.imagebtnChat);
+        imagebtnChat =  findViewById(R.id.imagebtnChat);
         tvNameUser = findViewById(R.id.tvNameChat);
         tvTimeUser = findViewById(R.id.tvTimeChat);
         imageUser = (CircleImageView) findViewById(R.id.imgUserChat);
@@ -155,7 +154,6 @@ public class ChatListAc extends AppCompatActivity {
 
         progressDialog = new ProgressDialog(this);
         dbHelper = new DBHelper(getApplicationContext());
-        chatListAc = this;
 
 
         tvNameUser.setText(nameUserIntent);
@@ -172,30 +170,71 @@ public class ChatListAc extends AppCompatActivity {
         }
 
         CheckUserIfOnline();
-        PermissionManager.check(ChatListAc.this, Manifest.permission.RECORD_AUDIO, REQUEST_PHONE_RECORD);
+       // PermissionManager.check(ChatListAc.this, Manifest.permission.RECORD_AUDIO, REQUEST_PHONE_RECORD);
 
-
-        mRecordButton.setOnTouchListener(new View.OnTouchListener() {
+        imagebtnChat.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
+            public void onClick(View v) {
 
-//                mFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recording.3gp";
-//
-//
-//
-//                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-//                    startRecording();
-//
-//                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-//
-//                    stopRecording();
-//
-//                }
+                PermissionManager.check(ChatListAc.this, android.Manifest.permission.READ_EXTERNAL_STORAGE, GALLERY);
+                PermissionManager.check(ChatListAc.this, android.Manifest.permission.CAMERA, CAMERA);
+                PermissionManager.check(ChatListAc.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
+
+                AlertDialog.Builder builder;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    builder = new AlertDialog.Builder(ChatListAc.this, android.R.style.Theme_Material_Dialog_Alert);
+                } else {
+                    builder = new AlertDialog.Builder(ChatListAc.this);
+                }
+                builder.setTitle("עריכת מצלמה")
+                        .setMessage("!בחר תמונה")
+                        .setNegativeButton("חזור", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        })
+                        .setPositiveButton("גלרייה", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                gallery();
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_info)
+                        .show();
 
 
-                return false;
+
+
+               // imagebtnChat.performClick();
+
+//                AlertDialog alertDialog = new AlertDialog.Builder(getApplicationContext()).create();
+//
+//                alertDialog.setTitle("עריכת מצלמה");
+//                alertDialog.setMessage("!בחר תמונה");
+//
+//                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Gallery", new DialogInterface.OnClickListener() {
+//
+//                    public void onClick(DialogInterface dialog, int id) {
+//
+//                        gallery();
+//
+//                    }
+//                });
+//                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", new DialogInterface.OnClickListener() {
+//
+//                    public void onClick(DialogInterface dialog, int id) {
+//
+//                        // return;
+//
+//                    }
+//                });
+//
+//                alertDialog.show();
+                return;
             }
         });
+
 
         textComment.addTextChangedListener(new TextWatcher() {
             @Override
@@ -235,7 +274,7 @@ public class ChatListAc extends AppCompatActivity {
 
                 for (com.google.firebase.database.DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     System.out.println("Child: " + postSnapshot);
-                    //Getting the data from snapshot
+
                     FirebaseMessageModel firebaseMessageModel = postSnapshot.getValue(FirebaseMessageModel.class);
                     firebaseMessageModel.setId(postSnapshot.getKey());
 
@@ -356,8 +395,8 @@ public class ChatListAc extends AppCompatActivity {
 
     public void hideKeyboard() {
         try {
-            InputMethodManager inputManager = (InputMethodManager) chatListAc.getSystemService(Context.INPUT_METHOD_SERVICE);
-            inputManager.hideSoftInputFromWindow(chatListAc.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+            InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(ChatListAc.this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         } catch (Exception e) {
             Log.i(TAG, "Exception while hiding keyboard");
         }
@@ -474,6 +513,7 @@ public class ChatListAc extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 resultUri = result.getUri();
+                stringUrl = String.valueOf(resultUri);
 
                 filePath = mImageStorage.child("msg_images").child(resultUri.getLastPathSegment());
 
@@ -484,7 +524,7 @@ public class ChatListAc extends AppCompatActivity {
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
 
-                Toast.makeText(ChatListAc.this, "error", Toast.LENGTH_LONG).show();
+                Toast.makeText(ChatListAc.this, "נכשל בעלת התמונה לשרת", Toast.LENGTH_LONG).show();
 
             }
         }
@@ -514,7 +554,7 @@ public class ChatListAc extends AppCompatActivity {
         updateListView();
 
 
-        final ProgressDialog Dialog = new ProgressDialog(chatListAc);
+        final ProgressDialog Dialog = new ProgressDialog(this);
         Dialog.setMessage("Please wait..");
         Dialog.setCancelable(false);
         Dialog.show();
@@ -525,11 +565,12 @@ public class ChatListAc extends AppCompatActivity {
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
 
                 uidMsg = databaseReference.getKey();
-                loadimageFirebase(uidMsg, chatRoomsUserIntent);
-                if (firebaseMessageModel.getImage().equals(resultUri)) {
 
+                if (!stringUrl.equals("stringUrl")){
+                    loadimageFirebase(uidMsg, chatRoomsUserIntent);
 
                 }
+
 
 
                 if (databaseError != null) {
@@ -658,50 +699,20 @@ public class ChatListAc extends AppCompatActivity {
 
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case REQUEST_PHONE_RECORD:
-                permissionToRecordAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                break;
-        }
-        if (!permissionToRecordAccepted) finish();
+    //    @Override
+//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        switch (requestCode) {
+//            case REQUEST_PHONE_RECORD:
+//                permissionToRecordAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+//                break;
+//        }
+//        if (!permissionToRecordAccepted) finish();
+//
+//    }
 
-    }
 
 
-    public void loadImagebtnChat(View view) {
-
-        PermissionManager.check(ChatListAc.this, android.Manifest.permission.READ_EXTERNAL_STORAGE, GALLERY);
-        PermissionManager.check(ChatListAc.this, android.Manifest.permission.CAMERA, CAMERA);
-        PermissionManager.check(ChatListAc.this, Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
-
-        gallery();
-
-//        AlertDialog alertDialog = new AlertDialog.Builder(getApplicationContext()).create();
-//
-//        alertDialog.setTitle("Profile Photo");
-//        alertDialog.setMessage("Please Pick A Method");
-//        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Gallery", new DialogInterface.OnClickListener() {
-//
-//            public void onClick(DialogInterface dialog, int id) {
-//
-//                gallery();
-//
-//            }
-//        });
-//        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", new DialogInterface.OnClickListener() {
-//
-//            public void onClick(DialogInterface dialog, int id) {
-//
-//                return;
-//
-//            }
-//        });
-//
-//        alertDialog.show();
-    }
 
     public void loadimageFirebase(String uidMsg, String getchat) {
         filePath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
@@ -725,6 +736,8 @@ public class ChatListAc extends AppCompatActivity {
 
                             mUserDatabase.updateChildren(mapCampsUpdates);
 
+                            stringUrl = "stringUrl";
+
                         }
 
                     }
@@ -732,6 +745,8 @@ public class ChatListAc extends AppCompatActivity {
             }
         });
     }
+
+
 }
 
 

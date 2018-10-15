@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,14 +17,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.R;
 import com.example.omer.midburneo.Tabs.ChatListAc;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
@@ -31,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
 import static com.example.omer.midburneo.Tabs.ChatAc.callPhoneChatAc;
 import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
@@ -39,7 +46,8 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
     private Context context;
     private final List<Friend> personUtils;
-    public String uidString, current_uid, urlString;
+    public String current_uid, urlString, chatRoomsString;
+    public int countString;
     private FirebaseUser mCurrentUser;
     private DatabaseReference mUserDatabase;
     private DBHelper dbHelper;
@@ -70,23 +78,22 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
         Friend friend = personUtils.get(position);
 
-        uidString = friend.uidReceiver;
-        if (uidString.equals(current_uid)) {
+        chatRoomsString = friend.getChatRoom();
+        countString = Integer.parseInt(friend.getUidCount());
+        holder.pName.setText(friend.getName());
+        holder.pLastMsg.setText(friend.getRole());
+
+
+        urlString = friend.getImage();
+
+
+        if (urlString.equals("default")) {
+            Glide.with(context).load(R.drawable.midburn_logo).into(holder.pImage);
 
         } else {
-            holder.pName.setText(friend.getName());
-            holder.pLastMsg.setText(friend.getRole());
-
-            urlString = friend.getImage();
+            Glide.with(context).load(urlString).into(holder.pImage);
 
 
-            if (urlString.equals("default")) {
-                Glide.with(context).load(R.drawable.midburn_logo).into(holder.pImage);
-
-            } else {
-                Glide.with(context).load(urlString).into(holder.pImage);
-
-            }
         }
     }
 
@@ -104,9 +111,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         public Button btnCallPopUp, tvAdminPopUp, tvDeleteMsgPopUp;
         public CircleImageView imgPopUp;
 
-        public Dialog myDialog;
-
-
+        private Dialog myDialog;
 
 
         public ViewHolder(View itemView) {
@@ -126,7 +131,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
                     Friend friend = (Friend) view.getTag();
 
-                   // user.SPUser();
+                    // user.SPUser();
                     Toast.makeText(view.getContext(), friend.getName(), Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(context, ChatListAc.class);
                     intent.putExtra("nameUidFriend", friend.getName());
@@ -189,11 +194,14 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                 Picasso.get().load(friend.getImage()).resize(300, 300).error(R.drawable.midburn_logo).into(imgPopUp);
 
             } catch (NullPointerException e) {
-                Picasso.get().load(R.drawable.midburn_logo).resize(200, 200).error(R.drawable.midburn_logo).into(imgPopUp);
+                Picasso.get().load(R.drawable.midburn_logo).resize(100, 100).error(R.drawable.midburn_logo).into(imgPopUp);
             }
             tvCampPopUp.setText(friend.getCamp());
             tvNamePopUp.setText(friend.getName());
             tvRolePopUp.setText(friend.getRole());
+
+            myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            myDialog.show();
 
             tvAdminPopUp.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -217,20 +225,32 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                 public void onClick(View v) {
                     dbHelper = new DBHelper(context);
 
-                    if (friend.getName().equals(firebaseUserModel.getCamp())) {
-                        dbHelper.DeleteTableSqliteDB(current_uid);
 
-                    } else {
-                        dbHelper.DeleteTableSqliteDB(friend.getUidReceiver());
+                    if (friend.getUidReceiver().equals(current_uid)){
+
+                        dbHelper.deleteRawFromTableUsers(countString,chatRoomsString,TABLE_NAME);
+                        deleteRawFormFireBase(chatRoomsString);
+
+                    }else {
+                        dbHelper.deleteRawFromTableUsers(countString,chatRoomsString,TABLE_NAME);
 
                     }
+
+                    myDialog.dismiss();
+//                    if (friend.getName().equals(firebaseUserModel.getCamp())) {
+//                        dbHelper.DeleteTableSqliteDB(current_uid);
+//
+//                    } else {
+//                        dbHelper.DeleteTableSqliteDB(friend.getUidReceiver());
+//
+//                    }
                 }
             });
 
             btnCallPopUp.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    callPhoneChatAc(friend.getPhone(),context);
+                    callPhoneChatAc(friend.getPhone(), context);
                 }
             });
 
@@ -245,8 +265,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
                 }
             });
-            myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            myDialog.show();
+
         }
 
         public void UpdateUserAdmin(String uid) {
@@ -260,6 +279,35 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
 
         }
+    }
+
+
+    private void deleteRawFormFireBase(String uidMsg) {
+
+
+        mUserDatabase = FirebaseDatabase.getInstance().getReference()
+                .child("Users").child(FeedReaderContract.FeedEntry.GROUP).child(uidMsg);
+        mUserDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                Log.e("gggg", String.valueOf(dataSnapshot.getRef()));
+                Log.e("gggg", String.valueOf(dataSnapshot.getValue()));
+                Log.e("gggg", String.valueOf(dataSnapshot.getKey()));
+
+                dataSnapshot.getRef().removeValue();
+
+
+                // ToDo delete from Firebase
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
 

@@ -1,10 +1,12 @@
 package com.example.omer.midburneo.Tabs;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,6 +20,7 @@ import android.widget.Toast;
 import com.example.omer.midburneo.Adapters.ImageAdapter;
 import com.example.omer.midburneo.Class.FirebaseUserModel;
 import com.example.omer.midburneo.Class.User;
+import com.example.omer.midburneo.PermissionManager;
 import com.example.omer.midburneo.R;
 import com.example.omer.midburneo.ScheduleAc;
 import com.google.firebase.auth.FirebaseAuth;
@@ -34,7 +37,15 @@ import java.util.Map;
 import static com.example.omer.midburneo.DataBase.DBHelper.DATABASE_NAME;
 
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_MESSAGE;
+import static com.example.omer.midburneo.RegisterAc.CAMERA;
+import static com.example.omer.midburneo.RegisterAc.GALLERY;
+import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
 
+
+// ToDo delete from Firebase -- FriendsAdapter
+// ToDo push notification -- All Project
+// ToDo picture's users in AlertDailog -- All Project
+// ToDo change name's group from Camp-AllCamps-group   -- AdminAc
 
 public class MainPageAc extends AppCompatActivity {
 
@@ -63,72 +74,47 @@ public class MainPageAc extends AppCompatActivity {
 
 
         // Determine if you have an internet connection
-        ConnectivityManager cm = (ConnectivityManager)this.getSystemService(this.CONNECTIVITY_SERVICE);
-
+        ConnectivityManager cm = (ConnectivityManager) this.getSystemService(this.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
 
 
         mprogress = new ProgressDialog(this);
-
         mprogress.setMessage("מוריד מידע");
         mprogress.show();
-
 
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
 
-        mAuth = FirebaseAuth.getInstance();
 
-     //   boolean isWiFi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
-
-        if (isConnected){
-            Log.e("ssssss", String.valueOf(isConnected));
-
-        }else {
-            Log.e("ssstttts", String.valueOf(isConnected));
-
-        }
-        Log.e("ssstttts", String.valueOf(isConnected));
+        prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
+        firebaseUserModel = new FirebaseUserModel();
 
 
-        try {
-
-
-            prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
+        if (isConnected) {
+            Log.e(TAG, "internet connection" + "=" + String.valueOf(isConnected));
 
 
             current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
             TABLE_NAME_MESSAGE = current_uid;
             DATABASE_NAME = current_uid;
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-
-
-        firebaseUserModel = new FirebaseUserModel();
-
-
-        GridView gridView = findViewById(R.id.grid_view);
-        gridView.setAdapter(new ImageAdapter(this));
-
-        try {
-            FirebaseUserModel.getSPToFirebaseUserModel(firebaseUserModel, getApplicationContext());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
+            mAuth = FirebaseAuth.getInstance();
 
             getUserDBFromFireBase();
             UpdateUserOnline();
 
-        } catch (Exception e) {
-            e.printStackTrace();
 
+        } else {
+            Log.e(TAG, "internet connection" + "=" + String.valueOf(isConnected));
+
+            FirebaseUserModel.getSPToFirebaseUserModel(firebaseUserModel, getApplicationContext());
+            mprogress.dismiss();
         }
+
+
+        GridView gridView = findViewById(R.id.grid_view);
+        gridView.setAdapter(new ImageAdapter(this));
 
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -198,9 +184,6 @@ public class MainPageAc extends AppCompatActivity {
                 String email = dataSnapshot.child("email").getValue().toString();
 
 
-
-
-
                 if (current_image.equals("default")) {
                     image = setImgUrlDefault;
 
@@ -208,8 +191,6 @@ public class MainPageAc extends AppCompatActivity {
                     image = current_image;
 
                 }
-
-
                 firebaseUserModel.setName(current_name);
                 firebaseUserModel.setDeviceId(deviceUserIntent);
                 firebaseUserModel.setDeviceToken(tokenUserIntent);
@@ -228,10 +209,6 @@ public class MainPageAc extends AppCompatActivity {
                 mprogress.dismiss();
 
                 FirebaseUserModel.saveDataInSharedPre(firebaseUserModel, getApplicationContext());
-
-                Log.e("ffffff", firebaseUserModel.getAdmin());
-                prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
-                prefs.edit().putString("email", firebaseUserModel.getEmail()).apply();
 
             }
 
@@ -262,12 +239,16 @@ public class MainPageAc extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
 
+
+        if (isConnected) {
+            mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+            Log.e(TAG, "onStop");
+            current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            long currentDateTime = System.currentTimeMillis();
+            timeString = String.valueOf(currentDateTime);
+        }
         // before on destroy take all the data
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
-        Log.e(TAG, "onStop");
-        current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        long currentDateTime = System.currentTimeMillis();
-        timeString = String.valueOf(currentDateTime);
+
     }
 
     @Override
