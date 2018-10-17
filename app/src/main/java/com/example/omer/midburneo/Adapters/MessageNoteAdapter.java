@@ -34,6 +34,7 @@ import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.Class.MessageNote;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.R;
+import com.example.omer.midburneo.RegisterAc;
 import com.example.omer.midburneo.Tabs.NotesAc;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -51,6 +52,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_NOTE;
 import static com.example.omer.midburneo.RegisterAc.prefs;
@@ -62,8 +64,8 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
 
     private Context context;
     private final List<MessageNote> MessageNoteList;
-    public String senderString, uidMsgString, time;
-    private int countMsg ;
+    public String senderString, uidMsgString, time, current_uid, checkBool, countString;
+    private int countMsg;
 
     private FirebaseUser mCurrentUser;
     private DatabaseReference mUserDatabase;
@@ -79,7 +81,7 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public MessageNoteAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_message_note, parent, false);
         ViewHolder viewHolder = new ViewHolder(v);
         viewGroup = parent;
@@ -88,7 +90,12 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        // holder.itemView.setTag(MessageNoteList.get(position));
+
+        holder.itemView.setTag(MessageNoteList.get(position));
+
+
+        current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
 
         MessageNote messageNote = MessageNoteList.get(position);
 
@@ -106,54 +113,27 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
         holder.pDateEnd.setText(dateEnd);
         holder.checkBox.setBackgroundColor(android.R.drawable.checkbox_off_background);
 
-
-        String checkBool = messageNote.getDateBool();
-
+        checkBool = messageNote.getDateBool();
         uidMsgString = messageNote.getUidMsg();
         senderString = messageNote.getUid();
         countMsg = Integer.parseInt(messageNote.getCount());
         time = messageNote.getTime();
+        countString = messageNote.getCount();
 
         if (checkBool.equals("true")) {
-            int btnDrawable = android.R.drawable.checkbox_on_background;
-            holder.checkBox.setButtonDrawable(btnDrawable);
-
+            if (current_uid.equals(senderString)) {
+                int btnDrawable = android.R.drawable.checkbox_on_background;
+                holder.checkBox.setButtonDrawable(btnDrawable);
+            }
         } else {
-            holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @SuppressLint("ResourceAsColor")
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
-
-                    // holder.checkBox.setChecked(false);
-                    holder.checkBox.isChecked();
-                    if (isChecked) {
-                        int btnDrawable = android.R.drawable.checkbox_on_background;
-                        holder.checkBox.setButtonDrawable(btnDrawable);
-                        holder.relativeLayout.setBackgroundColor(R.color.red);
-
-                        String count = messageNote.getCount();
-
-
-                        UpdateFirebase( messageNote.getUidMsg());
-                        getLastMsg(count);
-
-
-
-                    } else {
-                        //checkBox clicked and unchecked
-                        int btnDrawable = android.R.drawable.checkbox_off_background;
-                        holder.checkBox.setButtonDrawable(btnDrawable);
-                        holder.relativeLayout.setBackgroundColor(R.color.colorAccent);
-
-                    }
-
-                }
-            });
+            if (current_uid.equals(senderString)) {
+            }
         }
 
+        holder.checkBox.isChecked();
 
     }
+
 
     @Override
     public int getItemCount() {
@@ -183,19 +163,100 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
             this.setIsRecyclable(false);
 
 
+            checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @SuppressLint("ResourceAsColor")
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+
+                    MessageNote messageNote = (MessageNote) itemView.getTag();
+
+                    senderString = messageNote.getUid();
+
+                    if (current_uid.equals(senderString)) {
+
+                        checkBool = messageNote.getDateBool();
+
+                        uidMsgString = messageNote.getUidMsg();
+                        countMsg = Integer.parseInt(messageNote.getCount());
+                        time = messageNote.getTime();
+                        countString = messageNote.getCount();
+
+                        if (checkBool.equals("true")) {
+
+                            int btnDrawable = android.R.drawable.checkbox_on_background;
+                            checkBox.setButtonDrawable(btnDrawable);
+
+                            UpdateFirebase(uidMsgString);
+                            Toast.makeText(context, "המטלה הושלמה", Toast.LENGTH_SHORT).show();
+
+                            try {
+                                ContentValues data = new ContentValues();
+                                data.put(FeedReaderContract.FeedEntry.DATE_BOOL, "false");
+                                db.update(TABLE_NAME_NOTE, data, "_id=" + countMsg, null);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            Intent intent = new Intent(context, NotesAc.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            context.startActivity(intent);
+
+                        }else {
+                            Toast.makeText(context, "רק מפרסם המטלה יכול לשנות סטטוס", Toast.LENGTH_SHORT).show();
+
+                        }
+
+                        checkBox.isChecked();
+
+//                                if (isChecked) {
+//                                    if (current_uid.equals(senderString)) {
+//                                        int btnDrawable = android.R.drawable.checkbox_on_background;
+//                                        checkBox.setButtonDrawable(btnDrawable);
+//                                        //relativeLayout.setBackgroundColor(R.color.red);
+//
+//
+//
+//
+//                                    }else {
+//                                        Toast.makeText(context, "רק מפרסם המטלה יכול לשנות סטטוס", Toast.LENGTH_LONG).show();
+//
+//                                    }
+//
+//                                } else {
+//                                    if (current_uid.equals(senderString)) {
+//
+//                                        //checkBox clicked and unchecked
+//                                        int btnDrawable = android.R.drawable.checkbox_off_background;
+//                                        checkBox.setButtonDrawable(btnDrawable);
+//                                        relativeLayout.setBackgroundColor(R.color.colorAccent);
+//                                    }else {
+//                                        Toast.makeText(context, "רק מפרסם המטלה יכול לשנות סטטוס", Toast.LENGTH_LONG).show();
+//
+//                                    }
+//                                }
+                    } else {
+                        Toast.makeText(context, "רק מפרסם המטלה יכול לשנות סטטוס", Toast.LENGTH_LONG).show();
+
+                    }
+
+                }
+            });
+
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
 
 
+
+
                 }
             });
+
 
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
 
-                    String current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
                     AlertDialog alertDialog = new AlertDialog.Builder(context).create();
                     alertDialog.setTitle("עריכת הודעה");
@@ -204,13 +265,12 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
                         public void onClick(DialogInterface dialog, int id) {
 
 
-
-
-
                             dbHelper = new DBHelper(context);
 
-                            dbHelper.deleteRawFromTableNote(countMsg, time, TABLE_NAME_NOTE);
-
+                            dbHelper.deleteRawFromTable(countMsg, time, TABLE_NAME_NOTE,FeedReaderContract.FeedEntry.TIME);
+                            Intent intent = new Intent(context, NotesAc.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            context.startActivity(intent);
 
                         }
                     });
@@ -226,20 +286,32 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
 
                                 dbHelper = new DBHelper(context);
 
-                                dbHelper.deleteRawFromTableNote(countMsg, time, TABLE_NAME_NOTE);
+                                dbHelper.deleteRawFromTable(countMsg, time, TABLE_NAME_NOTE, FeedReaderContract.FeedEntry.TIME);
+                                Intent intent = new Intent(context, NotesAc.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                context.startActivity(intent);
 
                             }
                         });
                     }
+                    if (current_uid.equals(senderString)) {
 
-                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "חזור", new DialogInterface.OnClickListener() {
+                        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "החזר משימה", new DialogInterface.OnClickListener() {
 
-                        public void onClick(DialogInterface dialog, int id) {
+                            public void onClick(DialogInterface dialog, int id) {
 
-                            return;
 
-                        }
-                    });
+                                mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getChat()).child("Note").child(uidMsgString);
+
+                                Map<String, Object> mapCampsUpdates = new HashMap<>();
+                                mapCampsUpdates.put("dateBool", "false");
+
+                                mUserDatabase.updateChildren(mapCampsUpdates);
+
+
+                            }
+                        });
+                    }
 
                     alertDialog.show();
 
@@ -251,7 +323,7 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
         }
     }
 
-    private void UpdateFirebase( String uidMsgString) {
+    private void UpdateFirebase(String uidMsgString) {
 
 
         long currentDateTime = System.currentTimeMillis();
@@ -265,7 +337,6 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
 
         mUserDatabase.updateChildren(mapCampsUpdates);
     }
-
 
 
     private void deleteRawFormFireBase() {
@@ -288,37 +359,38 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
 
     }
 
-    public void getLastMsg(String countRaw) {
 
-        try {
-
-            dbHelper = new DBHelper(context);
-            db = dbHelper.getWritableDatabase();
-
-            String countQuery = "SELECT  * FROM " + TABLE_NAME_NOTE;
-            Cursor cursor = db.rawQuery(countQuery, null);
-            cursor.moveToLast();
-            String dateBool = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE_BOOL));
-//            Log.e(TAG, "onDestroy_lastMsg: " + last_msg);
-//            Log.e(TAG, "onDestroy_lastMsg: " + time);
-            cursor.close();
-
-            int count = Integer.parseInt(countRaw);
-
-            ContentValues cv = new ContentValues();
-            cv.put(FeedReaderContract.FeedEntry.DATE_BOOL, "true");
-
-
-            db.update(TABLE_NAME_NOTE, cv, "_id=" + count, null);
-
-
-        } catch (Exception e) {
-            Log.e(TAG, "Exception - Error change Bool date");
-
-        }
-
-
-    }
+//    public void getLastMsg(String countRaw) {
+//
+//        try {
+//
+//            dbHelper = new DBHelper(context);
+//            db = dbHelper.getWritableDatabase();
+//
+//            String countQuery = "SELECT  * FROM " + TABLE_NAME_NOTE;
+//            Cursor cursor = db.rawQuery(countQuery, null);
+//            cursor.moveToLast();
+//            String dateBool = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.DATE_BOOL));
+////            Log.e(TAG, "onDestroy_lastMsg: " + last_msg);
+////            Log.e(TAG, "onDestroy_lastMsg: " + time);
+//            cursor.close();
+//
+//            int count = Integer.parseInt(countRaw);
+//
+//            ContentValues cv = new ContentValues();
+//            cv.put(FeedReaderContract.FeedEntry.DATE_BOOL, "true");
+//
+//
+//            db.update(TABLE_NAME_NOTE, cv, "_id=" + count, null);
+//
+//
+//        } catch (Exception e) {
+//            Log.e(TAG, "Exception - Error change Bool date");
+//
+//        }
+//
+//
+//    }
 
 
 }

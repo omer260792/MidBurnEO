@@ -2,10 +2,13 @@ package com.example.omer.midburneo.Adapters;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,10 +20,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.omer.midburneo.Class.Equipment;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.R;
+import com.example.omer.midburneo.Tabs.ChatAc;
 import com.example.omer.midburneo.Tabs.ChatListAc;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -31,6 +36,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +44,7 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
 import static com.example.omer.midburneo.Tabs.ChatAc.callPhoneChatAc;
 import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
@@ -45,15 +52,15 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
 
     private Context context;
-    private final List<Friend> personUtils;
-    public String current_uid, urlString, chatRoomsString;
+    private List<Friend> personUtils;
+    public String current_uid, urlString, chatRoomsString, deviceID;
     public int countString;
     private FirebaseUser mCurrentUser;
     private DatabaseReference mUserDatabase;
     private DBHelper dbHelper;
 
 
-    public FriendsAdapter(Context context, List personUtils) {
+    public FriendsAdapter(Context context, List <Friend>personUtils) {
         this.context = context;
         this.personUtils = personUtils;
 
@@ -80,6 +87,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
         chatRoomsString = friend.getChatRoom();
         countString = Integer.parseInt(friend.getUidCount());
+        deviceID = friend.getDevice();
         holder.pName.setText(friend.getName());
         holder.pLastMsg.setText(friend.getRole());
 
@@ -132,7 +140,6 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                     Friend friend = (Friend) view.getTag();
 
                     // user.SPUser();
-                    Toast.makeText(view.getContext(), friend.getName(), Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(context, ChatListAc.class);
                     intent.putExtra("nameUidFriend", friend.getName());
                     intent.putExtra("imageUidFriend", friend.getImage());
@@ -154,21 +161,59 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
+                    Friend friend = (Friend) view.getTag();
 
-                    ShowPopup(view);
 
-//                    Friend friend = (Friend) view.getTag();
-//
-//                    Intent intent = new Intent(context, PopUpUser.class);
-//                    intent.putExtra("nameUidFriend", friend.getName());
-//                    intent.putExtra("imageUidFriend", friend.getImage());
-//                    intent.putExtra("receiverUidFriend", friend.getUidReceiver());
-//                    intent.putExtra("campUidFriend", friend.getCamp());
-//                    intent.putExtra("statusUidFriend", friend.getStatus());
-//                    intent.putExtra("countUidFriend", friend.getUidCount());
-//                    intent.putExtra("timeUidFriend", friend.getTime());
-//                    context.startActivity(intent);
+                    dbHelper = new DBHelper(context);
 
+                    String nameGroup = friend.getName();
+
+                    if (!friend.getDevice().equals("default")) {
+                        Log.e("FF", deviceID);
+                        ShowPopup(view);
+
+                    } else {
+                        //Todo **************
+
+
+                        AlertDialog.Builder builder;
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            builder = new AlertDialog.Builder(context, android.R.style.Theme_Material_Dialog_Alert);
+                        } else {
+                            builder = new AlertDialog.Builder(context);
+                        }
+                        builder.setTitle("עריכת קבוצה")
+                                .setMessage(nameGroup)
+                                .setNegativeButton("חזור", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+
+                                    }
+                                })
+                                .setPositiveButton("מחק קבוצה", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+
+
+                                        int count = Integer.parseInt(friend.getUidCount());
+                                        String ChatRooms = friend.getChatRoom();
+                                        String nameColums = FeedReaderContract.FeedEntry.CHAT_ROOMS;
+
+                                        deleteRawFormFireBase(ChatRooms);
+
+                                        dbHelper.deleteRawFromTable(count, ChatRooms, TABLE_NAME, nameColums);
+                                        Log.e("ff", "64cfe10c-4999-437e-a495-32511d89f94b");
+                                        dbHelper.getAllMsg();
+                                        Intent i = new Intent(context, ChatAc.class);
+                                        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                        context.startActivity(i);
+
+                                    }
+                                })
+                                .setIcon(android.R.drawable.ic_dialog_info)
+                                .show();
+
+
+                    }
                     return true;
                 }
             });
@@ -226,13 +271,13 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                     dbHelper = new DBHelper(context);
 
 
-                    if (friend.getUidReceiver().equals(current_uid)){
+                    if (friend.getUidReceiver().equals(current_uid)) {
 
-                        dbHelper.deleteRawFromTableUsers(countString,chatRoomsString,TABLE_NAME);
+                        dbHelper.deleteRawFromTable(countString, chatRoomsString, TABLE_NAME, FeedReaderContract.FeedEntry.CHAT_ROOMS);
                         deleteRawFormFireBase(chatRoomsString);
 
-                    }else {
-                        dbHelper.deleteRawFromTableUsers(countString,chatRoomsString,TABLE_NAME);
+                    } else {
+                        dbHelper.deleteRawFromTable(countString, chatRoomsString, TABLE_NAME, FeedReaderContract.FeedEntry.CHAT_ROOMS);
 
                     }
 
@@ -259,9 +304,6 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                 @Override
                 public void onClick(View v) {
                     myDialog.dismiss();
-//                    Intent intent = new Intent(context, ChatAc.class);
-//                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                    context.startActivity(intent);
 
                 }
             });
@@ -286,14 +328,11 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
 
         mUserDatabase = FirebaseDatabase.getInstance().getReference()
-                .child("Users").child(FeedReaderContract.FeedEntry.GROUP).child(uidMsg);
+                .child("Users").child(current_uid).child(FeedReaderContract.FeedEntry.GROUP).child(uidMsg);
         mUserDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                Log.e("gggg", String.valueOf(dataSnapshot.getRef()));
-                Log.e("gggg", String.valueOf(dataSnapshot.getValue()));
-                Log.e("gggg", String.valueOf(dataSnapshot.getKey()));
 
                 dataSnapshot.getRef().removeValue();
 
@@ -310,5 +349,8 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
     }
 
-
+    public void filterList(List<Friend> filteredList) {
+        personUtils = filteredList;
+        notifyDataSetChanged();
+    }
 }

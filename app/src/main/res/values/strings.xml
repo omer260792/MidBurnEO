@@ -3,8 +3,8 @@
 
 
     <string name="get_date">Get date</string>
-    <string name="notifications_admin_channel_name">omer_name</string>
-    <string name="notifications_admin_channel_descripti">omer_desc</string>
+    <string name="notifications_admin_channel_name">channel_name</string>
+    <string name="notifications_admin_channel_descripti">channel_descripti</string>
     <string name="msg_subscribed">msg_subscribed</string>
     <string name="msg_subscribe_failed">msg_subscribe_failed</string>
 

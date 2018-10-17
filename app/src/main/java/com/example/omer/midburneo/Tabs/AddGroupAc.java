@@ -227,6 +227,7 @@ public class AddGroupAc extends AppCompatActivity {
                             mprogress.dismiss();
 
                             Intent intent = new Intent(AddGroupAc.this,ChatAc.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(intent);
                             finish();
 
@@ -410,6 +411,7 @@ public class AddGroupAc extends AppCompatActivity {
                         stringUrl = String.valueOf(uri);
 
                         if (stringUrl != null) {
+
 
                             mMsgDatabase = FirebaseDatabase.getInstance().getReference().child("ChatRooms").child(getchat).child(uidMsg);
 

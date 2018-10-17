@@ -21,13 +21,11 @@ import static android.content.Context.ALARM_SERVICE;
  * Created by Jaison on 20/06/17.
  */
 
-public class NotificationScheduler
-{
-    public static final int DAILY_REMINDER_REQUEST_CODE=100;
-    public static final String TAG="NotificationScheduler";
+public class NotificationScheduler {
+    public static final int DAILY_REMINDER_REQUEST_CODE = 100;
+    public static final String TAG = "NotificationScheduler";
 
-    public static void setReminder(Context context,Class<?> cls,int hour, int min)
-    {
+    public static void setReminder(Context context, Class<?> cls, int hour, int min) {
         Calendar calendar = Calendar.getInstance();
 
         Calendar setcalendar = Calendar.getInstance();
@@ -36,10 +34,10 @@ public class NotificationScheduler
         setcalendar.set(Calendar.SECOND, 0);
 
         // cancel already scheduled reminders
-        cancelReminder(context,cls);
+        cancelReminder(context, cls);
 
-        if(setcalendar.before(calendar))
-            setcalendar.add(Calendar.DATE,1);
+        if (setcalendar.before(calendar))
+            setcalendar.add(Calendar.DATE, 1);
 
         // Enable a receiver
 
@@ -58,8 +56,7 @@ public class NotificationScheduler
 
     }
 
-    public static void cancelReminder(Context context,Class<?> cls)
-    {
+    public static void cancelReminder(Context context, Class<?> cls) {
         // Disable a receiver
 
         ComponentName receiver = new ComponentName(context, cls);
@@ -76,8 +73,7 @@ public class NotificationScheduler
         pendingIntent.cancel();
     }
 
-    public static void showNotification(Context context,Class<?> cls,String title,String content)
-    {
+    public static void showNotification(Context context, Class<?> cls, String title, String content) {
         Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
         Intent notificationIntent = new Intent(context, cls);

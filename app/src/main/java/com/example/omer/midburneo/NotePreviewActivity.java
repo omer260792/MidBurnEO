@@ -46,8 +46,6 @@ public class NotePreviewActivity extends AppCompatActivity {
         Intent intent = getIntent();
         count = getIntent().getStringExtra("coumtIntent");
         time = getIntent().getStringExtra("timeIntent");
-        Log.e(TAG, "timeeeeee"+time);
-        Log.e(TAG, "timeeeeee"+count);
 
 
         recyclerNotePreview = findViewById(R.id.recycler_note_preview);
@@ -79,7 +77,6 @@ public class NotePreviewActivity extends AppCompatActivity {
 
     public void getNotePreview(String time) {
 
-        Log.e(TAG, "time"+time);
 
         try {
 

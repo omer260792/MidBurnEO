@@ -126,7 +126,7 @@ public class AdminAc extends AppCompatActivity {
                         mapUserUpdates.put("image", stringUrl);
 
                         mUserDatabase.updateChildren(mapUserUpdates);
-                    }else {
+                    } else {
 
                         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(firebaseUserModel.getChat());
 
@@ -139,14 +139,11 @@ public class AdminAc extends AppCompatActivity {
                     }
 
 
+                    if (!firebaseUserModel.getCamp().equals(camp)) {
 
-                        if (!firebaseUserModel.getCamp().equals(camp)) {
-
-                            firebaseUserModel.setCamp(camp);
-                        }
-                        Toast.makeText(AdminAc.this, "נשמר בהצלחה", Toast.LENGTH_LONG).show();
-
-
+                        firebaseUserModel.setCamp(camp);
+                    }
+                    Toast.makeText(AdminAc.this, "נשמר בהצלחה", Toast.LENGTH_LONG).show();
 
 
                 } else {

@@ -135,6 +135,7 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.View
                     intent.putExtra("imageEquipment", equipment.getImage());
                     intent.putExtra("senderUidEquipment", equipment.getSender());
                     intent.putExtra("msgUidEquipment", equipment.getUid());
+                    intent.putExtra("countEquipment", equipment.getCount());
 
                     context.startActivity(intent);
 
@@ -162,7 +163,7 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.View
 
                                 dbHelper = new DBHelper(context);
 
-                                dbHelper.deleteRawFromTable(countInt, timeSting, TABLE_NAME_EQUIPMENT);
+                                dbHelper.deleteRawFromTable(countInt, timeSting, TABLE_NAME_EQUIPMENT, "time");
 
 
                             }
@@ -182,7 +183,7 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.View
                                 deleteRawFormFireBase(uidMsgString);
                                 dbHelper = new DBHelper(context);
 
-                                dbHelper.deleteRawFromTable(countInt, timeSting, TABLE_NAME_EQUIPMENT);
+                                dbHelper.deleteRawFromTable(countInt, timeSting, TABLE_NAME_EQUIPMENT, "time");
 
 
                             }

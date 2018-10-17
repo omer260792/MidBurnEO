@@ -26,6 +26,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         Log.d(TAG, "From: " + remoteMessage.getFrom());
+        Log.d(TAG, "From: " + remoteMessage.getSentTime());
+        Log.d(TAG, "From: " + remoteMessage.getNotification().getTitle());
+        Log.d(TAG, "From: " + remoteMessage.getNotification().getBodyLocalizationKey());
+        Log.d(TAG, "From: " + remoteMessage.getNotification().getTitleLocalizationArgs());
+        Log.d(TAG, "From: " + remoteMessage.getNotification().getTag());
         Log.d(TAG, "Notification Message Body: " + remoteMessage.getNotification().getBody());
 
         //Calling method to show notification
@@ -51,7 +56,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         notificationManager.notify(0, notificationBuilder.build());
-        Log.e(TAG,"ssssssssss");
 
     }
 

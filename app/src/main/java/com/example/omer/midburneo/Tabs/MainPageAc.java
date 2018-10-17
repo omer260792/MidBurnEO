@@ -1,10 +1,13 @@
 package com.example.omer.midburneo.Tabs;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -20,6 +23,8 @@ import com.example.omer.midburneo.Class.FirebaseUserModel;
 import com.example.omer.midburneo.Class.User;
 import com.example.omer.midburneo.R;
 import com.example.omer.midburneo.ScheduleAc;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -27,6 +32,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,9 +41,6 @@ import java.util.Map;
 import static com.example.omer.midburneo.DataBase.DBHelper.DATABASE_NAME;
 
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_MESSAGE;
-import static com.example.omer.midburneo.RegisterAc.CAMERA;
-import static com.example.omer.midburneo.RegisterAc.GALLERY;
-import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
 
 
 // ToDo delete from Firebase -- FriendsAdapter
@@ -62,7 +66,7 @@ public class MainPageAc extends AppCompatActivity {
     private ProgressDialog mprogress;
 
 
-    public String current_uid, current_image, current_name, image, current_camp, current_admin, timeString;
+    public String current_uid, current_image, current_name, image, current_camp, current_admin, timeString, tokenUser;
     public String current_uid_camp = "";
     public static FirebaseUserModel firebaseUserModel;
     private boolean isConnected;
@@ -177,7 +181,7 @@ public class MainPageAc extends AppCompatActivity {
                 current_camp = dataSnapshot.child("camps").getValue().toString();
                 current_uid_camp = dataSnapshot.child("chat").getValue().toString();
                 String deviceUserIntent = dataSnapshot.child("device_id").getValue().toString();
-                String tokenUserIntent = dataSnapshot.child("device_token").getValue().toString();
+                tokenUser = dataSnapshot.child("device_token").getValue().toString();
                 String phone = dataSnapshot.child("phone").getValue().toString();
                 String number = dataSnapshot.child("number").getValue().toString();
                 String time = dataSnapshot.child("time").getValue().toString();
@@ -192,9 +196,11 @@ public class MainPageAc extends AppCompatActivity {
                     image = current_image;
 
                 }
+
+
                 firebaseUserModel.setName(current_name);
                 firebaseUserModel.setDeviceId(deviceUserIntent);
-                firebaseUserModel.setDeviceToken(tokenUserIntent);
+                firebaseUserModel.setDeviceToken(tokenUser);
                 firebaseUserModel.setImage(image);
                 firebaseUserModel.setRole(role);
                 firebaseUserModel.setDeviceId(deviceUserIntent);
@@ -206,6 +212,30 @@ public class MainPageAc extends AppCompatActivity {
                 firebaseUserModel.setStatus("status");
                 firebaseUserModel.setTime(time);
                 firebaseUserModel.setEmail(email);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    // Create channel to show notifications.
+                    String channelId  = getString(R.string.notifications_admin_channel_descripti);
+                    String channelName = getString(R.string.notifications_admin_channel_name);
+                    NotificationManager notificationManager =
+                            getSystemService(NotificationManager.class);
+                    notificationManager.createNotificationChannel(new NotificationChannel(channelId,
+                            channelName, NotificationManager.IMPORTANCE_LOW));
+
+
+
+
+                }
+
+                if (getIntent().getExtras() != null) {
+                    for (String key : getIntent().getExtras().keySet()) {
+                        Object value = getIntent().getExtras().get(key);
+                        Log.d(TAG, "Key: " + key + " Value: " + value);
+                    }
+                }
+
+
+                UpdateUserOnline();
 
                 mprogress.dismiss();
 
@@ -224,14 +254,36 @@ public class MainPageAc extends AppCompatActivity {
 
     public void UpdateUserOnline() {
 
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
 
-        Map<String, Object> mapCampsUpdates = new HashMap<>();
-        mapCampsUpdates.put("online", "true");
-        Log.e("ADDNoteAc", String.valueOf(mapCampsUpdates));
+        FirebaseInstanceId.getInstance().getInstanceId()
+                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                        if (task.isSuccessful()) {
+                            // Get new Instance ID token
+                            tokenUser = task.getResult().getToken();
+
+                            // Log and toast
+                            String msg = getString(R.string.fcm_fallback_notification_channel_label, tokenUser);
+                            Log.d(TAG, msg);
+                            Toast.makeText(MainPageAc.this, msg, Toast.LENGTH_SHORT).show();
+                            mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+
+                            Map<String, Object> mapCampsUpdates = new HashMap<>();
+                            mapCampsUpdates.put("online", "true");
+                            mapCampsUpdates.put("device_token", tokenUser);
+
+                            mUserDatabase.updateChildren(mapCampsUpdates);
+
+                        } else {
+                            Log.w(TAG, "getInstanceId failed", task.getException());
+
+                        }
+
+                    }
+                });
 
 
-        mUserDatabase.updateChildren(mapCampsUpdates);
 
 
     }
@@ -243,7 +295,6 @@ public class MainPageAc extends AppCompatActivity {
 
         if (isConnected) {
             mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
-            Log.e(TAG, "onStop");
             current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
             long currentDateTime = System.currentTimeMillis();
             timeString = String.valueOf(currentDateTime);
@@ -255,10 +306,6 @@ public class MainPageAc extends AppCompatActivity {
     @Override
     protected void onDestroy() {
 
-
-        Log.e(TAG, "onDestroy");
-
-        //      mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
 
         Map<String, Object> mapCampsUpdates = new HashMap<>();
         mapCampsUpdates.put("time", timeString);
@@ -274,26 +321,5 @@ public class MainPageAc extends AppCompatActivity {
     }
 
 }
-
-//                final FirebaseUserModel firebaseUserModel = new FirebaseUserModel();
-//                firebaseUserModel.setName(getName);
-//                firebaseUserModel.setEmail(getEmail);
-//                firebaseUserModel.setPass(getPass);
-//                firebaseUserModel.setNumber("default");
-//                firebaseUserModel.setImage(image);
-//                firebaseUserModel.setAdmin("default");
-//                firebaseUserModel.setChat("default");
-//                firebaseUserModel.setCamp("default");
-//                firebaseUserModel.setStatus("status");
-//                firebaseUserModel.setTime(timeString);
-//                firebaseUserModel.setLastMsg("default");
-//                firebaseUserModel.setUidReceiver(current_uid);
-//                firebaseUserModel.setRole("default");
-//                firebaseUserModel.setOnline("true");
-//                firebaseUserModel.setPhone(getNum);
-//                firebaseUserModel.setDeviceId(currentDeviceId);
-//                firebaseUserModel.setDeviceToken(firebaseInstanceId);
-
-
 
 

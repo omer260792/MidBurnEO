@@ -1,11 +1,14 @@
 package com.example.omer.midburneo.Tabs;
 
 import android.Manifest;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -17,7 +20,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -58,7 +60,7 @@ public class EquipmentAc extends AppCompatActivity {
     public RecyclerView.LayoutManager layoutManager;
     private ArrayList<Equipment> equipmentUtilsList = new ArrayList<>();
 
-    public String current_admin, current_uid;
+    public String current_admin, current_uid, countSqLiteUpdate;
     public String filePathString = "לא יצר קובץ";
     public Boolean boolRecycler = false;
     public DBEquipment dbEquipment;
@@ -72,7 +74,6 @@ public class EquipmentAc extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tab_equipment);
 
-        Log.e(TAG, "onCreate");
 
         recyclerView = findViewById(R.id.recycler_Equipment);
         etSearchEquipment = findViewById(R.id.etSearchEquipment);
@@ -90,11 +91,7 @@ public class EquipmentAc extends AppCompatActivity {
         getRawCountSql();
 
 
-        if (countSqlLite == 0) {
-            Log.e(TAG, "oncreat if " + String.valueOf(countSqlLite));
 
-
-        } else {
             String test = etSearchEquipment.getText().toString() + "";
             //   getEquipment(boolRecycler);
             if (test.equals("")) {
@@ -119,7 +116,7 @@ public class EquipmentAc extends AppCompatActivity {
 
 
             }
-        }
+
 
         etSearchEquipment.addTextChangedListener(new TextWatcher() {
             @Override
@@ -179,16 +176,15 @@ public class EquipmentAc extends AppCompatActivity {
 
         try {
 
-                equipmentUtilsList.addAll(dbHelper.getAllEquipment());
-                mAdapter = new EquipmentAdapter(EquipmentAc.this, equipmentUtilsList);
-                LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
-                layoutManager.setStackFromEnd(bool);
-                recyclerView.setLayoutManager(layoutManager);
-                recyclerView.setAdapter(mAdapter);
-                Log.e(TAG, "getEquipment() + try");
+            equipmentUtilsList.addAll(dbHelper.getAllEquipment());
+            mAdapter = new EquipmentAdapter(EquipmentAc.this, equipmentUtilsList);
+            LinearLayoutManager layoutManager = new LinearLayoutManager(EquipmentAc.this);
+            layoutManager.setStackFromEnd(bool);
+            recyclerView.setLayoutManager(layoutManager);
+            recyclerView.setAdapter(mAdapter);
+            Log.e(TAG, "getEquipment() + try");
 
-              //  UpdateDateFromFireBaseToSQLiteEquipment();
-
+            //  UpdateDateFromFireBaseToSQLiteEquipment();
 
 
         } catch (Exception e) {
@@ -240,25 +236,23 @@ public class EquipmentAc extends AppCompatActivity {
                             String name = ds.child("nameProd").getValue(String.class);
                             String content = ds.child(FeedReaderContract.FeedEntry.CONTENT).getValue(String.class);
                             String amount = ds.child(FeedReaderContract.FeedEntry.MOUNT).getValue(String.class);
-                            String amountCurrent = ds.child("mountCurrent").getValue(String.class);
+                            String amountCurrent = ds.child(FeedReaderContract.FeedEntry.MOUNT_CURRENT).getValue(String.class);
                             String time = ds.child(FeedReaderContract.FeedEntry.TIME).getValue(String.class);
                             String image = ds.child(FeedReaderContract.FeedEntry.IMAGE).getValue(String.class);
                             String sender = ds.child("sender").getValue(String.class);
-                            String msgUid = ds.child(FeedReaderContract.FeedEntry.MESSAGE_UID).getKey();
-
+                            String msgUid = ds.getKey();
 
 
                             Boolean tagUserGroup = ds.child(FeedReaderContract.FeedEntry.TAG_USER).exists();
-                            if (tagUserGroup.equals(false)){
+                            if (tagUserGroup.equals(false)) {
                                 dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
 
                                 dbEquipment.SaveDBSqliteToEquipmentExcel(name, content, amount, amountCurrent, time, image, firebaseUserModel.getName());
                             }
 
 
-
                             Boolean tagUser = ds.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
-                            if (tagUser.equals(true)){
+                            if (tagUser.equals(true)) {
                                 dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
                                 Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + countSqlLite == 0");
 
@@ -281,53 +275,58 @@ public class EquipmentAc extends AppCompatActivity {
                             getEquipment(boolRecycler);
 
                         }
-                    } else if (countSqlLite < FBCount) {
-
-                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
-
-                            if (countSqlLite < FBCount) {
-
-                                String name = ds.child("nameProd").getValue(String.class);
-                                String content = ds.child(FeedReaderContract.FeedEntry.CONTENT).getValue(String.class);
-                                String amount = ds.child(FeedReaderContract.FeedEntry.MOUNT).getValue(String.class);
-                                String amountCurrent = ds.child("mountCurrent").getValue(String.class);
-                                String time = ds.child(FeedReaderContract.FeedEntry.TIME).getValue(String.class);
-                                String image = ds.child(FeedReaderContract.FeedEntry.IMAGE).getValue(String.class);
-                                String sender = ds.child("sender").getValue(String.class);
-                                String msgUid = ds.child(FeedReaderContract.FeedEntry.MESSAGE_UID).getKey();
-
-
-                                Boolean tagUserGroup = ds.child(FeedReaderContract.FeedEntry.TAG_USER).exists();
-                                if (tagUserGroup.equals(false)){
-                                    dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
-
-                                    dbEquipment.SaveDBSqliteToEquipmentExcel(name, content, amount, amountCurrent, time, image, firebaseUserModel.getName());
-                                }
-
-
-
-                                Boolean tagUser = ds.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
-                                if (tagUser.equals(true)){
-                                    dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
-                                    Log.e(TAG, "UpdateDateFromFireBaseToSQLiteEquipment After + countSqlLite == 0");
-
-                                    dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
-
-                                    dbEquipment.SaveDBSqliteToEquipmentExcel(name, content, amount, amountCurrent, time, image, firebaseUserModel.getName());
-
-
-                                }
-
-
-
-                            }
-
-                        }
-
                     } else {
 
 
-                        return;
+                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
+
+
+                            String name = ds.child("nameProd").getValue(String.class);
+                            String content = ds.child(FeedReaderContract.FeedEntry.CONTENT).getValue(String.class);
+                            String amount = ds.child(FeedReaderContract.FeedEntry.MOUNT).getValue(String.class);
+                            String amountCurrent = ds.child(FeedReaderContract.FeedEntry.MOUNT_CURRENT).getValue(String.class);
+                            String time = ds.child(FeedReaderContract.FeedEntry.TIME).getValue(String.class);
+                            String image = ds.child(FeedReaderContract.FeedEntry.IMAGE).getValue(String.class);
+                            String sender = ds.child("sender").getValue(String.class);
+                            String msgUid = ds.getKey();
+
+                            Boolean check = queryEquipment(msgUid, FeedReaderContract.FeedEntry.MESSAGE_UID);
+
+                            if (check.equals(false)) {
+
+
+                                Boolean tagUserGroup = ds.child(FeedReaderContract.FeedEntry.TAG_USER).exists();
+                                if (tagUserGroup.equals(false)) {
+                                    dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
+
+                                    dbEquipment.SaveDBSqliteToEquipmentExcel(name, content, amount, amountCurrent, time, image, firebaseUserModel.getName());
+                                }
+
+
+                                Boolean tagUser = ds.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
+                                if (tagUser.equals(true)) {
+                                    dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
+
+                                    dbHelper.SaveDBSqliteToEquipment(name, content, amount, amountCurrent, time, image, sender, msgUid);
+
+                                    dbEquipment.SaveDBSqliteToEquipmentExcel(name, content, amount, amountCurrent, time, image, firebaseUserModel.getName());
+
+
+                                }
+                            }else {
+                                ContentValues data=new ContentValues();
+                                data.put(FeedReaderContract.FeedEntry.NAME_EQUIPMENT,name);
+                                data.put(FeedReaderContract.FeedEntry.CONTENT,content);
+                                data.put(FeedReaderContract.FeedEntry.MOUNT,amount);
+                                data.put(FeedReaderContract.FeedEntry.MOUNT_CURRENT,amountCurrent);
+                                data.put(FeedReaderContract.FeedEntry.IMAGE,image);
+                                db.update(TABLE_NAME_EQUIPMENT, data, "_id=" + countSqLiteUpdate, null);
+                            }
+
+
+                        }
+
+
                     }
 
                 }
@@ -352,7 +351,6 @@ public class EquipmentAc extends AppCompatActivity {
         cursor.moveToFirst();
         long count = cursor.getCount();
 
-        Log.e(TAG, "getrawCount:" + String.valueOf(count));
         countSqlLite = (int) count;
         cursor.close();
 
@@ -364,7 +362,7 @@ public class EquipmentAc extends AppCompatActivity {
         PermissionManager.check(EquipmentAc.this, Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
 
         File file = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOCUMENTS), "/"+firebaseUserModel.getCamp()+".xls"); //    "/users.xls"
+                Environment.DIRECTORY_DOCUMENTS), "/" + firebaseUserModel.getCamp() + ".xls"); //    "/users.xls"
         if (!file.exists()) {
 
             try {
@@ -378,7 +376,7 @@ public class EquipmentAc extends AppCompatActivity {
                     filePathString, //ADD THIS
                     Toast.LENGTH_SHORT).show();
 
-        }else {
+        } else {
             Toast.makeText(EquipmentAc.this,
                     filePathString, //ADD THIS
                     Toast.LENGTH_SHORT).show();
@@ -425,17 +423,15 @@ public class EquipmentAc extends AppCompatActivity {
     public void onClickCheckBox(View view) {
 
 
-
     }
 
-    public void SQLiteToExcel(){
-
+    public void SQLiteToExcel() {
 
 
         dbEquipment.open();
         SQLiteToExcel sqLiteToExcel = new SQLiteToExcel(getApplicationContext(), DATABASE_NAME_EQUIPMENT, directory_path);
 
-        sqLiteToExcel.exportAllTables(firebaseUserModel.getCamp()+".xls", new SQLiteToExcel.ExportListener() {
+        sqLiteToExcel.exportAllTables(firebaseUserModel.getCamp() + ".xls", new SQLiteToExcel.ExportListener() {
             @Override
             public void onStart() {
 
@@ -455,12 +451,11 @@ public class EquipmentAc extends AppCompatActivity {
             }
         });
 
-        Log.v(TAG, "SQLiteToExcel");
     }
 
-    public void ExcelToSQLite(){
+    public void ExcelToSQLite() {
 
-                dbEquipment.open();
+        dbEquipment.open();
 
         ExcelToSQLite excelToSQLite = new ExcelToSQLite(getApplicationContext(), DATABASE_NAME_EQUIPMENT, true);
         // Import EXCEL FILE to SQLite
@@ -472,16 +467,54 @@ public class EquipmentAc extends AppCompatActivity {
 
             @Override
             public void onCompleted(String dbName) {
-                Log.e(TAG, dbName);
             }
 
             @Override
             public void onError(Exception e) {
-                //Log.i("exr",e.st);
+                Log.i("exr", String.valueOf(e));
             }
         });
 
 
+    }
+
+
+    private Boolean queryEquipment(String selectionArgss, String selectio) {
+
+
+        String[] projection = {
+                BaseColumns._ID,
+                FeedReaderContract.FeedEntry.NAME_EQUIPMENT,
+                FeedReaderContract.FeedEntry.CONTENT,
+                FeedReaderContract.FeedEntry.MOUNT,
+                FeedReaderContract.FeedEntry.MOUNT,
+                FeedReaderContract.FeedEntry.TIME,
+                FeedReaderContract.FeedEntry.IMAGE,
+                FeedReaderContract.FeedEntry.MESSAGE_SENDER,
+                FeedReaderContract.FeedEntry.MESSAGE_UID
+
+        };
+
+        String selection = selectio + " = ?";
+        String[] selectionArgs = {selectionArgss};
+
+        SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
+        builder.setTables(TABLE_NAME_EQUIPMENT);
+
+        Cursor cursor = builder.query(dbHelper.getReadableDatabase(),
+                projection, selection, selectionArgs, null, null, null);
+
+        if (cursor == null) {
+            return null;
+        } else if (!cursor.moveToFirst()) {
+
+
+            cursor.close();
+            return false;
+        }
+        countSqLiteUpdate = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID));
+
+        return true;
     }
 
 

@@ -144,11 +144,7 @@ public class AddNoteActivity extends AppCompatActivity {
         ////4444444444444444444
         localData = new LocalData(getApplicationContext());
         myClipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-//        hour = localData.get_hour();
-//        min = localData.get_min();
-
-//        if (!localData.getReminderStatus())
-//            ll_set_time.setAlpha(0.4f);
+//
         timerSwitchCalEdit.setChecked(localData.getReminderStatus());
 
 

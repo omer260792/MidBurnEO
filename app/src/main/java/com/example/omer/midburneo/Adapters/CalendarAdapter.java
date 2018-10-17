@@ -22,10 +22,13 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.omer.midburneo.Class.Calendar;
+import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.FirebaseUserModel;
 import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.DataBase.DBHelper;
+import com.example.omer.midburneo.NotePreviewActivity;
 import com.example.omer.midburneo.R;
+import com.example.omer.midburneo.Tabs.NotesAc;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -193,9 +196,11 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
 
                                 dbHelper = new DBHelper(context);
 
-                                dbHelper.deleteRawFromTable(count, time, TABLE_NAME_CALENDAR);
+                                dbHelper.deleteRawFromTable(count, time, TABLE_NAME_CALENDAR, FeedReaderContract.FeedEntry.TIME);
 
-
+                                Intent intent = new Intent(context, NotePreviewActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                context.startActivity(intent);
                             }
 
 
@@ -215,10 +220,12 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.ViewHo
                                     deleteRawFormFireBase(uidMsg);
                                     dbHelper = new DBHelper(context);
 
-                                    dbHelper.deleteRawFromTable(count, time, TABLE_NAME_CALENDAR);
+                                    dbHelper.deleteRawFromTable(count, time, TABLE_NAME_CALENDAR, FeedReaderContract.FeedEntry.TIME);
 
-                                    // ToDo delete msg from firebase
 
+                                Intent intent = new Intent(context, NotePreviewActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                context.startActivity(intent);
 
 
 

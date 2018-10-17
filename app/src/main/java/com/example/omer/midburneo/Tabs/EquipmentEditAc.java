@@ -208,7 +208,6 @@ public class EquipmentEditAc extends AppCompatActivity {
 
     public void SaveDataToFireBaseEquipment() {
 
-        Log.e(TAG, "SaveDataToFireBaseEquipment");
 
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getChat()).child("Equipment").child(get_msg_uid);
 
@@ -255,7 +254,6 @@ public class EquipmentEditAc extends AppCompatActivity {
             }
         });
 
-        Log.v(TAG, "SQLiteToExcel");
     }
 
 

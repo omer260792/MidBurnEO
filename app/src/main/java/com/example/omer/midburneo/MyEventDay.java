@@ -14,7 +14,6 @@ class MyEventDay extends EventDay implements Parcelable {
     MyEventDay(Calendar day, int imageResource, String note) {
         super(day, imageResource);
         mNote = note;
-        Log.i("ssssssssssss", "MyEventDay"+"MyEventDay");
 
     }
     String getNote() {
@@ -24,19 +23,16 @@ class MyEventDay extends EventDay implements Parcelable {
         super((Calendar) in.readSerializable(), in.readInt());
         mNote = in.readString();
 
-        Log.i("ssssssssssss", "MyEventDay"+"getNote");
 
     }
     public static final Creator<MyEventDay> CREATOR = new Creator<MyEventDay>() {
         @Override
         public MyEventDay createFromParcel(Parcel in) {
-            Log.i("ssssssssssss", "MyEventDay"+"createFromParcel");
 
             return new MyEventDay(in);
         }
         @Override
         public MyEventDay[] newArray(int size) {
-            Log.i("f", "MyEventDay"+size);
 
             return new MyEventDay[size];
         }
@@ -47,12 +43,10 @@ class MyEventDay extends EventDay implements Parcelable {
         parcel.writeSerializable(getCalendar());
         parcel.writeInt(getImageResource());
         parcel.writeString(mNote);
-        Log.i("ssssssssssss", "MyEventDay"+"writeToParcel");
 
     }
     @Override
     public int describeContents() {
-        Log.i("ssssssssssss", "MyEventDay"+"describeContents");
 
         return 0;
 

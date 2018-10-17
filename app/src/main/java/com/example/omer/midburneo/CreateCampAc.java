@@ -263,7 +263,7 @@ public class CreateCampAc extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == GALLERY && resultCode == RESULT_OK) {
-            Uri resultUri= data.getData();
+            Uri resultUri = data.getData();
 
             CropImage.activity(resultUri)
                     .setAspectRatio(1, 1)

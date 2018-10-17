@@ -165,7 +165,6 @@ public class ScheduleAc extends AppCompatActivity {
         cursor.moveToFirst();
         long count = cursor.getCount();
 
-        Log.e("*******************", String.valueOf(count) + "getrawCount");
         countSqlLite = (int) count;
         cursor.close();
 

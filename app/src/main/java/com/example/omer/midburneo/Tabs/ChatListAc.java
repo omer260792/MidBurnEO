@@ -1,6 +1,8 @@
 package com.example.omer.midburneo.Tabs;
 
 
+import android.nfc.Tag;
+import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 //import android.app.AlertDialog;
 import android.app.Dialog;
@@ -35,6 +37,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.omer.midburneo.Adapters.MessagesListAdapter;
+import com.example.omer.midburneo.CampsAc;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.FirebaseMessageModel;
 import com.example.omer.midburneo.Class.MessageCell;
@@ -61,6 +64,7 @@ import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 
+import org.apache.poi.ss.formula.functions.T;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -123,6 +127,7 @@ public class ChatListAc extends AppCompatActivity {
     public String uidMsg;
     public int num = 1;
     public int numStop = 1;
+    public int numCencel = 1;
 
     JSONArray registration_ids = new JSONArray();
 
@@ -176,6 +181,8 @@ public class ChatListAc extends AppCompatActivity {
         tokenUserIntent = getIntent().getStringExtra("tokenUidFriend");
         chatRoomsUserIntent = getIntent().getStringExtra("chatRoomsUidFriend");
 
+        Toast.makeText(this,tokenUserIntent,Toast.LENGTH_SHORT).show();
+
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         mImageStorage = FirebaseStorage.getInstance().getReference();
@@ -210,11 +217,6 @@ public class ChatListAc extends AppCompatActivity {
             public void onClick(View v) {
 
 
-                if (mediaPlayer != null) {
-                    mediaPlayer.stop();
-                    mediaPlayer.release();
-                    MediaRecorderReady();
-                }
 
                 if (numCheck == 1) {
 
@@ -242,28 +244,39 @@ public class ChatListAc extends AppCompatActivity {
                 PermissionManager.check(ChatListAc.this, android.Manifest.permission.CAMERA, CAMERA);
                 PermissionManager.check(ChatListAc.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
 
-                AlertDialog.Builder builder;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    builder = new AlertDialog.Builder(ChatListAc.this, android.R.style.Theme_Material_Dialog_Alert);
-                } else {
-                    builder = new AlertDialog.Builder(ChatListAc.this);
-                }
-                builder.setTitle("עריכת מצלמה")
-                        .setMessage("!בחר תמונה")
-                        .setNegativeButton("חזור", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
+//
+//                Handler handler = new Handler();
+//                handler.postDelayed(new Runnable() {
+//                    public void run() {
 
-                            }
-                        })
-                        .setPositiveButton("גלרייה", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
 
-                                gallery();
-                            }
-                        })
-                        .setIcon(android.R.drawable.ic_dialog_info)
-                        .show();
+                        AlertDialog.Builder builder;
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            builder = new AlertDialog.Builder(ChatListAc.this, android.R.style.Theme_Material_Dialog_Alert);
+                        } else {
+                            builder = new AlertDialog.Builder(ChatListAc.this);
+                        }
+                        builder.setTitle("עריכת מצלמה")
+                                .setMessage("!בחר תמונה")
+                                .setNegativeButton("חזור", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+
+                                    }
+                                })
+                                .setPositiveButton("גלרייה", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+
+                                        gallery();
+                                    }
+                                })
+                                .setIcon(android.R.drawable.ic_dialog_info)
+                                .show();
+
+//                    }
+//                }, 500);   //
+
+
             }
         });
 
@@ -305,13 +318,11 @@ public class ChatListAc extends AppCompatActivity {
 
 
                 for (com.google.firebase.database.DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    System.out.println("Child: " + postSnapshot);
 
                     FirebaseMessageModel firebaseMessageModel = postSnapshot.getValue(FirebaseMessageModel.class);
                     firebaseMessageModel.setId(postSnapshot.getKey());
 
 
-                    Log.e("ssss", postSnapshot.getKey());
                     String image = firebaseMessageModel.setImage((postSnapshot.child("image").getValue().toString()));
                     String sender = firebaseMessageModel.setSenderId(postSnapshot.child("senderId").getValue().toString());
                     String createDate = firebaseMessageModel.setCreatedDate(Long.valueOf(postSnapshot.child("createdDate").getValue().toString()));
@@ -351,7 +362,6 @@ public class ChatListAc extends AppCompatActivity {
                 registration_ids = new JSONArray();
 
                 for (com.google.firebase.database.DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    System.out.println("Child: " + postSnapshot);
                     //Getting the data from snapshot
                     try {
 
@@ -367,8 +377,7 @@ public class ChatListAc extends AppCompatActivity {
                             if (!device.equals("default") && !token.equals("default")) {
 
                                 registration_ids.put(token);
-                                System.out.println("Good: ");
-
+                                Log.e(TAG+"1",registration_ids.toString());
                             }
 
 
@@ -376,8 +385,9 @@ public class ChatListAc extends AppCompatActivity {
 
 
                             if (!device.equals(current_device) && !token.isEmpty()) {
+
                                 registration_ids.put(token);
-                                System.out.println("Good: ");
+                                Log.e(TAG,registration_ids.toString());
 
                             }
                         } else {
@@ -564,7 +574,11 @@ public class ChatListAc extends AppCompatActivity {
                     String time = String.valueOf(currentDateTime);
                     uploadAudio(AudioSavePathInDevice,time);
                     cardView.setVisibility(v.GONE);
-                    Log.e(TAG, "AudioSavePathInDevice"+AudioSavePathInDevice);
+
+                        mediaPlayer.stop();
+                        mediaPlayer.release();
+                        MediaRecorderReady();
+
                 }
 
                 } catch (IOException e) {
@@ -594,11 +608,9 @@ public class ChatListAc extends AppCompatActivity {
     }
 
     public void updateListView() {
-        Log.i(TAG, "Inside prepareWishList()");
 
         int totalWishes = messages.size();
 
-        Log.i(TAG, "Total Wishes : " + totalWishes);
 
         MessageCell[] messageCells;
         messageCells = new MessageCell[totalWishes];
@@ -622,106 +634,7 @@ public class ChatListAc extends AppCompatActivity {
     }
 
 
-    public static String getDate(long milliSeconds) {
-        // Create a DateFormatter object for displaying date in specified format.
-        SimpleDateFormat formatter = new SimpleDateFormat("dd MMM, yyyy, hh:mm a");
 
-        // Create a calendar object that will convert the date and time value in milliseconds to date.
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(milliSeconds);
-        return formatter.format(calendar.getTime());
-    }
-
-    public void CheckUserIfOnline() {
-
-
-        if (!deviceUserIntent.equals("default")){
-
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(uidUserIntent);
-        mUserDatabase.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                    String time = dataSnapshot.child("time").getValue().toString();
-                    String onilne = dataSnapshot.child("online").getValue().toString();
-
-                    if (!onilne.equals("default")) {
-                        DateFormat getTimeDmY = new SimpleDateFormat("dd:MM:yyyy:HH:mm");
-                        long timeMilLong = Long.parseLong(time);
-
-
-                        String realTime = getTimeDmY.format(timeMilLong);
-
-                        if (onilne.equals("true")) {
-                            tvTimeUser.setText("מחובר");
-                        } else {
-                            tvTimeUser.setText("last seen:" + realTime);
-
-                        }
-                    } else {
-                        tvTimeUser.setText("");
-
-                    }
-
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        }else {
-            tvTimeUser.setText("");
-
-        }
-
-
-    }
-
-
-    private void gallery() {
-        CropImage.activity()
-                .setGuidelines(CropImageView.Guidelines.ON)
-                .start(this);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == GALLERY && resultCode == RESULT_OK) {
-            Uri imageUri = data.getData();
-
-            CropImage.activity(imageUri)
-                    .setAspectRatio(1, 1)
-                    .start(this);
-
-
-        }
-        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
-            CropImage.ActivityResult result = CropImage.getActivityResult(data);
-            if (resultCode == RESULT_OK) {
-                resultUri = result.getUri();
-                stringUrl = String.valueOf(resultUri);
-
-                filePath = mImageStorage.child("msg_images").child(resultUri.getLastPathSegment());
-
-                hideKeyboard();
-                sendMsgWithNotification();
-
-
-            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                Exception error = result.getError();
-
-                Toast.makeText(ChatListAc.this, "נכשל בעלת התמונה לשרת", Toast.LENGTH_LONG).show();
-
-            }
-        }
-
-
-    }
 
     public void sendMsgWithNotification() {
 
@@ -820,11 +733,19 @@ public class ChatListAc extends AppCompatActivity {
                                 public void onFailure(int statusCode, cz.msebera.android.httpclient.Header[] headers, String responseString, Throwable throwable) {
                                     Dialog.dismiss();
 
+                                    Log.i(TAG, String.valueOf(statusCode));
+                                    Log.i(TAG, responseString);
+
                                 }
 
                                 @Override
                                 public void onSuccess(int statusCode, cz.msebera.android.httpclient.Header[] headers, String responseString) {
                                     Dialog.dismiss();
+                                    AudioSavePathInDevice = null;
+                                    resultUri  = null;
+                                    mediaPlayer = new MediaPlayer();
+                                    Log.i(TAG, String.valueOf(statusCode));
+                                    Log.i(TAG, responseString);
 
                                 }
                             });
@@ -843,6 +764,66 @@ public class ChatListAc extends AppCompatActivity {
 
 
     }
+
+
+    public static String getDate(long milliSeconds) {
+        // Create a DateFormatter object for displaying date in specified format.
+        SimpleDateFormat formatter = new SimpleDateFormat("dd MMM, yyyy, hh:mm a");
+
+        // Create a calendar object that will convert the date and time value in milliseconds to date.
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(milliSeconds);
+        return formatter.format(calendar.getTime());
+    }
+
+    public void CheckUserIfOnline() {
+
+
+        if (!deviceUserIntent.equals("default")){
+
+            mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(uidUserIntent);
+            mUserDatabase.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                    String time = dataSnapshot.child("time").getValue().toString();
+                    String onilne = dataSnapshot.child("online").getValue().toString();
+
+                    if (!onilne.equals("default")) {
+                        DateFormat getTimeDmY = new SimpleDateFormat("dd:MM:yyyy:HH:mm");
+                        long timeMilLong = Long.parseLong(time);
+
+
+                        String realTime = getTimeDmY.format(timeMilLong);
+
+                        if (onilne.equals("true")) {
+                            tvTimeUser.setText("מחובר");
+                        } else {
+                            tvTimeUser.setText("last seen:" + realTime);
+
+                        }
+                    } else {
+                        tvTimeUser.setText("");
+
+                    }
+
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+        }else {
+            tvTimeUser.setText("");
+
+        }
+
+
+    }
+
 
 
     private void uploadAudio(String mFileName, String time) {
@@ -864,13 +845,50 @@ public class ChatListAc extends AppCompatActivity {
 
                 sendMsgWithNotification();
 
-
-
             }
         });
 
+    }
 
 
+    private void gallery() {
+        CropImage.activity()
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .start(this);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == GALLERY && resultCode == RESULT_OK) {
+            Uri imageUri = data.getData();
+
+            CropImage.activity(imageUri)
+                    .setAspectRatio(1, 1)
+                    .start(this);
+
+
+        }
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                resultUri = result.getUri();
+                stringUrl = String.valueOf(resultUri);
+
+                filePath = mImageStorage.child("msg_images").child(resultUri.getLastPathSegment());
+
+                hideKeyboard();
+                sendMsgWithNotification();
+
+
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
+
+                Toast.makeText(ChatListAc.this, "נכשל בעלת התמונה לשרת", Toast.LENGTH_LONG).show();
+
+            }
+        }
 
 
     }
@@ -946,28 +964,28 @@ public class ChatListAc extends AppCompatActivity {
         ActivityCompat.requestPermissions(ChatListAc.this, new
                 String[]{WRITE_EXTERNAL_STORAGE, RECORD_AUDIO}, RequestPermissionCode);
     }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case RequestPermissionCode:
-                if (grantResults.length > 0) {
-                    boolean StoragePermission = grantResults[0] ==
-                            PackageManager.PERMISSION_GRANTED;
-                    boolean RecordPermission = grantResults[1] ==
-                            PackageManager.PERMISSION_GRANTED;
-
-                    if (StoragePermission && RecordPermission) {
-                        Toast.makeText(ChatListAc.this, "Permission Granted",
-                                Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(ChatListAc.this, "Permission", Toast.LENGTH_LONG).show();
-                    }
-                }
-                break;
-        }
-    }
+//
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode,
+//                                           String permissions[], int[] grantResults) {
+//        switch (requestCode) {
+//            case RequestPermissionCode:
+//                if (grantResults.length > 0) {
+//                    boolean StoragePermission = grantResults[0] ==
+//                            PackageManager.PERMISSION_GRANTED;
+//                    boolean RecordPermission = grantResults[1] ==
+//                            PackageManager.PERMISSION_GRANTED;
+//
+//                    if (StoragePermission && RecordPermission) {
+//                        Toast.makeText(ChatListAc.this, "Permission Granted",
+//                                Toast.LENGTH_LONG).show();
+//                    } else {
+//                        Toast.makeText(ChatListAc.this, "Permission", Toast.LENGTH_LONG).show();
+//                    }
+//                }
+//                break;
+//        }
+//    }
 
     public boolean checkPermission() {
         int result = ContextCompat.checkSelfPermission(getApplicationContext(),

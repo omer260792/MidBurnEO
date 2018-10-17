@@ -218,7 +218,6 @@ public class MessagesListAdapter extends ArrayAdapter<MessageCell> {
                             uriPath = uri;
                             // fileFromFirebase = new File(uriPath.getPath());
 
-                            Toast.makeText(context, "3", Toast.LENGTH_LONG).show();
                             MediaPlayer mediaPlayer = new MediaPlayer();
 
                             try {

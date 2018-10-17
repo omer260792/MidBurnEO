@@ -26,7 +26,7 @@
 
             <TextView
                 android:id="@+id/nameFriendClass"
-                android:text="text"
+
                 android:textSize="30dp"
                 android:layout_marginLeft="20dp"
                 android:textStyle="bold"
@@ -37,7 +37,6 @@
 
             <TextView
                 android:id="@+id/lastMsgFriendClass"
-                android:hint="Text"
                 android:gravity="center"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />

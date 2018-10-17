@@ -164,16 +164,11 @@ public class DBHelper extends SQLiteOpenHelper {
     public List<Friend> getAllFriend() {
         List<Friend> notes = new ArrayList<>();
 
-        // Select All Query
-
-        Log.e(TAG, "getAllFriend");
-
         String selectQuery = "SELECT  * FROM " + FeedReaderContract.FeedEntry.TABLE_NAME;
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
-        // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
 
@@ -202,9 +197,9 @@ public class DBHelper extends SQLiteOpenHelper {
 
                     notes.add(friend);
 
-                }else if(cToken.equals("default")){
+                } else if (cToken.equals("default")) {
 
-                        notes.add(friend);
+                    notes.add(friend);
 
 
                 }
@@ -213,9 +208,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
         }
-        // close db connection
         db.close();
-        // return notes list
+
         return notes;
     }
 
@@ -223,7 +217,6 @@ public class DBHelper extends SQLiteOpenHelper {
         List<FirebaseMessageModel> msgList = new ArrayList<>();
 
         db = this.getReadableDatabase();
-        Log.e(TAG, "getAllMsg");
 
 
         try {
@@ -254,13 +247,6 @@ public class DBHelper extends SQLiteOpenHelper {
                     String status = message.setStatus(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.STATUS)));
                     //String uidcount = message.setc(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID)));
 
-                    Log.e((TAG), "getAllMsg" + msg);
-                    Log.e((TAG), "getAllMsg" + status);
-                    Log.e((TAG), "getAllMsg" + sender);
-                    Log.e((TAG), "getAllMsg" + receiver);
-                    Log.e((TAG), "getAllMsg" + name_sender);
-                    Log.e((TAG), "getAllMsg" + time);
-
 
                     msgList.add(message);
 
@@ -268,71 +254,23 @@ public class DBHelper extends SQLiteOpenHelper {
                 } while (cursor.moveToNext());
 
             }
-            // close db connection
             db.close();
         } catch (Exception e) {
         }
 
-
-        // return notes list
-
         return msgList;
     }
 
-    public List<Calendar> getAllCalendar() {
-        List<Calendar> calendarList = new ArrayList<>();
-
-        // Select All Query
-
-        Log.e("*******************", "getAllCalendar");
-
-        String selectQuery = "SELECT  * FROM " + FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR;
-
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
-
-        // looping through all rows and adding to list
-        if (cursor.moveToFirst()) {
-            do {
-
-//                mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
-//                current_uid = mCurrentUser.getUid();
-
-                Calendar calendar = new Calendar();
-
-                String msg = calendar.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE)));
-                String sender = calendar.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
-                String time = calendar.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME)));
-                String msgUid = calendar.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
-                String timeSet = calendar.setTimeSet(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME__SET)));
-                String image = calendar.setImage(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.IMAGE)));
-
-
-                calendarList.add(calendar);
-
-
-            } while (cursor.moveToNext());
-
-        }
-        // close db connection
-        db.close();
-        // return notes list
-        return calendarList;
-    }
 
     public List<Equipment> getAllEquipment() {
         List<Equipment> equipment = new ArrayList<>();
 
-        // Select All Query
-
-        Log.e(TAG, "getAllEquipment");
 
         String selectQuery = "SELECT  * FROM " + FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
-        // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
 
@@ -358,19 +296,15 @@ public class DBHelper extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
 
         }
-        // close db connection
         db.close();
-        // return notes list
         return equipment;
     }
 
 
-    public List<MessageNote> getAllNote(String bool) {
+    public List<MessageNote> getAllNote(String bool, DBHelper dbHelper) {
         List<MessageNote> msgNoteList = new ArrayList<>();
 
-        db = this.getReadableDatabase();
-        Log.e(TAG, "getAllMsg");
-
+        db = dbHelper.getReadableDatabase();
 
         try {
             String selectQuery = "SELECT  * FROM " + TABLE_NAME_NOTE;
@@ -407,10 +341,6 @@ public class DBHelper extends SQLiteOpenHelper {
                         String msgUid = messageNote.setUidMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
                         String uidcount = messageNote.setCount(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID)));
 
-                        Log.e((TAG), "msgNoteList" + title);
-                        Log.e((TAG), "msgNoteList" + content);
-
-
                         msgNoteList.add(messageNote);
                     }
 
@@ -427,89 +357,53 @@ public class DBHelper extends SQLiteOpenHelper {
         return msgNoteList;
     }
 
-    public ArrayList<Calendar> getAllCalnderNotePreview(String timeCalnder) {
+    public List<Calendar> getAllCalnderNotePreview(String timeCalnder) {
 
-        ArrayList<Calendar> calendarArrayList = new ArrayList<>();
-
+        List<Calendar> calendarList = new ArrayList<>();
 
         db = this.getReadableDatabase();
 
-        Calendar calendar = new Calendar();
+        try {
+            String selectQuery = "SELECT  * FROM " + TABLE_NAME_CALENDAR;
 
 
-        String[] projection = {
-                BaseColumns._ID,
-                FeedReaderContract.FeedEntry.MESSAGE,
-                FeedReaderContract.FeedEntry.MESSAGE_SENDER,
-                FeedReaderContract.FeedEntry.TIME,
-                FeedReaderContract.FeedEntry.MESSAGE_UID,
-                FeedReaderContract.FeedEntry.TIME__SET,
-                FeedReaderContract.FeedEntry.NAME,
-                FeedReaderContract.FeedEntry.IMAGE
+            Cursor cursor = db.rawQuery(selectQuery, null);
 
+            if (cursor.moveToFirst()) {
+                do {
+                    current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    Calendar calendar = new Calendar();
 
-        };
+                    String time = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
 
-        String selection = FeedReaderContract.FeedEntry.TIME + " = ?";
-        String[] selectionArgs = {timeCalnder};
+                    if (timeCalnder.equals(time)) {
 
-        String sortOrder =
-                FeedReaderContract.FeedEntry.TIME__SET + " DESC";
+                        String msg = calendar.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE)));
+                        String senderUid = calendar.setSender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
+                        String messageUid = calendar.setMsguid(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
+                        String timeSetString = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME__SET));
+                        String nameSender = calendar.setName(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.NAME)));
+                        String image = calendar.setImage(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.IMAGE)));
+                        String countSetString = calendar.setCountRaw(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID)));
 
-        Cursor cursor = db.query(
-                FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR,   // The table to query
-                projection,             // The array of columns to return (pass null to get all)
-                selection,              // The columns for the WHERE clause
-                selectionArgs,          // The values for the WHERE clause
-                null,                   // don't group the rows
-                null,                   // don't filter by row groups
-                sortOrder               // The sort order
-        );
+                        long timeSetLong = (Long.parseLong(timeSetString));
+                        DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
+                        timeSetString = getTimeHourMintus.format(timeSetLong);
 
-        Log.e(TAG + " Read", String.valueOf(timeCalnder));
-        Log.e(TAG + " Read", String.valueOf(cursor.getColumnNames()));
-        Log.e(TAG + " Read", String.valueOf(cursor.getCount()));
+                        String timeSet = calendar.setTimeSet(timeSetString);
+                        String timeSets = calendar.setTime(time);
 
+                        calendarList.add(calendar);
+                        }
 
-        if (cursor.moveToFirst()) {
-            do {
-
-                String time = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
-
-                if (time.equals(timeCalnder)){
-
-                    String msg = calendar.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE)));
-                    String senderUid = calendar.setSender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
-                    String messageUid = calendar.setMsguid(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
-                    String timeSetString = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME__SET));
-                    String nameSender = calendar.setName(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.NAME)));
-                    String image = calendar.setImage(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.IMAGE)));
-                    String countSetString = calendar.setCountRaw(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID)));
-
-
-                    long timeSetLong = (Long.parseLong(timeSetString));
-                    DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
-                    timeSetString = getTimeHourMintus.format(timeSetLong);
-
-                    String timeSet = calendar.setTimeSet(timeSetString);
-                    String timeSets = calendar.setTime(time);
-
-                    Log.e(TAG + " Readdddddd", String.valueOf(timeSet));
-                    Log.e(TAG + " Readdddddd", String.valueOf(timeSets));
-
-
-                    calendarArrayList.add(calendar);
-
-                }
-
-
-            } while (cursor.moveToNext());
-
+                } while (cursor.moveToNext());
+            }
+            // close db connection
+            db.close();
+        } catch (Exception e) {
         }
-        // close db connection
-        db.close();
 
-        return calendarArrayList;
+        return calendarList;
 
     }
 
@@ -533,7 +427,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(FeedReaderContract.FeedEntry.TIME, "default");
         values.put(FeedReaderContract.FeedEntry.UID, Uid);
         values.put(FeedReaderContract.FeedEntry.LASTMSG, lstmsg);
-        values.put(FeedReaderContract.FeedEntry.ROLE, "אין תפקיד");
+        values.put(FeedReaderContract.FeedEntry.ROLE, "");
         values.put(FeedReaderContract.FeedEntry.PHONE, phone);
         values.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID, device);
         values.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN, token);
@@ -543,42 +437,12 @@ public class DBHelper extends SQLiteOpenHelper {
         // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
 
-        Log.e(TAG, " SaveDBSqliteUser" + String.valueOf(newRowId));
-
 
         db.close();
 
 
     }
 
-    public void SaveDBSqliteMsgUser(String msg, String msg_receiver, String msg_sender, String name, String time, String uid_msg, String status, String table) {
-
-        TABLE_NAME_MESSAGE = table;
-
-
-        db = this.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(FeedReaderContract.FeedEntry.MESSAGE, msg);
-        values.put(FeedReaderContract.FeedEntry.MESSAGE_RECEIVER, msg_receiver);
-        values.put(FeedReaderContract.FeedEntry.MESSAGE_SENDER, msg_sender);
-        values.put(FeedReaderContract.FeedEntry.NAME, name);
-        values.put(FeedReaderContract.FeedEntry.TIME, time);
-        values.put(FeedReaderContract.FeedEntry.MESSAGE_UID, uid_msg);
-        values.put(FeedReaderContract.FeedEntry.STATUS, status);
-
-        //prefs.edit().putString("time_msg", time);
-
-
-        // Insert the new row, returning the primary key value of the new row
-        long newRowId = db.insert(TABLE_NAME_MESSAGE, null, values);
-
-        Log.e(TAG, " SaveDBSqliteMsgUser" + String.valueOf(newRowId));
-
-
-        db.close();
-
-    }
 
 
     public void SaveDBSqliteToCalendar(String msg, String msg_sender, String time, String uid_msg, String setTime, String name, String image) {
@@ -597,13 +461,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(FeedReaderContract.FeedEntry.IMAGE, image);
 
 
-        // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert(TABLE_NAME_CALENDAR, null, values);
-
-        prefs.edit().putString("time_calendar", time);
-
-
-        Log.e(TAG, String.valueOf(time) + " time_calendar");
 
         db.close();
     }
@@ -623,13 +481,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(FeedReaderContract.FeedEntry.MESSAGE_SENDER, sender);
         values.put(FeedReaderContract.FeedEntry.MESSAGE_UID, uid_msg);
 
-        // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert(TABLE_NAME_EQUIPMENT, null, values);
-
-        //  prefs.edit().putString("time_equipment", time);
-
-
-        Log.e(TAG, String.valueOf(time) + " time_equipment");
 
         db.close();
     }
@@ -648,62 +500,21 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(FeedReaderContract.FeedEntry.UID, uid);
         values.put(FeedReaderContract.FeedEntry.MESSAGE_UID, uid_msg);
 
-        // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert(TABLE_NAME_NOTE, null, values);
 
         db.close();
 
     }
 
-
-    public void DeleteTableSqliteDB(String tableName) {
-
-        db = this.getWritableDatabase();
-        db.execSQL("delete from " + tableName);
-        db.close();
-
-
-    }
-
-    public void DeleteMsgSqliteDB(String tableName, String id) {
-
-        db = this.getWritableDatabase();
-
-        db.delete(tableName, FeedReaderContract.FeedEntry._ID + " = ?",
-                new String[]{String.valueOf(id)});
-        db.close();
-
-
-    }
-
-    public void deleteRawFromTable(int id, String time, String table) {
+    public void deleteRawFromTable(int id, String time, String table, String key) {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "DELETE FROM " + table + " WHERE "
                 + FeedReaderContract.FeedEntry._ID + " = '" + id + "'" +
-                " AND " + FeedReaderContract.FeedEntry.TIME + " = '" + time + "'";
-        Log.d(TAG, "deleteName: query: " + query);
-        Log.d(TAG, "deleteName: Deleting " + time + " from database.");
+                " AND " + key + " = '" + time + "'";
         db.execSQL(query);
     }
 
-    public void deleteRawFromTableNote(int id, String time, String table) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String query = "DELETE FROM " + table + " WHERE "
-                + FeedReaderContract.FeedEntry._ID + " = '" + id + "'" +
-                " AND " + FeedReaderContract.FeedEntry.DATE + " = '" + time + "'";
-        Log.d(TAG, "deleteName: query: " + query);
-        Log.d(TAG, "deleteName: Deleting " + time + " from database.");
-        db.execSQL(query);
-    }
-
-    public void deleteRawFromTableUsers(int id, String chat, String table) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String query = "DELETE FROM " + table + " WHERE "
-                + FeedReaderContract.FeedEntry._ID + " = '" + id + "'" +
-                " AND " + FeedReaderContract.FeedEntry.CHAT_ROOMS + " = '" + chat + "'";
-
-        db.execSQL(query);
-    }
 
 
 }
+

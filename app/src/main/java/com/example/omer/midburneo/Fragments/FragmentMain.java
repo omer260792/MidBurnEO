@@ -78,17 +78,21 @@ public class FragmentMain extends Fragment {
 
     public void getNoteMsg() {
 
-        Log.e(TAG, "getNoteMsg");
+
+        dbHelper = new DBHelper(getContext());
 
         try {
-            messageNoteList.addAll(dbHelper.getAllNote("false"));
+            messageNoteList.addAll(dbHelper.getAllNote("false",dbHelper));
             mAdapterNote = new MessageNoteAdapter(getContext(), messageNoteList);
             recyclerViewNote.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerViewNote.setAdapter(mAdapterNote);
-            mAdapterNote.notifyDataSetChanged();
+            mAdapterNote.notifyDataSetChanged();            Log.e("sssdddds","SSssss");
+
 
 
         } catch (Exception e) {
+            Log.e("ssss","SSssss");
+
             e.printStackTrace();
             e.getStackTrace();
             e.getMessage();

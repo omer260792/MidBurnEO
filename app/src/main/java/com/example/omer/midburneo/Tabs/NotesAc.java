@@ -1,13 +1,18 @@
 package com.example.omer.midburneo.Tabs;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.os.Bundle;
+import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -30,6 +35,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_NOTE;
 import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
@@ -48,7 +54,7 @@ public class NotesAc extends AppCompatActivity {
     private FragmentMain fragmentMain;
     private FragmentHistory fragmentHistory;
 
-    private String current_uid, getUid;
+    private String current_uid, getUid, countSqLiteUpdate;
     private String getTitle = "getMsg";
     private String getSender = "getSender";
     private String getDate = "getDate";
@@ -83,6 +89,9 @@ public class NotesAc extends AppCompatActivity {
         fragmentHistory = new FragmentHistory();
         fragmentMain = new FragmentMain();
 
+
+
+
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
         DatabaseReference discussionRoomsRef = rootRef.child("Camps").child(firebaseUserModel.getChat()).child("Note");
 
@@ -103,7 +112,7 @@ public class NotesAc extends AppCompatActivity {
 
 
                         Boolean tagUserGroup = snapshot.child(FeedReaderContract.FeedEntry.TAG_USER).exists();
-                        if (tagUserGroup.equals(false)){
+                        if (tagUserGroup.equals(false)) {
                             dbHelper.SaveDBSqliteToNote(getTitle, getContent, getDate, getDateEnd, getBool, getSender, current_uid, getUid);
 
                         }
@@ -117,8 +126,9 @@ public class NotesAc extends AppCompatActivity {
 
 
                     }
+
+
                     fragmentMain.getNoteMsg();
-                    fragmentHistory.getNoteMsg();
 
                 }
 
@@ -136,36 +146,51 @@ public class NotesAc extends AppCompatActivity {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         long FBCount = dataSnapshot.getChildrenCount();
 
-                        if (countSqlLite < FBCount) {
 
-                            getUid = snapshot.getKey().toString();
+                        getUid = snapshot.getKey().toString();
 
-                            getTitle = snapshot.child("title").getValue(String.class);
-                            getContent = snapshot.child("content").getValue(String.class);
-                            getDate = snapshot.child("date").getValue(String.class);
-                            getDateEnd = snapshot.child("dateEnd").getValue(String.class);
-                            getBool = snapshot.child("dateBool").getValue(String.class);
-                            getSender = snapshot.child("sender").getValue(String.class);
+                        getTitle = snapshot.child("title").getValue(String.class);
+                        getContent = snapshot.child("content").getValue(String.class);
+                        getDate = snapshot.child("date").getValue(String.class);
+                        getDateEnd = snapshot.child("dateEnd").getValue(String.class);
+                        getBool = snapshot.child("dateBool").getValue(String.class);
+                        getSender = snapshot.child("sender").getValue(String.class);
 
-
+                        Boolean check = query(getDate, FeedReaderContract.FeedEntry.DATE);
+                        if (check.equals(false)) {
 
                             Boolean tagUserGroup = snapshot.child(FeedReaderContract.FeedEntry.TAG_USER).exists();
-                            if (tagUserGroup.equals(false)){
+                            if (tagUserGroup.equals(false)) {
                                 dbHelper.SaveDBSqliteToNote(getTitle, getContent, getDate, getDateEnd, getBool, getSender, current_uid, getUid);
 
+                            }else {
+                                Boolean tagUser = snapshot.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
+                                if (tagUser.equals(true)) {
+                                    dbHelper.SaveDBSqliteToNote(getTitle, getContent, getDate, getDateEnd, getBool, getSender, current_uid, getUid);
+
+
+                                }
                             }
 
+                        } else {
 
-                            Boolean tagUser = snapshot.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
-                            if (tagUser.equals(true)) {
-                                dbHelper.SaveDBSqliteToNote(getTitle, getContent, getDate, getDateEnd, getBool, getSender, current_uid, getUid);
+                            try{
+                                ContentValues data = new ContentValues();
+                                data.put("title", getTitle);
+                                data.put("content", getContent);
+                                data.put("date", getDate);
+                                data.put("date_end", getDateEnd);
+                                data.put("date_bool", getBool);
+                                db.update(TABLE_NAME_NOTE, data, "_id=" + countSqLiteUpdate, null);
+                                Log.e("ggggg","try");
 
+
+                            }catch (Exception e){
+                                e.printStackTrace();
+                                Log.e("ggggg","catch");
                             }
-
                         }
-
                     }
-
                 }
 
                 @Override
@@ -175,6 +200,9 @@ public class NotesAc extends AppCompatActivity {
             });
 
         }
+
+
+
 
 
     }
@@ -218,6 +246,45 @@ public class NotesAc extends AppCompatActivity {
     public void onClickCheckBox(View view) {
 
 
+    }
+
+
+    private Boolean query(String selectionArgss, String selectio) {
+
+
+        String[] projection = {
+                BaseColumns._ID,
+                FeedReaderContract.FeedEntry.TITLE,
+                FeedReaderContract.FeedEntry.CONTENT,
+                FeedReaderContract.FeedEntry.DATE,
+                FeedReaderContract.FeedEntry.DATE_END,
+                FeedReaderContract.FeedEntry.DATE_BOOL,
+                FeedReaderContract.FeedEntry.MESSAGE_SENDER,
+                FeedReaderContract.FeedEntry.UID,
+                FeedReaderContract.FeedEntry.MESSAGE_UID
+
+        };
+
+        String selection = selectio + " = ?";
+        String[] selectionArgs = {selectionArgss};
+
+        SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
+        builder.setTables(TABLE_NAME_NOTE);
+
+        Cursor cursor = builder.query(dbHelper.getReadableDatabase(),
+                projection, selection, selectionArgs, null, null, null);
+
+        if (cursor == null) {
+            return null;
+        } else if (!cursor.moveToFirst()) {
+
+
+            cursor.close();
+            return false;
+        }
+        countSqLiteUpdate = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID));
+
+        return true;
     }
 }
 

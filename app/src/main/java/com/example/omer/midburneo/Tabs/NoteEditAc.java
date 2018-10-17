@@ -137,10 +137,6 @@ public class NoteEditAc extends AppCompatActivity {
                         }
 
 
-
-
-                        Log.e("ADDNoteAc", String.valueOf(stringObjectHashMapNote));
-                        //  mItemSelected.setText(item);
                     }
                 });
 
@@ -195,7 +191,6 @@ public class NoteEditAc extends AppCompatActivity {
             @Override
             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
                 month = month + 1;
-                Log.d(TAG, "onDateSet: mm/dd/yyy: " + month + "/" + day + "/" + year);
 
                 Calendar cal = Calendar.getInstance();
                 cal.set(Calendar.DAY_OF_MONTH, datePicker.getDayOfMonth());
@@ -281,7 +276,7 @@ public class NoteEditAc extends AppCompatActivity {
         mapAdminUpdate.put("dateBool", "false");
         mapAdminUpdate.put("uid", current_uid);
 
-        if (num == 2){
+        if (num == 2) {
             mapAdminUpdate.put(FeedReaderContract.FeedEntry.TAG_USER, stringObjectHashMapNote);
 
         }
@@ -314,19 +309,18 @@ public class NoteEditAc extends AppCompatActivity {
 
                     if (!key.equals(firebaseUserModel.getChat())) {
 
-                        if (!key.equals(current_uid)){
+                        if (!key.equals(current_uid)) {
                             String name = ds.child("name").getValue().toString();
 
 
                             contactsArray.add(name);
                             keyArray.add(key);
-                        }else {
+                        } else {
 
                         }
 
 
                     }
-
 
 
                 }
@@ -345,7 +339,6 @@ public class NoteEditAc extends AppCompatActivity {
                 int count = (int) FBCount;
 
 
-                Log.i("ssssssssffffffssss", String.valueOf(listItems));
             }
 
             @Override

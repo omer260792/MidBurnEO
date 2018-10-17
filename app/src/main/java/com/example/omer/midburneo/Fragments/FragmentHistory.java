@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -39,7 +40,7 @@ public class FragmentHistory extends Fragment {
     public DBHelper dbHelper;
     public SQLiteDatabase db;
 
-    public String  getUid, date;
+    public String getUid, date;
 
     View view;
 
@@ -59,7 +60,10 @@ public class FragmentHistory extends Fragment {
 
         getNoteMsg();
 
+
+
         return view;
+
     }
 
 
@@ -71,10 +75,10 @@ public class FragmentHistory extends Fragment {
 
     public void getNoteMsg() {
 
-        Log.e(TAG, "getNoteMsg");
+        dbHelper = new DBHelper(getContext());
 
         try {
-            messageNoteList.addAll(dbHelper.getAllNote("true"));
+            messageNoteList.addAll(dbHelper.getAllNote("true",dbHelper));
             mAdapterNote = new MessageNoteAdapter(getContext(), messageNoteList);
             recyclerViewNote.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerViewNote.setAdapter(mAdapterNote);

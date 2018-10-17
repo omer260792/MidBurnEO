@@ -4,8 +4,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#FFFFFF">
+    android:background="#FFFFFF"
+    android:orientation="vertical">
 
 
     <LinearLayout
@@ -13,6 +13,12 @@
         android:layout_height="55dp"
         android:background="#ffdddddd"
         android:padding="5dp">
+
+        <Button
+            android:id="@+id/imageButtonSearchUser"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:background="@android:drawable/ic_menu_search" />
 
         <TextView
             android:id="@+id/nameCampUser"
@@ -33,6 +39,15 @@
 
 
     </LinearLayout>
+
+    <EditText
+        android:id="@+id/etSearchUser"
+        android:layout_width="match_parent"
+        android:paddingRight="10dp"
+        android:hint="....חפש שם"
+        android:textSize="16dp"
+        android:layout_height="40dp"
+        android:layout_margin="10dp" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_Expand"

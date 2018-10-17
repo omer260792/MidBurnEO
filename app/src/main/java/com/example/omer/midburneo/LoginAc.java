@@ -176,7 +176,6 @@ public class LoginAc extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        Log.e(TAG,"onDestroy");
 
     }
 }

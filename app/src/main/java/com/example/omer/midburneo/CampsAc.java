@@ -52,7 +52,7 @@ public class CampsAc extends AppCompatActivity {
     public String current_uid, current_uid_camp, uid_camp, camp_name, get_name_camp;
     public long countFB;
     public int size;
-    public int num =1;
+    public int num = 1;
 
 
     @Override
@@ -102,24 +102,18 @@ public class CampsAc extends AppCompatActivity {
                 prefs.edit().putString("camps", get_name_camp).apply();
                 prefs.edit().putString("chat", current_uid_camp).apply();
 
-                Log.e(TAG,"confirmCampBtn"+current_uid_camp);
 
                 Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
                     public void run() {
 
                         Intent intent = new Intent(CampsAc.this, MainPageAc.class);
-                       //yuval intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
-                      //  mprogress.dismiss();
                         finish();
 
 
-                        // yourMethod();
                     }
-                }, 3000);   //
-
-
+                }, 2000);   //
 
 
             }
@@ -159,9 +153,6 @@ public class CampsAc extends AppCompatActivity {
 
                     contacts.add(new ListCampAc(camp_name));
 
-                    Log.e(TAG,"getDataSpinner"+current_uid_camp);
-                    Log.e(TAG, "getDataSpinner"+String.valueOf(contacts));
-                    Log.e(TAG, "getDataSpinner"+String.valueOf(camp_name));
 
                 }
 
@@ -189,31 +180,29 @@ public class CampsAc extends AppCompatActivity {
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
             if (camp_name.equals(spinner.getSelectedItem().toString())) {
 
-                        get_name_camp = parent.getItemAtPosition(pos).toString();
+                get_name_camp = parent.getItemAtPosition(pos).toString();
 
-                        Log.e("ItemSelectedListener33",get_name_camp);
 
-                        getUidCamp();
+                getUidCamp();
 
             } else {
 
-                if(parent.getItemAtPosition(pos).toString().equals("רשימת קמפים")){
+                if (parent.getItemAtPosition(pos).toString().equals("רשימת קמפים")) {
 
-                    if (num == 1){
+                    if (num == 1) {
                         Toast.makeText(parent.getContext(),
                                 "בחר קמפ",
                                 Toast.LENGTH_LONG).show();
-                        num =2;
-                    }else {
+                        num = 2;
+                    } else {
                         Toast.makeText(parent.getContext(),
                                 "רשימת קמפים??? בחר קבוצה אחרת!",
                                 Toast.LENGTH_LONG).show();
                     }
 
-                }else {
+                } else {
                     get_name_camp = parent.getItemAtPosition(pos).toString();
 
-                    Log.e("ItemSelectedListener", get_name_camp);
 
                     getUidCamp();
                 }
@@ -270,9 +259,6 @@ public class CampsAc extends AppCompatActivity {
         mapUserUpdates.put("camps", get_name_camp);
         mapUserUpdates.put("chat", current_uid_camp);
         mapUserUpdates.put("number", lastCountString);
-
-        Log.e(TAG, "updateDataFireBase"+String.valueOf(mapUserUpdates));
-
 
 
         mUserDatabase.updateChildren(mapUserUpdates);
