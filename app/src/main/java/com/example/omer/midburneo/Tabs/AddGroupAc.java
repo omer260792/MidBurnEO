@@ -196,9 +196,10 @@ public class AddGroupAc extends AppCompatActivity {
                     firebaseMessageModel.setSenderId(current_uid);
                     firebaseMessageModel.setSenderName(current_name);
                     firebaseMessageModel.setReceiverId(get_msg_uid);
-                    firebaseMessageModel.setImage(imgLocalPath);
+                    firebaseMessageModel.setImage("default");
                     firebaseMessageModel.setStatus("false");
                     firebaseMessageModel.setCreatedDate(currentDateTime);
+                    firebaseMessageModel.setRecord("default");
 
                     ProgressDialog Dialog = new ProgressDialog(AddGroupAc.this);
                     Dialog.setMessage("Please wait..");

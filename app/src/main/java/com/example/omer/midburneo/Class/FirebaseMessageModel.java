@@ -14,7 +14,20 @@ public class FirebaseMessageModel {
     private String senderName;
     private String Id;
     private String image;
+    private String record;
 
+    public FirebaseMessageModel() {
+        /*Blank default constructor essential for Firebase*/
+    }
+
+    public String getRecord() {
+        return record;
+    }
+
+    public String setRecord(String record) {
+        this.record = record;
+        return record;
+    }
 
     public String getImage() {
         return image;
@@ -44,9 +57,6 @@ public class FirebaseMessageModel {
         return status;
     }
 
-    public FirebaseMessageModel() {
-        /*Blank default constructor essential for Firebase*/
-    }
 
     public String getSenderId() {
         return senderId;

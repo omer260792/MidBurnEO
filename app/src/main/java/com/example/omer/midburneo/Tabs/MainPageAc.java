@@ -1,12 +1,10 @@
 package com.example.omer.midburneo.Tabs;
 
-import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -20,7 +18,6 @@ import android.widget.Toast;
 import com.example.omer.midburneo.Adapters.ImageAdapter;
 import com.example.omer.midburneo.Class.FirebaseUserModel;
 import com.example.omer.midburneo.Class.User;
-import com.example.omer.midburneo.PermissionManager;
 import com.example.omer.midburneo.R;
 import com.example.omer.midburneo.ScheduleAc;
 import com.google.firebase.auth.FirebaseAuth;
@@ -46,6 +43,10 @@ import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
 // ToDo push notification -- All Project
 // ToDo picture's users in AlertDailog -- All Project
 // ToDo change name's group from Camp-AllCamps-group   -- AdminAc
+// ToDo refresh the recyclerview   -- ANoteAc
+// ToDo get current version Matiral Calnder  -- scheduleAc
+// ToDo save database to sqlite  -- ChatListAc
+// ToDo save record path in stroge device directory  -- ChatListAc
 
 public class MainPageAc extends AppCompatActivity {
 

@@ -143,8 +143,20 @@
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/BtnTimeNoteEdit" />
 
+
+
+                <android.support.v7.widget.SwitchCompat
+                    android:id="@+id/timerSwitchCalEdit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:gravity="center_vertical"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"/>
+
+
             <Button
-                android:id="@+id/addNoteButton"
+                android:id="@+id/addNoteButtonCalEdit"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"

@@ -44,8 +44,10 @@ public class NotePreviewActivity extends AppCompatActivity {
 
 
         Intent intent = getIntent();
-//        count = getIntent().getStringExtra("coumtIntent");
-//        time = getIntent().getStringExtra("timeIntent");
+        count = getIntent().getStringExtra("coumtIntent");
+        time = getIntent().getStringExtra("timeIntent");
+        Log.e(TAG, "timeeeeee"+time);
+        Log.e(TAG, "timeeeeee"+count);
 
 
         recyclerNotePreview = findViewById(R.id.recycler_note_preview);
@@ -63,7 +65,7 @@ public class NotePreviewActivity extends AppCompatActivity {
                 //tvNote.setText(myEventDay.getNote());
 
                 String time = String.valueOf(getFormattedDate(myEventDay.getCalendar().getTime()));
-                Log.e(" Rffffffffffead", time);
+                Log.e(TAG, time);
 
                 getNotePreview(time);
                 return;
@@ -77,7 +79,7 @@ public class NotePreviewActivity extends AppCompatActivity {
 
     public void getNotePreview(String time) {
 
-        Log.e(TAG, "getEquipment");
+        Log.e(TAG, "time"+time);
 
         try {
 
@@ -98,7 +100,7 @@ public class NotePreviewActivity extends AppCompatActivity {
     }
 
     public static String getFormattedDate(Date date) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
-        return simpleDateFormat.format(date);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy", Locale.ENGLISH);
+        return sdf.format(date);
     }
 }

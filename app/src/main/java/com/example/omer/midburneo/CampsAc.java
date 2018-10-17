@@ -52,6 +52,7 @@ public class CampsAc extends AppCompatActivity {
     public String current_uid, current_uid_camp, uid_camp, camp_name, get_name_camp;
     public long countFB;
     public int size;
+    public int num =1;
 
 
     @Override
@@ -116,7 +117,7 @@ public class CampsAc extends AppCompatActivity {
 
                         // yourMethod();
                     }
-                }, 6000);   //
+                }, 3000);   //
 
 
 
@@ -146,6 +147,7 @@ public class CampsAc extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
 
                 ArrayList<ListCampAc> contacts = new ArrayList<>();
+                contacts.add(new ListCampAc("רשימת קמפים"));
 
                 //running loop of all the children and getting key
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
@@ -184,35 +186,38 @@ public class CampsAc extends AppCompatActivity {
     public class ItemSelectedListener implements AdapterView.OnItemSelectedListener {
 
         //get strings of first item
-
-
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
             if (camp_name.equals(spinner.getSelectedItem().toString())) {
-                // ToDo when first item is selected
-                Toast.makeText(parent.getContext(),
-                        "ToDo when first item is selected: ",
-                        Toast.LENGTH_LONG).show();
 
-                if (spinner.getSelectedItem().equals(1)) {
                         get_name_camp = parent.getItemAtPosition(pos).toString();
 
                         Log.e("ItemSelectedListener33",get_name_camp);
 
                         getUidCamp();
-                }
-
 
             } else {
-                Toast.makeText(parent.getContext(),
-                        "You have selected : " + parent.getItemAtPosition(pos).toString(),
-                        Toast.LENGTH_LONG).show();
-                // Todo when item is selected by the user
 
-                get_name_camp = parent.getItemAtPosition(pos).toString();
+                if(parent.getItemAtPosition(pos).toString().equals("רשימת קמפים")){
 
-                Log.e("ItemSelectedListener", get_name_camp);
+                    if (num == 1){
+                        Toast.makeText(parent.getContext(),
+                                "בחר קמפ",
+                                Toast.LENGTH_LONG).show();
+                        num =2;
+                    }else {
+                        Toast.makeText(parent.getContext(),
+                                "רשימת קמפים??? בחר קבוצה אחרת!",
+                                Toast.LENGTH_LONG).show();
+                    }
 
-                getUidCamp();
+                }else {
+                    get_name_camp = parent.getItemAtPosition(pos).toString();
+
+                    Log.e("ItemSelectedListener", get_name_camp);
+
+                    getUidCamp();
+                }
+
             }
         }
 

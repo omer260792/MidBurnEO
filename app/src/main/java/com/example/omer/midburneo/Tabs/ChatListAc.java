@@ -1,20 +1,27 @@
 package com.example.omer.midburneo.Tabs;
 
 
-import android.Manifest;
-import android.app.AlertDialog;
+import android.support.v7.app.AlertDialog;
+//import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
+import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -34,7 +41,6 @@ import com.example.omer.midburneo.Class.MessageCell;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.PermissionManager;
 import com.example.omer.midburneo.R;
-import com.example.omer.midburneo.RegisterAc;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -67,17 +73,19 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 
 import cz.msebera.android.httpclient.HttpHeaders;
 import cz.msebera.android.httpclient.entity.StringEntity;
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static android.Manifest.permission.RECORD_AUDIO;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static com.example.omer.midburneo.RegisterAc.CAMERA;
 import static com.example.omer.midburneo.RegisterAc.GALLERY;
-import static com.example.omer.midburneo.RegisterAc.REQUEST_PHONE_RECORD;
 import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
 import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
-import static com.loopj.android.http.AsyncHttpClient.LOG_TAG;
 
 
 public class ChatListAc extends AppCompatActivity {
@@ -100,21 +108,38 @@ public class ChatListAc extends AppCompatActivity {
     public SharedPreferences prefs;
     public DBHelper dbHelper;
     public SQLiteDatabase db;
-    private Uri resultUri;
-    private StorageReference mImageStorage, filePath;
+    private Uri resultUri, recordUri;
+    private StorageReference mImageStorage, filePath, filePathRecord;
 
     private MediaRecorder mRecorder;
     private ProgressDialog progressDialog;
     private boolean permissionToRecordAccepted = false;
-    private String mFileName = null;
 
 
-    public String nameUserIntent, campUserIntent, uidUserIntent, chatRoomsUserIntent, imageUserIntent, statusUserIntent, deviceUserIntent, tokenUserIntent, countUserIntent, timeUserIntent, onilneUserIntent, current_uid, current_name, current_device, table;
+    public String nameUserIntent, campUserIntent, uidUserIntent, chatRoomsUserIntent, imageUserIntent, statusUserIntent, deviceUserIntent,
+            tokenUserIntent, countUserIntent, timeUserIntent, onilneUserIntent, current_uid, current_name, current_device, table;
     public String stringUrl = "stringUrl";
+    public String urlPathString = null;
     public String uidMsg;
     public int num = 1;
+    public int numStop = 1;
 
     JSONArray registration_ids = new JSONArray();
+
+    ///record
+
+    private Dialog myDialog;
+    private Button buttonRecordPop, buttonStopPop, buttonPlayPop, sendRecordBtn;
+
+    private String AudioSavePathInDevice = null;
+    MediaRecorder mediaRecorder;
+    Random random;
+    String RandomAudioFileName = "ABCDEFGHIJKLMNOP";
+    public static final int RequestPermissionCode = 1;
+    MediaPlayer mediaPlayer;
+    public CardView cardView;
+    private int numCheck = 1;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,11 +150,19 @@ public class ChatListAc extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.chattingList);
         textComment = (EditText) findViewById(R.id.comment_text);
         btnSend = (ImageView) findViewById(R.id.send_button);
-        imagebtnChat =  findViewById(R.id.imagebtnChat);
+        imagebtnChat = findViewById(R.id.imagebtnChat);
         tvNameUser = findViewById(R.id.tvNameChat);
         tvTimeUser = findViewById(R.id.tvTimeChat);
         imageUser = (CircleImageView) findViewById(R.id.imgUserChat);
         mRecordButton = findViewById(R.id.recored_button);
+        cardView = findViewById(R.id.CardViewChatlist);
+
+        //record
+        buttonRecordPop = findViewById(R.id.buttonRecordPop);//1
+        buttonStopPop = findViewById(R.id.buttonStopPop);//2
+        buttonPlayPop = findViewById(R.id.buttonPlayPop);//3
+        sendRecordBtn = findViewById(R.id.sendRecordBtn);//4
+        //  sendRecordBtn = myDialog.findViewById(R.id.sendRecordBtn);
 
         nameUserIntent = getIntent().getStringExtra("nameUidFriend");
         campUserIntent = getIntent().getStringExtra("campUidFriend");
@@ -170,7 +203,36 @@ public class ChatListAc extends AppCompatActivity {
         }
 
         CheckUserIfOnline();
-       // PermissionManager.check(ChatListAc.this, Manifest.permission.RECORD_AUDIO, REQUEST_PHONE_RECORD);
+
+
+        mRecordButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                if (mediaPlayer != null) {
+                    mediaPlayer.stop();
+                    mediaPlayer.release();
+                    MediaRecorderReady();
+                }
+
+                if (numCheck == 1) {
+
+
+                    cardView.setVisibility(View.VISIBLE);
+                    buttonStopPop.setVisibility(View.GONE);
+                    buttonPlayPop.setVisibility(View.GONE);
+                    sendRecordBtn.setVisibility(View.GONE);
+                    popUp();
+                    numCheck = 2;
+                } else {
+                    cardView.setVisibility(View.GONE);
+                    popUp();
+                    numCheck = 1;
+                }
+
+            }
+        });
 
         imagebtnChat.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -181,7 +243,7 @@ public class ChatListAc extends AppCompatActivity {
                 PermissionManager.check(ChatListAc.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
 
                 AlertDialog.Builder builder;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     builder = new AlertDialog.Builder(ChatListAc.this, android.R.style.Theme_Material_Dialog_Alert);
                 } else {
                     builder = new AlertDialog.Builder(ChatListAc.this);
@@ -202,36 +264,6 @@ public class ChatListAc extends AppCompatActivity {
                         })
                         .setIcon(android.R.drawable.ic_dialog_info)
                         .show();
-
-
-
-
-               // imagebtnChat.performClick();
-
-//                AlertDialog alertDialog = new AlertDialog.Builder(getApplicationContext()).create();
-//
-//                alertDialog.setTitle("עריכת מצלמה");
-//                alertDialog.setMessage("!בחר תמונה");
-//
-//                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Gallery", new DialogInterface.OnClickListener() {
-//
-//                    public void onClick(DialogInterface dialog, int id) {
-//
-//                        gallery();
-//
-//                    }
-//                });
-//                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", new DialogInterface.OnClickListener() {
-//
-//                    public void onClick(DialogInterface dialog, int id) {
-//
-//                        // return;
-//
-//                    }
-//                });
-//
-//                alertDialog.show();
-                return;
             }
         });
 
@@ -285,6 +317,7 @@ public class ChatListAc extends AppCompatActivity {
                     String createDate = firebaseMessageModel.setCreatedDate(Long.valueOf(postSnapshot.child("createdDate").getValue().toString()));
 
                     String status = firebaseMessageModel.setStatus(postSnapshot.child("status").getValue().toString());
+                    String record = firebaseMessageModel.setRecord(postSnapshot.child("record").getValue().toString());
 
 
                     firebaseMessageModel.setId(postSnapshot.getKey());
@@ -377,6 +410,8 @@ public class ChatListAc extends AppCompatActivity {
 
         usersRef.addValueEventListener(userValueEventListener);
 
+        ///////record
+
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -391,6 +426,162 @@ public class ChatListAc extends AppCompatActivity {
 
         //Value event listener for realtime data update
         messagesRef.addValueEventListener(commentValueEventListener);
+
+
+        buttonRecordPop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+
+
+                if (checkPermission()) {
+
+                    AudioSavePathInDevice =
+                            Environment.getExternalStorageDirectory().getAbsolutePath() + "/" +
+                                    CreateRandomAudioFileName(5) + "AudioRecording.3gp";
+
+                    MediaRecorderReady();
+
+                    try {
+                        mediaRecorder.prepare();
+                        mediaRecorder.start();
+                    } catch (IllegalStateException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+
+                    buttonRecordPop.setEnabled(false);
+                    buttonStopPop.setEnabled(true);
+                    buttonStopPop.setVisibility(View.VISIBLE);
+
+                    numStop = 1;
+
+                    Toast.makeText(ChatListAc.this, "Recording started",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    requestPermission();
+                }
+
+
+
+
+
+
+            }
+        });
+
+        buttonStopPop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+
+
+
+                if (numStop == 1) {
+                    mediaRecorder.stop();
+                    buttonStopPop.setEnabled(false);
+                    buttonPlayPop.setEnabled(true);
+                    buttonRecordPop.setEnabled(true);
+                    sendRecordBtn.setEnabled(true);
+
+                    Toast.makeText(ChatListAc.this, "Recording Completed",
+                            Toast.LENGTH_SHORT).show();
+
+                    buttonStopPop.setVisibility(View.VISIBLE);
+                    buttonPlayPop.setVisibility(View.VISIBLE);
+                    sendRecordBtn.setVisibility(View.VISIBLE);
+
+
+                } else {
+
+                    buttonStopPop.setEnabled(false);
+                    buttonRecordPop.setEnabled(true);
+                    sendRecordBtn.setEnabled(true);
+                    buttonPlayPop.setEnabled(true);
+
+                    if (mediaPlayer != null) {
+                        mediaPlayer.stop();
+                        mediaPlayer.release();
+                        MediaRecorderReady();
+                    }
+
+                    buttonStopPop.setVisibility(View.VISIBLE);
+                    buttonPlayPop.setVisibility(View.VISIBLE);
+                    sendRecordBtn.setVisibility(View.VISIBLE);
+                }
+
+
+
+
+            }
+        });
+
+        buttonPlayPop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                buttonStopPop.setEnabled(false);
+                buttonRecordPop.setEnabled(false);
+                sendRecordBtn.setEnabled(true);
+
+
+                numStop = 2;
+
+                mediaPlayer = new MediaPlayer();
+                try {
+                    mediaPlayer.setDataSource(AudioSavePathInDevice);
+                    mediaPlayer.prepare();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+                mediaPlayer.start();
+                Toast.makeText(ChatListAc.this, "Recording Playing",
+                        Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+        sendRecordBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mediaPlayer = new MediaPlayer();
+                try {
+                    mediaPlayer.setDataSource(AudioSavePathInDevice);
+                    mediaPlayer.prepare();
+
+
+
+                if (AudioSavePathInDevice != null) {
+                    long currentDateTime = System.currentTimeMillis();
+                    String time = String.valueOf(currentDateTime);
+                    uploadAudio(AudioSavePathInDevice,time);
+                    cardView.setVisibility(v.GONE);
+                    Log.e(TAG, "AudioSavePathInDevice"+AudioSavePathInDevice);
+                }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        cardView.setVisibility(View.GONE);
+
     }
 
     public void hideKeyboard() {
@@ -412,32 +603,21 @@ public class ChatListAc extends AppCompatActivity {
         MessageCell[] messageCells;
         messageCells = new MessageCell[totalWishes];
 
-        //   try {
-
 
         for (int counter = 0; counter < totalWishes; counter++) {
             FirebaseMessageModel firebaseMessageModel = messages.get(counter);
 
             MessageCell messageCell = new MessageCell(firebaseMessageModel.getSenderName(), firebaseMessageModel.getText(),
-                    getDate(firebaseMessageModel.getCreatedDateLong()), firebaseMessageModel.getSenderId().equals(current_uid), firebaseMessageModel.getImage(), firebaseMessageModel.getSenderId());
+                    getDate(firebaseMessageModel.getCreatedDateLong()), firebaseMessageModel.getSenderId().equals(current_uid), firebaseMessageModel.getImage(), firebaseMessageModel.getSenderId(),firebaseMessageModel.getRecord());
 
             messageCells[counter] = messageCell;
         }
-
         MessagesListAdapter adapter = new MessagesListAdapter(this, messageCells);
 
         // Assign adapter to ListView
         listView.setAdapter(adapter);
-
         listView.setSelection(listView.getCount() - 1);
-
         listView.requestFocus();
-
-//
-//        } catch (Exception e) {
-//
-//        }
-
 
     }
 
@@ -454,30 +634,36 @@ public class ChatListAc extends AppCompatActivity {
 
     public void CheckUserIfOnline() {
 
+
+        if (!deviceUserIntent.equals("default")){
+
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(uidUserIntent);
         mUserDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                String time = dataSnapshot.child("time").getValue().toString();
-                String onilne = dataSnapshot.child("online").getValue().toString();
+                    String time = dataSnapshot.child("time").getValue().toString();
+                    String onilne = dataSnapshot.child("online").getValue().toString();
 
-                if (!onilne.equals("default")) {
-                    DateFormat getTimeDmY = new SimpleDateFormat("dd:MM:yyyy:HH:mm");
-                    long timeMilLong = Long.parseLong(time);
+                    if (!onilne.equals("default")) {
+                        DateFormat getTimeDmY = new SimpleDateFormat("dd:MM:yyyy:HH:mm");
+                        long timeMilLong = Long.parseLong(time);
 
-                    String realTime = getTimeDmY.format(timeMilLong);
 
-                    if (onilne.equals("true")) {
-                        tvTimeUser.setText("מחובר");
+                        String realTime = getTimeDmY.format(timeMilLong);
+
+                        if (onilne.equals("true")) {
+                            tvTimeUser.setText("מחובר");
+                        } else {
+                            tvTimeUser.setText("last seen:" + realTime);
+
+                        }
                     } else {
-                        tvTimeUser.setText("last seen:" + realTime);
+                        tvTimeUser.setText("");
 
                     }
-                } else {
-                    tvTimeUser.setText("");
 
-                }
+
             }
 
             @Override
@@ -485,6 +671,11 @@ public class ChatListAc extends AppCompatActivity {
 
             }
         });
+
+        }else {
+            tvTimeUser.setText("");
+
+        }
 
 
     }
@@ -541,6 +732,13 @@ public class ChatListAc extends AppCompatActivity {
 
         }
 
+        if (urlPathString == null){
+            AudioSavePathInDevice = "default";
+        }else {
+            AudioSavePathInDevice = String.valueOf(urlPathString);
+
+        }
+
         current_name = firebaseUserModel.getName();
 
         final FirebaseMessageModel firebaseMessageModel = new FirebaseMessageModel();
@@ -550,6 +748,7 @@ public class ChatListAc extends AppCompatActivity {
         firebaseMessageModel.setReceiverId(uidUserIntent);
         firebaseMessageModel.setImage(String.valueOf(resultUri));
         firebaseMessageModel.setStatus("false");
+        firebaseMessageModel.setRecord(AudioSavePathInDevice);
 
         updateListView();
 
@@ -566,11 +765,10 @@ public class ChatListAc extends AppCompatActivity {
 
                 uidMsg = databaseReference.getKey();
 
-                if (!stringUrl.equals("stringUrl")){
+                if (!stringUrl.equals("stringUrl")) {
                     loadimageFirebase(uidMsg, chatRoomsUserIntent);
 
                 }
-
 
 
                 if (databaseError != null) {
@@ -611,32 +809,23 @@ public class ChatListAc extends AppCompatActivity {
 
                             JSONObject notificationObject = new JSONObject();
                             notificationObject.put("body", wishMessage);
-                            notificationObject.put("title", "MidBurnEO");
+                            notificationObject.put("title", firebaseUserModel.getName());
 
                             params.put("notification", notificationObject);
 
                             StringEntity entity = new StringEntity(params.toString());
 
-                            Log.i(TAG, String.valueOf(entity));
-                            Log.i(TAG, params.toString());
-                            Log.i(TAG, String.valueOf(notificationObject));
-
                             client.post(getApplicationContext(), url, entity, RequestParams.APPLICATION_JSON, new TextHttpResponseHandler() {
                                 @Override
                                 public void onFailure(int statusCode, cz.msebera.android.httpclient.Header[] headers, String responseString, Throwable throwable) {
                                     Dialog.dismiss();
-                                    Log.i(TAG, responseString);
-
 
                                 }
 
                                 @Override
                                 public void onSuccess(int statusCode, cz.msebera.android.httpclient.Header[] headers, String responseString) {
                                     Dialog.dismiss();
-                                    Log.i(TAG + "succccc", responseString);
 
-                                    Log.i(TAG, String.valueOf(statusCode));
-                                    Log.i(TAG, String.valueOf(headers));
                                 }
                             });
 
@@ -655,64 +844,36 @@ public class ChatListAc extends AppCompatActivity {
 
     }
 
-    private void startRecording() {
-        mRecorder = new MediaRecorder();
-        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        mRecorder.setOutputFile(mFileName);
 
-
-        try {
-            mRecorder.prepare();
-            mRecorder.start();
-
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "prepare() failed");
-        }
-
-    }
-
-    private void stopRecording() {
-        mRecorder.stop();
-        mRecorder.release();
-        mRecorder = null;
-        uploadAudio();
-    }
-
-    private void uploadAudio() {
+    private void uploadAudio(String mFileName, String time) {
         progressDialog.setMessage("מעלה הקלטה");
         progressDialog.show();
+        String getMyKeyMsg = UUID.randomUUID().toString();
 
-        StorageReference filePath = mImageStorage.child("Audio").child("new_audio.3gp");
+        filePathRecord = mImageStorage.child("Audio").child(time+".3gp");
+         urlPathString = "Audio/"+time+".3gp";
 
-        Uri uri = Uri.fromFile(new File(mFileName));
-        filePath.putFile(uri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+        recordUri = Uri.fromFile(new File(mFileName));
+        filePathRecord.putFile(recordUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+
+
                 progressDialog.dismiss();
                 progressDialog.setMessage("סיים לעלות הקלטה");
+
+                sendMsgWithNotification();
+
 
 
             }
         });
 
+
+
+
+
     }
-
-    //    @Override
-//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        switch (requestCode) {
-//            case REQUEST_PHONE_RECORD:
-//                permissionToRecordAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-//                break;
-//        }
-//        if (!permissionToRecordAccepted) finish();
-//
-//    }
-
-
-
 
     public void loadimageFirebase(String uidMsg, String getchat) {
         filePath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
@@ -744,6 +905,77 @@ public class ChatListAc extends AppCompatActivity {
                 });
             }
         });
+    }
+    ////////////////Record
+
+
+    public void popUp() {
+
+        buttonStopPop.setEnabled(true);
+        buttonPlayPop.setEnabled(false);
+        sendRecordBtn.setEnabled(false);
+
+        random = new Random();
+
+    }
+
+
+
+
+    public void MediaRecorderReady() {
+        mediaRecorder = new MediaRecorder();
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mediaRecorder.setAudioEncoder(MediaRecorder.OutputFormat.AMR_NB);
+        mediaRecorder.setOutputFile(AudioSavePathInDevice);
+    }
+
+    public String CreateRandomAudioFileName(int string) {
+        StringBuilder stringBuilder = new StringBuilder(string);
+        int i = 0;
+        while (i < string) {
+            stringBuilder.append(RandomAudioFileName.
+                    charAt(random.nextInt(RandomAudioFileName.length())));
+
+            i++;
+        }
+        return stringBuilder.toString();
+    }
+
+    private void requestPermission() {
+        ActivityCompat.requestPermissions(ChatListAc.this, new
+                String[]{WRITE_EXTERNAL_STORAGE, RECORD_AUDIO}, RequestPermissionCode);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case RequestPermissionCode:
+                if (grantResults.length > 0) {
+                    boolean StoragePermission = grantResults[0] ==
+                            PackageManager.PERMISSION_GRANTED;
+                    boolean RecordPermission = grantResults[1] ==
+                            PackageManager.PERMISSION_GRANTED;
+
+                    if (StoragePermission && RecordPermission) {
+                        Toast.makeText(ChatListAc.this, "Permission Granted",
+                                Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(ChatListAc.this, "Permission", Toast.LENGTH_LONG).show();
+                    }
+                }
+                break;
+        }
+    }
+
+    public boolean checkPermission() {
+        int result = ContextCompat.checkSelfPermission(getApplicationContext(),
+                WRITE_EXTERNAL_STORAGE);
+        int result1 = ContextCompat.checkSelfPermission(getApplicationContext(),
+                RECORD_AUDIO);
+        return result == PackageManager.PERMISSION_GRANTED &&
+                result1 == PackageManager.PERMISSION_GRANTED;
     }
 
 

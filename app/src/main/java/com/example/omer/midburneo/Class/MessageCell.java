@@ -8,17 +8,27 @@ public class MessageCell {
     String StringSender;
     String image;
     Boolean isSender;
+    String messageRecord;
 
 
-    public MessageCell(String messageSender, String messageText, String messageDateTime, Boolean isSender, String image, String StringSender){
+
+    public MessageCell(String messageSender, String messageText, String messageDateTime, Boolean isSender, String image, String StringSender, String messageRecord){
         this.messageSender = messageSender;
         this.messageText = messageText;
         this.messageDateTime = messageDateTime;
         this.isSender = isSender;
         this.image = image;
         this.StringSender = StringSender;
+        this.messageRecord = messageRecord;
     }
 
+    public String getMessageRecord() {
+        return messageRecord;
+    }
+
+    public void setMessageRecord(String messageRecord) {
+        this.messageRecord = messageRecord;
+    }
 
     public String getStringSender() {
         return StringSender;

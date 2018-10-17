@@ -159,101 +159,92 @@ public class ChatAc extends AppCompatActivity {
                         getUidUsers = ds.getKey();
 
 
-                        if (countSqlLite < FBCount) {
-
-                            getNameReceiver = ds.child(FeedReaderContract.FeedEntry.NAME).getValue(String.class);
-                            get_image = ds.child(FeedReaderContract.FeedEntry.IMAGE).getValue(String.class);
-                            get_lastmsg = ds.child(FeedReaderContract.FeedEntry.LASTMSG).getValue(String.class);
-                            get_phone = ds.child(FeedReaderContract.FeedEntry.PHONE).getValue(String.class);
-                            get_device = ds.child(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID).getValue(String.class);
-                            get_chat = ds.child(FeedReaderContract.FeedEntry.CHAT).getValue(String.class);
-                            get_token = ds.child(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN).getValue(String.class);
-                            getUidUsers = ds.getKey();
+                        getNameReceiver = ds.child(FeedReaderContract.FeedEntry.NAME).getValue(String.class);
+                        get_image = ds.child(FeedReaderContract.FeedEntry.IMAGE).getValue(String.class);
+                        get_lastmsg = ds.child(FeedReaderContract.FeedEntry.LASTMSG).getValue(String.class);
+                        get_phone = ds.child(FeedReaderContract.FeedEntry.PHONE).getValue(String.class);
+                        get_device = ds.child(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID).getValue(String.class);
+                        get_chat = ds.child(FeedReaderContract.FeedEntry.CHAT).getValue(String.class);
+                        get_token = ds.child(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN).getValue(String.class);
+                        getUidUsers = ds.getKey();
 
 
-                            Boolean CheckUidEx;
+                        Boolean CheckUidEx;
 
-                            String getMyKeyMsg = UUID.randomUUID().toString();
+                        String getMyKeyMsg = UUID.randomUUID().toString();
 
-                            try {
-                                CheckUidEx = ds.child(current_uid).exists();
-                                if (CheckUidEx.equals(false)) {
+                        try {
+                            CheckUidEx = ds.child(current_uid).exists();
+                            if (CheckUidEx.equals(false)) {
 
-                                    if (getNameReceiver.equals(firebaseUserModel.getCamp())) {
-                                        getMyKeyMsg = get_chat;
-                                        saveUserChatFirebase(getMyKeyMsg);
-
-                                    } else {
-                                        saveUserChatFirebase(getMyKeyMsg);
-
-
-                                    }
-
+                                if (getNameReceiver.equals(firebaseUserModel.getCamp())) {
+                                    getMyKeyMsg = get_chat;
+                                    saveUserChatFirebase(getMyKeyMsg);
 
                                 } else {
-                                    getMyKeyMsg = ds.child(current_uid).getValue(String.class);
+                                    saveUserChatFirebase(getMyKeyMsg);
 
                                 }
-                            } catch (Exception e) {
+
+
+                            } else {
+                                getMyKeyMsg = ds.child(current_uid).getValue(String.class);
 
                             }
+                        } catch (Exception e) {
+
+                        }
 
 
-                            try {
+                        try {
 
-                                Boolean check = query(getUidUsers, FeedReaderContract.FeedEntry.UID);
+                            Boolean check = query(getUidUsers, FeedReaderContract.FeedEntry.UID);
 
-                                if (getUidUsers.equals(firebaseUserModel.getChat())) {
+                            if (getUidUsers.equals(firebaseUserModel.getChat())) {
 
-                                    if (check.equals(false)){
-                                        getMyKeyMsg = get_chat;
+                                if (check.equals(false)) {
+                                    getMyKeyMsg = get_chat;
+                                    dbHelper.SaveDBSqliteUser(getNameReceiver, firebaseUserModel.getCamp(), getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
+
+                                }
+
+
+                            } else {
+                                if (check.equals(false)) {
+                                    if (!current_uid.equals(getUidUsers)) {
                                         dbHelper.SaveDBSqliteUser(getNameReceiver, firebaseUserModel.getCamp(), getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
 
                                     }
 
+                                }
 
-                                } else {
+
+                            }
+
+
+                        } catch (NullPointerException e) {
+                            e.printStackTrace();
+                        }
+
+
+                        if (getUidUsers.equals(current_uid)) {
+
+                            Boolean CheckUid = ds.child(FeedReaderContract.FeedEntry.GROUP).exists();
+
+                            if (CheckUid.equals(true)) {
+
+
+                                for (DataSnapshot dataSnapshot1 : ds.child(FeedReaderContract.FeedEntry.GROUP).getChildren()) {
+
+                                    String key = dataSnapshot1.getKey();
+                                    String nameGroup = String.valueOf(dataSnapshot1.getValue());
+
+                                    Boolean check = query(key, FeedReaderContract.FeedEntry.CHAT_ROOMS);
+
                                     if (check.equals(false)) {
-                                        if (!current_uid.equals(getUidUsers)){
-                                            dbHelper.SaveDBSqliteUser(getNameReceiver, firebaseUserModel.getCamp(), getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
 
-                                        }
-
-                                    }
-
-
-                                }
-
-
-                            } catch (NullPointerException e) {
-                                e.printStackTrace();
-                            }
-
-
-                        } else {
-
-                            if (getUidUsers.equals(current_uid)) {
-
-                                Boolean CheckUid = ds.child(FeedReaderContract.FeedEntry.GROUP).exists();
-
-                                if (CheckUid.equals(true)) {
-
-
-
-                                    for (DataSnapshot dataSnapshot1 : ds.child(FeedReaderContract.FeedEntry.GROUP).getChildren()) {
-
-                                        String key = dataSnapshot1.getKey();
-                                        String nameGroup = String.valueOf(dataSnapshot1.getValue());
-
-                                        Boolean check =  query(key, FeedReaderContract.FeedEntry.CHAT_ROOMS);
-
-                                        if (check.equals(false)) {
-
-                                            get_image = "default";
-                                            dbHelper.SaveDBSqliteUser(nameGroup, firebaseUserModel.getCamp(), current_uid, get_image, "default", "default", "default", "default", key);
-
-
-                                        }
+                                        get_image = "default";
+                                        dbHelper.SaveDBSqliteUser(nameGroup, firebaseUserModel.getCamp(), current_uid, get_image, "default", "default", "default", "default", key);
 
 
                                     }
@@ -261,7 +252,9 @@ public class ChatAc extends AppCompatActivity {
 
                                 }
 
+
                             }
+
                         }
 
 

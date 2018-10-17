@@ -7,8 +7,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.v7.widget.CardView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,11 +26,21 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.omer.midburneo.Class.FirebaseMessageModel;
+import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.R;
 import com.example.omer.midburneo.Class.MessageCell;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageMetadata;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Random;
 
@@ -39,6 +53,13 @@ public class MessagesListAdapter extends ArrayAdapter<MessageCell> {
     public static int VIEW_TYPE = 0;
     public static int VIEW_TYPE_PICTURE = 0;
     public String randomNumString;
+    private CardView cardView;
+    private StorageReference mImageStorage, filePath;
+    private DatabaseReference ref;
+    private Uri uriPath;
+    private File fileFromFirebase;
+
+
 
     public MessagesListAdapter(Context context, MessageCell[] resource) {
         super(context, R.layout.message_cell, resource);
@@ -56,102 +77,180 @@ public class MessagesListAdapter extends ArrayAdapter<MessageCell> {
 
 
         if (cellItem[position].getSender()) {
-                VIEW_TYPE=0;
+            VIEW_TYPE = 0;
 
-                convertView = inflater.inflate(R.layout.message_cell_sender, parent, false);
+            convertView = inflater.inflate(R.layout.message_cell_sender, parent, false);
 
-            } else {
-                VIEW_TYPE=1;
+        } else {
+            VIEW_TYPE = 1;
 
-                convertView = inflater.inflate(R.layout.message_cell, parent, false);
+            convertView = inflater.inflate(R.layout.message_cell, parent, false);
 
-            }
+        }
         TextView nameSenderTv = (TextView) convertView.findViewById(R.id.tvNameItemMsg);
         TextView messageTv = (TextView) convertView.findViewById(R.id.tvContentItemMsg);
         TextView dateTimeTv = (TextView) convertView.findViewById(R.id.dateTimeItemMsg);
-        Button btnRecod = (Button)convertView.findViewById(R.id.btnRecordItemMsg);
+        Button btnRecod = (Button) convertView.findViewById(R.id.btnRecordItemMsg);
         ImageView imageView = (ImageView) convertView.findViewById(R.id.imageItemMsg);
+        cardView = (CardView) convertView.findViewById(R.id.cardViewMessageCell);
+
 
         String image = cellItem[position].getImage();
         String msg = cellItem[position].getMessageText();
 
         String sender = cellItem[position].getStringSender();
+        String record = cellItem[position].getMessageRecord();
+
+        filePath = FirebaseStorage.getInstance().getReference();
 
 
-       // /String omer = firebaseMessageModel.getStatus();
-//        Log.e(sender,omer);
-
-        if (VIEW_TYPE == 0){
-
-            if (image.equals("default")){
-
-                messageTv.setText(cellItem[position].getMessageText());
-                dateTimeTv.setText(cellItem[position].getMessageDateTime());
-                imageView.setVisibility(View.GONE);
-                btnRecod.setVisibility(View.GONE);
-                nameSenderTv.setVisibility(View.GONE);
-
-            }else {
-
-                if (msg.equals("")){
-                    dateTimeTv.setText(cellItem[position].getMessageDateTime());
-                    Glide.with(context).load(cellItem[position].getImage()).into(imageView);
-                    messageTv.setVisibility(View.GONE);
-                    btnRecod.setVisibility(View.GONE);
-                    nameSenderTv.setVisibility(View.GONE);
-
-                }else{
-                    messageTv.setText(cellItem[position].getMessageText());
-                    dateTimeTv.setText(cellItem[position].getMessageDateTime());
-                    Glide.with(context).load(cellItem[position].getImage()).into(imageView);
-                    btnRecod.setVisibility(View.GONE);
-                    nameSenderTv.setVisibility(View.GONE);
-
-                }
-
-
-            }
-
-
-
-        }else {
-
-            if (image.equals("default")){
-
-
-                nameSenderTv.setText(cellItem[position].getMessageSender());
-                messageTv.setText(cellItem[position].getMessageText());
-                dateTimeTv.setText(cellItem[position].getMessageDateTime());
-                imageView.setVisibility(View.GONE);
-                btnRecod.setVisibility(View.GONE);
-
-            }else {
-
-                if (msg.equals("")){
-                    nameSenderTv.setText(cellItem[position].getMessageSender());
-                    messageTv.setVisibility(View.GONE);
-                    dateTimeTv.setText(cellItem[position].getMessageDateTime());
-                    Glide.with(context).load(cellItem[position].getImage()).into(imageView);
-                    btnRecod.setVisibility(View.GONE);
-
-                }else{
-                    nameSenderTv.setText(cellItem[position].getMessageSender());
-                    messageTv.setText(cellItem[position].getMessageText());
-                    dateTimeTv.setText(cellItem[position].getMessageDateTime());
-                    Glide.with(context).load(cellItem[position].getImage()).into(imageView);
-                    btnRecod.setVisibility(View.GONE);
-
-                }
-
-
-            }
-
-
+        if (!record.equals("dafault")) {
 
 
 
         }
 
+
+        // /String omer = firebaseMessageModel.getStatus();
+//        Log.e(sender,omer);
+
+        if (VIEW_TYPE == 0) {
+
+            if (image.equals("default")) {
+
+                if (record.equals("default")) {
+                    messageTv.setText(cellItem[position].getMessageText());
+                    dateTimeTv.setText(cellItem[position].getMessageDateTime());
+                    imageView.setVisibility(View.GONE);
+                    btnRecod.setVisibility(View.GONE);
+                    nameSenderTv.setVisibility(View.GONE);
+                } else {
+
+                    dateTimeTv.setText(cellItem[position].getMessageDateTime());
+                    imageView.setVisibility(View.GONE);
+                    messageTv.setVisibility(View.GONE);
+                    btnRecod.setText(cellItem[position].getMessageText());
+                    nameSenderTv.setVisibility(View.GONE);
+                }
+
+
+            } else {
+
+                if (msg.equals("")) {
+                    dateTimeTv.setText(cellItem[position].getMessageDateTime());
+                    Glide.with(context).load(cellItem[position].getImage()).into(imageView);
+                    messageTv.setVisibility(View.GONE);
+                    btnRecod.setVisibility(View.GONE);
+                    nameSenderTv.setVisibility(View.GONE);
+
+                } else {
+                    messageTv.setText(cellItem[position].getMessageText());
+                    dateTimeTv.setText(cellItem[position].getMessageDateTime());
+                    Glide.with(context).load(cellItem[position].getImage()).into(imageView);
+                    btnRecod.setVisibility(View.GONE);
+                    nameSenderTv.setVisibility(View.GONE);
+
+                }
+
+
+            }
+
+
+        } else {
+
+            if (image.equals("default")) {
+
+
+                if (record.equals("default")) {
+                    nameSenderTv.setText(cellItem[position].getMessageSender());
+                    messageTv.setText(cellItem[position].getMessageText());
+                    dateTimeTv.setText(cellItem[position].getMessageDateTime());
+                    imageView.setVisibility(View.GONE);
+                    btnRecod.setVisibility(View.GONE);
+                } else {
+                    nameSenderTv.setText(cellItem[position].getMessageSender());
+                    dateTimeTv.setText(cellItem[position].getMessageDateTime());
+                    imageView.setVisibility(View.GONE);
+                    messageTv.setVisibility(View.GONE);
+                    btnRecod.setText(cellItem[position].getMessageRecord());
+                }
+
+
+            } else {
+
+                if (msg.equals("")) {
+                    nameSenderTv.setText(cellItem[position].getMessageSender());
+                    messageTv.setVisibility(View.GONE);
+                    dateTimeTv.setText(cellItem[position].getMessageDateTime());
+                    Glide.with(context).load(cellItem[position].getImage()).into(imageView);
+                    btnRecod.setVisibility(View.GONE);
+
+                } else {
+                    nameSenderTv.setText(cellItem[position].getMessageSender());
+                    messageTv.setText(cellItem[position].getMessageText());
+                    dateTimeTv.setText(cellItem[position].getMessageDateTime());
+                    Glide.with(context).load(cellItem[position].getImage()).into(imageView);
+                    btnRecod.setVisibility(View.GONE);
+
+                }
+
+
+            }
+
+
+        }
+
+
+        btnRecod.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+
+                if (!cellItem[position].getMessageRecord().equals("default")) {
+
+
+
+                    filePath.child(record).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+
+                            uriPath = uri;
+                            // fileFromFirebase = new File(uriPath.getPath());
+
+                            Toast.makeText(context, "3", Toast.LENGTH_LONG).show();
+                            MediaPlayer mediaPlayer = new MediaPlayer();
+
+                            try {
+                                mediaPlayer.setDataSource(context,uriPath);
+                                mediaPlayer.prepare();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            mediaPlayer.start();
+
+
+
+
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            Log.e("fffffffff3", String.valueOf(exception));
+                        }
+                    });
+
+
+
+                } else if (!cellItem[position].getImage().equals("default")) {
+
+
+                } else {
+
+                }
+
+            }
+        });
 
 
         convertView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -168,8 +267,8 @@ public class MessagesListAdapter extends ArrayAdapter<MessageCell> {
                     }
                 });
 
-                    String img = cellItem[position].getImage();
-                if (!img.equals("default")){
+                String img = cellItem[position].getImage();
+                if (!img.equals("default")) {
                     alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "הורד תמונה", new DialogInterface.OnClickListener() {
 
                         public void onClick(DialogInterface dialog, int id) {
@@ -177,7 +276,7 @@ public class MessagesListAdapter extends ArrayAdapter<MessageCell> {
                             Glide.with(context)
                                     .asBitmap()
                                     .load(img)
-                                    .into(new SimpleTarget<Bitmap>(100,100) {
+                                    .into(new SimpleTarget<Bitmap>(100, 100) {
                                         @Override
                                         public void onResourceReady(Bitmap resource, Transition<? super Bitmap> transition) {
                                             saveImage(resource);
@@ -207,8 +306,6 @@ public class MessagesListAdapter extends ArrayAdapter<MessageCell> {
                 return false;
             }
         });
-
-
 
 
         return convertView;
@@ -259,5 +356,6 @@ public class MessagesListAdapter extends ArrayAdapter<MessageCell> {
 
 
     }
+
 
 }

@@ -16,6 +16,8 @@
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
 
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
     <uses-feature
         android:name="android.hardware.camera2"
         android:required="true" />
@@ -180,6 +182,13 @@
 
         </activity>
 
+        <receiver android:name=".AlarmReceiver"
+            android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
 
         <service android:name=".Service.MyFirebaseInstanceIdService">
             <intent-filter>
@@ -191,6 +200,7 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
 
         <meta-data
             android:name="firebase_messaging_auto_init_enabled"

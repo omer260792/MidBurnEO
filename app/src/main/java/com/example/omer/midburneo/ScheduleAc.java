@@ -4,6 +4,9 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
+import android.os.Build;
+import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -32,7 +35,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR;
 import static com.example.omer.midburneo.RegisterAc.prefs;
 import static com.example.omer.midburneo.Tabs.MainPageAc.SHPRF;
@@ -46,7 +52,7 @@ public class ScheduleAc extends AppCompatActivity {
     private ArrayList<EventDay> mEventDays = new ArrayList<>();
     public DBHelper dbHelper;
     public SQLiteDatabase db;
-    public String msg, sender, time, msgUid, current_uid,current_time,current_camp, current_admin, uid_msg, msg_sender, setTime, count, name_sender,image;
+    public String msg, sender, time, msgUid, current_uid, current_time, current_camp, current_admin, uid_msg, msg_sender, setTime, count, name_sender, image;
     public Calendar calendar;
     public MyEventDay myEventDay;
     public long countSqlLite;
@@ -121,7 +127,6 @@ public class ScheduleAc extends AppCompatActivity {
             mCalendarView.setEvents(mEventDays);
 
 
-
         }
     }
 
@@ -129,7 +134,7 @@ public class ScheduleAc extends AppCompatActivity {
 
 
         long currentDateTime = System.currentTimeMillis();
-        DateFormat getTimeHourMintus = new SimpleDateFormat("dd MMMM yyyy");
+        DateFormat getTimeHourMintus = new SimpleDateFormat("dd MMMM yyyy", Locale.ENGLISH);
 
         String realTime = getTimeHourMintus.format(currentDateTime);
 
@@ -141,7 +146,6 @@ public class ScheduleAc extends AppCompatActivity {
     }
 
     private void previewNote(EventDay eventDay) {
-        Log.i("ssssssssssss", "previewNote");
 
         Intent intent = new Intent(this, NotePreviewActivity.class);
         if (eventDay instanceof MyEventDay) {
@@ -175,7 +179,6 @@ public class ScheduleAc extends AppCompatActivity {
         discussionRoomsRef = rootRef.child("Camps").child(firebaseUserModel.getCamp()).child("Calendar");
 
         if (countSqlLite == 0) {
-
 
 
             getCalnderFromFireBase();
@@ -216,20 +219,32 @@ public class ScheduleAc extends AppCompatActivity {
                 Calendar cal = Calendar.getInstance();
                 Calendar cal1 = Calendar.getInstance();
 
-                @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+                SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy", Locale.ENGLISH);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                    try {
+                        cal.setTime(sdf.parse(time));// all done
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                } else {
+                    Date date = null;
+                    try {
+                        date = sdf.parse(time);
+                        cal.setTime(date);// all done
+
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                }
 
 
                 long currentDateTime = System.currentTimeMillis();
                 String timeCurrent = String.valueOf(currentDateTime);
                 //String realTime = sdf.format(time);
-
-
-                try {
-                    cal.setTime(sdf.parse(time));// all done
-                    cal1.setTimeInMillis(currentDateTime);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+                cal1.setTimeInMillis(currentDateTime);
 
                 myEventDay = new MyEventDay(cal, R.drawable.ic_send, msg);
 
@@ -263,7 +278,6 @@ public class ScheduleAc extends AppCompatActivity {
                 current_admin = dataSnapshot.child("admin").getValue().toString();
 
 
-
                 UpdateSqliteFromFireBaseCalendar();
 
             }
@@ -284,29 +298,37 @@ public class ScheduleAc extends AppCompatActivity {
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     long FBCount = dataSnapshot.getChildrenCount();
 
-                    if (countSqlLite < FBCount) {
-                        msg = ds.child("message").getValue(String.class);
-                        msg_sender = ds.child("message_sender").getValue(String.class);
-                        time = ds.child("time").getValue(String.class);
-                        setTime = ds.child("timeSet").getValue(String.class);
-                        name_sender = ds.child("name").getValue(String.class);
-                        image = ds.child("image").getValue(String.class);
-                        uid_msg = ds.getKey();
 
-                        Boolean tagUserGroup = ds.child(FeedReaderContract.FeedEntry.TAG_USER).exists();
-                        if (tagUserGroup.equals(false)){
-                            dbHelper.SaveDBSqliteToCalendar(msg, msg_sender, time, uid_msg, setTime,name_sender,image);
+                    msg = ds.child("message").getValue(String.class);
+                    msg_sender = ds.child("message_sender").getValue(String.class);
+                    time = ds.child("time").getValue(String.class);
+                    setTime = ds.child("timeSet").getValue(String.class);
+                    name_sender = ds.child("name").getValue(String.class);
+                    image = ds.child("image").getValue(String.class);
+                    uid_msg = ds.getKey();
 
-                        }
-
-                        Boolean tagUser = ds.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
-                        if (tagUser.equals(true)){
-                            dbHelper.SaveDBSqliteToCalendar(msg, msg_sender, time, uid_msg, setTime,name_sender,image);
+                    Boolean tagUserGroup = ds.child(FeedReaderContract.FeedEntry.TAG_USER).exists();
+                    if (tagUserGroup.equals(false)) {
+                        Boolean check = query(setTime, FeedReaderContract.FeedEntry.TIME__SET);
+                        if (check.equals(false)){
+                            dbHelper.SaveDBSqliteToCalendar(msg, msg_sender, time, uid_msg, setTime, name_sender, image);
 
                         }
 
-                        getCalendarPickerView();
                     }
+
+                    Boolean tagUser = ds.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
+                    if (tagUser.equals(true)) {
+
+                        Boolean check = query(setTime, FeedReaderContract.FeedEntry.TIME__SET);
+                        if (check.equals(false)){
+                            dbHelper.SaveDBSqliteToCalendar(msg, msg_sender, time, uid_msg, setTime, name_sender, image);
+
+                        }
+                    }
+
+                    getCalendarPickerView();
+
 
                 }
 
@@ -329,7 +351,7 @@ public class ScheduleAc extends AppCompatActivity {
 
         try {
 
-            SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy", Locale.ENGLISH);
             String realTime = sdf.format(currentDateTime);
 
             cal.setTime(sdf.parse(realTime));
@@ -341,5 +363,38 @@ public class ScheduleAc extends AppCompatActivity {
 
 
     }
+
+    private Boolean query(String selectionArgss, String selectio) {
+
+
+        String[] projection = {
+                BaseColumns._ID,
+                FeedReaderContract.FeedEntry.MESSAGE,
+                FeedReaderContract.FeedEntry.MESSAGE_SENDER,
+                FeedReaderContract.FeedEntry.TIME,
+                FeedReaderContract.FeedEntry.MESSAGE_UID,
+                FeedReaderContract.FeedEntry.TIME__SET,
+                FeedReaderContract.FeedEntry.NAME,
+                FeedReaderContract.FeedEntry.IMAGE
+        };
+
+        String selection = selectio + " = ?";
+        String[] selectionArgs = {selectionArgss};
+
+        SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
+        builder.setTables(TABLE_NAME_CALENDAR);
+
+        Cursor cursor = builder.query(dbHelper.getReadableDatabase(),
+                projection, selection, selectionArgs, null, null, null);
+
+        if (cursor == null) {
+            return null;
+        } else if (!cursor.moveToFirst()) {
+            cursor.close();
+            return false;
+        }
+        return true;
+    }
+
 
 }

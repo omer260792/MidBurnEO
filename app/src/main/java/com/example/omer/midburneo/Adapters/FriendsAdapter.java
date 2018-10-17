@@ -194,7 +194,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                 Picasso.get().load(friend.getImage()).resize(300, 300).error(R.drawable.midburn_logo).into(imgPopUp);
 
             } catch (NullPointerException e) {
-                Picasso.get().load(R.drawable.midburn_logo).resize(100, 100).error(R.drawable.midburn_logo).into(imgPopUp);
+                Picasso.get().load(R.drawable.midburn_logo).resize(100, 200).error(R.drawable.midburn_logo).into(imgPopUp);
             }
             tvCampPopUp.setText(friend.getCamp());
             tvNamePopUp.setText(friend.getName());

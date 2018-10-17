@@ -39,9 +39,11 @@ public class PopUpUser extends AppCompatActivity {
         txtclose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                myDialog.dismiss();
 
                 Intent intent = new Intent(PopUpUser.this, ChatAc.class);
                 startActivity(intent);
+
             }
         });
         myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));

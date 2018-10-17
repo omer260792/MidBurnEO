@@ -24,6 +24,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR;
@@ -426,7 +427,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return msgNoteList;
     }
 
-    public ArrayList<Calendar> getAllCalnderNotePreview(String time) {
+    public ArrayList<Calendar> getAllCalnderNotePreview(String timeCalnder) {
 
         ArrayList<Calendar> calendarArrayList = new ArrayList<>();
 
@@ -444,14 +445,13 @@ public class DBHelper extends SQLiteOpenHelper {
                 FeedReaderContract.FeedEntry.MESSAGE_UID,
                 FeedReaderContract.FeedEntry.TIME__SET,
                 FeedReaderContract.FeedEntry.NAME,
-                FeedReaderContract.FeedEntry.IMAGE,
-                FeedReaderContract.FeedEntry.GROUP
+                FeedReaderContract.FeedEntry.IMAGE
 
 
         };
 
         String selection = FeedReaderContract.FeedEntry.TIME + " = ?";
-        String[] selectionArgs = {time};
+        String[] selectionArgs = {timeCalnder};
 
         String sortOrder =
                 FeedReaderContract.FeedEntry.TIME__SET + " DESC";
@@ -466,7 +466,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 sortOrder               // The sort order
         );
 
-        Log.e(TAG + " Read", String.valueOf(cursor.getColumnCount()));
+        Log.e(TAG + " Read", String.valueOf(timeCalnder));
         Log.e(TAG + " Read", String.valueOf(cursor.getColumnNames()));
         Log.e(TAG + " Read", String.valueOf(cursor.getCount()));
 
@@ -474,32 +474,33 @@ public class DBHelper extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
 
+                String time = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
 
-                String msg = calendar.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE)));
-                String senderUid = calendar.setSender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
-                time = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME));
-                String messageUid = calendar.setMsguid(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
-                String timeSetString = calendar.setTimeSet(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME__SET)));
-                String nameSender = calendar.setName(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.NAME)));
-                String image = calendar.setImage(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.IMAGE)));
-                String countSetString = calendar.setCountRaw(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID)));
+                if (time.equals(timeCalnder)){
 
-
-                long timeSetLong = (Long.parseLong(timeSetString));
-                DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm");
-                timeSetString = getTimeHourMintus.format(timeSetLong);
-
-                String timeSet = calendar.setTimeSet(timeSetString);
-                String timeSets = calendar.setTime(time);
-
-                Log.e(TAG + "Read", msg);
-                Log.e(TAG + "Reaeeeeeeed", countSetString);
-                Log.e(TAG + "Read", time);
-                Log.e(TAG + "Read", timeSet);
-                Log.e(TAG + "Read", timeSets);
+                    String msg = calendar.setMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE)));
+                    String senderUid = calendar.setSender(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_SENDER)));
+                    String messageUid = calendar.setMsguid(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
+                    String timeSetString = cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.TIME__SET));
+                    String nameSender = calendar.setName(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.NAME)));
+                    String image = calendar.setImage(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.IMAGE)));
+                    String countSetString = calendar.setCountRaw(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID)));
 
 
-                calendarArrayList.add(calendar);
+                    long timeSetLong = (Long.parseLong(timeSetString));
+                    DateFormat getTimeHourMintus = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
+                    timeSetString = getTimeHourMintus.format(timeSetLong);
+
+                    String timeSet = calendar.setTimeSet(timeSetString);
+                    String timeSets = calendar.setTime(time);
+
+                    Log.e(TAG + " Readdddddd", String.valueOf(timeSet));
+                    Log.e(TAG + " Readdddddd", String.valueOf(timeSets));
+
+
+                    calendarArrayList.add(calendar);
+
+                }
 
 
             } while (cursor.moveToNext());

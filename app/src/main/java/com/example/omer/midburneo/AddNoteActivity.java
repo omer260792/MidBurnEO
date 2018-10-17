@@ -1,11 +1,14 @@
 package com.example.omer.midburneo;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -13,19 +16,23 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
 
 import com.example.omer.midburneo.Class.FeedReaderContract;
+import com.example.omer.midburneo.Class.LocalData;
 import com.example.omer.midburneo.DataBase.DBHelper;
+import com.example.omer.midburneo.Tabs.ChatListAc;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -39,14 +46,26 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.RequestParams;
+import com.loopj.android.http.TextHttpResponseHandler;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+
+import cz.msebera.android.httpclient.HttpHeaders;
+import cz.msebera.android.httpclient.entity.StringEntity;
 
 import static com.example.omer.midburneo.NotePreviewActivity.getFormattedDate;
 import static com.example.omer.midburneo.RegisterAc.CAMERA;
@@ -72,16 +91,27 @@ public class AddNoteActivity extends AppCompatActivity {
     private StorageReference mImageStorage, filePath;
     private ProgressDialog mprogress;
     public EditText noteEditText;
+    private SwitchCompat timerSwitchCalEdit;
+    private Boolean boolSwitch = true;
 
 
     private Uri resultUri;
 
-    String[] listItems;
-    String[] listItemsKey;
+    public String[] listItems, listItemsKey, tokenItems;
+
     boolean[] checkedItems;
     ArrayList<Integer> mUserItems = new ArrayList<>();
     Map<String, Object> stringObjectHashMap = new HashMap<>();
     private int num = 1;
+
+
+    ////////444444444444
+    String TAG = "RemindMe";
+    LocalData localData;
+    LinearLayout ll_set_time, ll_terms;
+    int hour, min;
+    ClipboardManager myClipboard;
+    private JSONArray registration_ids = new JSONArray();
 
 
 
@@ -98,18 +128,47 @@ public class AddNoteActivity extends AppCompatActivity {
         mprogress = new ProgressDialog(this);
 
 
-        Button button = (Button) findViewById(R.id.addNoteButton);
+        Button button = (Button) findViewById(R.id.addNoteButtonCalEdit);
         BtnTimeNoteEdit = findViewById(R.id.BtnTimeNoteEdit);
         addBtnDateCalEdit = findViewById(R.id.addBtnDateCalEdit);
         addBtnLoctionCalEdit = findViewById(R.id.addBtnLoctionCalEdit);
         addBtnfirendCalEdit = findViewById(R.id.addBtnfirendCalEdit);
+        timerSwitchCalEdit = (SwitchCompat) findViewById(R.id.timerSwitchCalEdit);
 
-       noteEditText = (EditText) findViewById(R.id.noteEditText);
+        noteEditText = (EditText) findViewById(R.id.noteEditText);
 
         String currentTimeIntent = getIntent().getStringExtra("currentDate");
 
         getNameUserFromFireBase();
 
+        ////4444444444444444444
+        localData = new LocalData(getApplicationContext());
+        myClipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+//        hour = localData.get_hour();
+//        min = localData.get_min();
+
+//        if (!localData.getReminderStatus())
+//            ll_set_time.setAlpha(0.4f);
+        timerSwitchCalEdit.setChecked(localData.getReminderStatus());
+
+
+        timerSwitchCalEdit.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                localData.setReminderStatus(isChecked);
+                if (isChecked) {
+                    Log.d(TAG, "onCheckedChanged: true");
+                    NotificationScheduler.setReminder(AddNoteActivity.this, AlarmReceiver.class, localData.get_hour(), localData.get_min());
+                    boolSwitch = true;
+
+                } else {
+                    Log.d(TAG, "onCheckedChanged: false");
+                    NotificationScheduler.cancelReminder(AddNoteActivity.this, AlarmReceiver.class);
+                    boolSwitch = false;
+                }
+
+            }
+        });
 
         addBtnLoctionCalEdit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -175,6 +234,11 @@ public class AddNoteActivity extends AppCompatActivity {
                             c.set(Calendar.DAY_OF_MONTH, view.getDayOfMonth());
 
 
+                        }else {
+                            c.set(Calendar.YEAR, view.getYear());
+                            c.set(Calendar.MONTH, view.getMonth());
+                            c.set(Calendar.DAY_OF_MONTH, view.getDayOfMonth());
+
                         }
                     }
                 }, year, month, day);
@@ -196,7 +260,11 @@ public class AddNoteActivity extends AppCompatActivity {
                 mTimeSetListener = new TimePickerDialog(AddNoteActivity.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
-                        // eReminderTime.setText( selectedHour + ":" + selectedMinute);
+
+
+                        localData.set_hour(selectedHour);
+                        localData.set_min(selectedMinute);
+                        getFormatedTime(selectedHour, selectedMinute);
 
                         Calendar cal = Calendar.getInstance();
 
@@ -204,9 +272,13 @@ public class AddNoteActivity extends AppCompatActivity {
                             cal.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
                             cal.set(Calendar.MINUTE, timePicker.getMinute());
 
+
                             timeMili = cal.getTimeInMillis();
                             timeMilliString = String.valueOf(timeMili);
 
+                        }else {
+                            timeMili = cal.getTimeInMillis();
+                            timeMilliString = String.valueOf(timeMili);
                         }
 
                     }
@@ -252,8 +324,12 @@ public class AddNoteActivity extends AppCompatActivity {
 
                             String listItemString = listItems[mUserItems.get(i)];
                             String listItemKeyString = listItemsKey[mUserItems.get(i)];
+                            String listItemPushString = tokenItems[mUserItems.get(i)];
 
                             stringObjectHashMap.put(listItemKeyString, listItemString);
+
+                            registration_ids.put(listItemPushString);
+
 
                             item = item + listItems[mUserItems.get(i)];
 
@@ -303,7 +379,11 @@ public class AddNoteActivity extends AppCompatActivity {
                 } else {
                     imgUpload();
 
-                    if (num == 1){
+                    String etString = noteEditText.getText().toString();
+                    localData.setTitlePush("התראת פגישה ");
+                    localData.setBodyPush(etString);
+
+                    if (num == 1) {
                         for (int i = 0; i < checkedItems.length; i++) {
                             checkedItems[i] = true;
 
@@ -314,16 +394,29 @@ public class AddNoteActivity extends AppCompatActivity {
 
                             String listItemString = listItems[mUserItems.get(i)];
                             String listItemKeyString = listItemsKey[mUserItems.get(i)];
+                            String listItemPushString = tokenItems[mUserItems.get(i)];
 
                             stringObjectHashMap.put(listItemKeyString, listItemString);
 
                             stringObjectHashMap.put(current_uid, firebaseUserModel.getName());
 
-                            item = item + listItems[mUserItems.get(i)];
+                            registration_ids.put(listItemPushString);
+                            hideKeyboard();
+//                            pushNotification();
+//                            if (boolSwitch.equals(true)){
+//                                NotificationScheduler.setReminder(AddNoteActivity.this, AlarmReceiver.class, localData.get_hour(), localData.get_min());
+//
+//                            }
 
-                            if (i != mUserItems.size() - 1) {
-                                item = item + ", ";
-                            }
+                        }
+
+                    }
+                    if (registration_ids != null){
+                        pushNotification();
+
+                        if (boolSwitch.equals(true)){
+                            NotificationScheduler.setReminder(AddNoteActivity.this, AlarmReceiver.class, localData.get_hour(), localData.get_min());
+
                         }
 
                     }
@@ -349,6 +442,12 @@ public class AddNoteActivity extends AppCompatActivity {
                     prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
                     prefs.edit().putString("time_calendar", calendar).apply();
 
+
+
+
+
+                     NotificationScheduler.setReminder(getBaseContext(), AlarmReceiver.class, localData.get_hour(), localData.get_min());
+
                     setResult(Activity.RESULT_OK, returnIntent);
                     finish();
 
@@ -371,7 +470,7 @@ public class AddNoteActivity extends AppCompatActivity {
             mapCampsUpdates.put(FeedReaderContract.FeedEntry.NAME, name);
             mapCampsUpdates.put(FeedReaderContract.FeedEntry.IMAGE, image);
 
-            if (num == 2){
+            if (num == 2) {
                 mapCampsUpdates.put(FeedReaderContract.FeedEntry.TAG_USER, stringObjectHashMap);
 
             }
@@ -381,6 +480,136 @@ public class AddNoteActivity extends AppCompatActivity {
 
         }
 
+    }
+
+
+    public void getNameUserFromFireBase() {
+
+
+        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference discussionRoomsRef = rootRef.child("Users");
+
+        String chatUid = firebaseUserModel.getChat();
+
+        Query query = discussionRoomsRef.orderByChild("chat").equalTo(chatUid);
+        ValueEventListener valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                ArrayList<String> contactsArray = new ArrayList<>();
+                ArrayList<String> keyArray = new ArrayList<>();
+                ArrayList<String> tokenArray = new ArrayList<>();
+
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+
+                    String key = ds.getKey();
+
+                    if (!key.equals(firebaseUserModel.getChat())) {
+
+                        //if (!key.equals(current_uid)) {
+                            String name = ds.child("name").getValue().toString();
+                            String token = ds.child("device_token").getValue().toString();
+
+
+                            contactsArray.add(name);
+                            keyArray.add(key);
+                            tokenArray.add(token);
+                       // } else { }
+                    }
+                }
+
+                listItems = new String[contactsArray.size()];
+                listItems = contactsArray.toArray(listItems);
+
+                listItemsKey = new String[keyArray.size()];
+                listItemsKey = keyArray.toArray(listItemsKey);
+
+
+                tokenItems = new String[tokenArray.size()];
+                tokenItems = tokenArray.toArray(listItemsKey);
+
+                checkedItems = new boolean[listItems.length];
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        };
+        query.addValueEventListener(valueEventListener);
+
+    }
+
+    public void pushNotification(){
+
+        if (registration_ids.length() > 0) {
+
+
+            String url = "https://fcm.googleapis.com/fcm/send";
+            AsyncHttpClient client = new AsyncHttpClient();
+
+            client.addHeader(HttpHeaders.AUTHORIZATION, "key=AIzaSyDV08bsa0Cdtnzt4EJkm29qsvs-3giVFbc");
+            client.addHeader(HttpHeaders.CONTENT_TYPE, RequestParams.APPLICATION_JSON);
+
+            try {
+
+
+                JSONObject params = new JSONObject();
+
+                params.put("registration_ids", registration_ids);
+
+                JSONObject notificationObject = new JSONObject();
+                notificationObject.put("body", localData.getBodyPush());
+                notificationObject.put("title", localData.getTitlePush());
+
+                params.put("notification", notificationObject);
+
+                StringEntity entity = new StringEntity(params.toString());
+
+                client.post(getApplicationContext(), url, entity, RequestParams.APPLICATION_JSON, new TextHttpResponseHandler() {
+                    @Override
+                    public void onFailure(int statusCode, cz.msebera.android.httpclient.Header[] headers, String responseString, Throwable throwable) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(int statusCode, cz.msebera.android.httpclient.Header[] headers, String responseString) {
+
+                    }
+                });
+
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
+    public String getFormatedTime(int h, int m) {
+        final String OLD_FORMAT = "HH:mm";
+        final String NEW_FORMAT = "hh:mm a";
+
+        String oldDateString = h + ":" + m;
+        String newDateString = "";
+
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat(OLD_FORMAT, getCurrentLocale());
+            Date d = sdf.parse(oldDateString);
+            sdf.applyPattern(NEW_FORMAT);
+            newDateString = sdf.format(d);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return newDateString;
+    }
+
+    @TargetApi(Build.VERSION_CODES.N)
+    public Locale getCurrentLocale() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return getResources().getConfiguration().getLocales().get(0);
+        } else {
+            //noinspection deprecation
+            return getResources().getConfiguration().locale;
+        }
     }
 
     public void onImg(View view) {
@@ -488,55 +717,13 @@ public class AddNoteActivity extends AppCompatActivity {
 
     }
 
-    public void getNameUserFromFireBase() {
-
-
-        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference discussionRoomsRef = rootRef.child("Users");
-
-        String chatUid = firebaseUserModel.getChat();
-
-        Query query = discussionRoomsRef.orderByChild("chat").equalTo(chatUid);
-        ValueEventListener valueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                ArrayList<String> contactsArray = new ArrayList<>();
-                ArrayList<String> keyArray = new ArrayList<>();
-
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-
-                    String key = ds.getKey();
-
-                    if (!key.equals(firebaseUserModel.getChat())) {
-
-                        if (!key.equals(current_uid)){
-                            String name = ds.child("name").getValue().toString();
-
-
-                            contactsArray.add(name);
-                            keyArray.add(key);
-                        }else {
-
-                        }
-                    }
-                }
-
-                listItems = new String[contactsArray.size()];
-                listItems = contactsArray.toArray(listItems);
-
-                listItemsKey = new String[keyArray.size()];
-                listItemsKey = keyArray.toArray(listItemsKey);
-
-                checkedItems = new boolean[listItems.length];
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        };
-        query.addValueEventListener(valueEventListener);
-
+    public void hideKeyboard() {
+        try {
+            InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(AddNoteActivity.this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        } catch (Exception e) {
+            Log.i(TAG, "Exception while hiding keyboard");
+        }
     }
 
 

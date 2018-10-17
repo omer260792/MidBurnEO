@@ -11,6 +11,7 @@ import android.util.Log;
 
 import com.example.omer.midburneo.R;
 import com.example.omer.midburneo.Tabs.ChatAc;
+import com.example.omer.midburneo.Tabs.ChatListAc;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -28,11 +29,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Log.d(TAG, "Notification Message Body: " + remoteMessage.getNotification().getBody());
 
         //Calling method to show notification
-        showNotification(remoteMessage.getNotification().getBody());
+        showNotification(remoteMessage.getNotification().getBody(), remoteMessage.getFrom());
     }
 
-    private void showNotification(String messageBody) {
-        Intent intent = new Intent(this, ChatAc.class);
+    private void showNotification(String messageBody, String sender) {
+        Intent intent = new Intent(this, ChatListAc.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_ONE_SHOT);
@@ -40,7 +41,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_midburn_app)
-                .setContentTitle(getString(R.string.app_name))
+                .setContentTitle(sender)
                 .setContentText(messageBody)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
