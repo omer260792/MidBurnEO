@@ -53,10 +53,12 @@ import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -112,7 +114,6 @@ public class AddNoteActivity extends AppCompatActivity {
     int hour, min;
     ClipboardManager myClipboard;
     private JSONArray registration_ids = new JSONArray();
-
 
 
     @Override
@@ -230,7 +231,7 @@ public class AddNoteActivity extends AppCompatActivity {
                             c.set(Calendar.DAY_OF_MONTH, view.getDayOfMonth());
 
 
-                        }else {
+                        } else {
                             c.set(Calendar.YEAR, view.getYear());
                             c.set(Calendar.MONTH, view.getMonth());
                             c.set(Calendar.DAY_OF_MONTH, view.getDayOfMonth());
@@ -272,7 +273,7 @@ public class AddNoteActivity extends AppCompatActivity {
                             timeMili = cal.getTimeInMillis();
                             timeMilliString = String.valueOf(timeMili);
 
-                        }else {
+                        } else {
                             timeMili = cal.getTimeInMillis();
                             timeMilliString = String.valueOf(timeMili);
                         }
@@ -293,7 +294,6 @@ public class AddNoteActivity extends AppCompatActivity {
                 stringObjectHashMap.put(current_uid, firebaseUserModel.getName());
 
 
-                num = 2;
                 android.support.v7.app.AlertDialog.Builder mBuilder = new android.support.v7.app.AlertDialog.Builder(AddNoteActivity.this);
                 mBuilder.setTitle("סמן חברים");
                 mBuilder.setMultiChoiceItems(listItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
@@ -315,8 +315,9 @@ public class AddNoteActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int which) {
                         String item = "";
-
+                        String[] ary = new String[0];
                         for (int i = 0; i < mUserItems.size(); i++) {
+                            num = 2;
 
                             String listItemString = listItems[mUserItems.get(i)];
                             String listItemKeyString = listItemsKey[mUserItems.get(i)];
@@ -326,6 +327,20 @@ public class AddNoteActivity extends AppCompatActivity {
 
                             registration_ids.put(listItemPushString);
 
+                          //  String[] stringArrayList = listItemPushString;
+
+
+                            ary = new String[]{listItemPushString};
+
+                            // JSONArray jsonArray = jsnobject.getJSONArray("locations");
+//                            for (int i = 0; i < jsonArray.length(); i++) {
+//                                JSONObject explrObject = jsonArray.getJSONObject(i);
+//                            }
+
+
+                            Log.e(TAG + "registration_ids", ary[0]);
+                         //   Log.e(TAG + "registration_ids", ary[1]);
+
 
                             item = item + listItems[mUserItems.get(i)];
 
@@ -333,6 +348,38 @@ public class AddNoteActivity extends AppCompatActivity {
                                 item = item + ", ";
                             }
                         }
+//
+//                        String [] stringArray="My Name is ABC".split(" ");
+//                        Log.e(TAG + "registrationddddd_ids", stringArray[3]);
+//                        Log.e(TAG + "registrationddddd_ids", stringArray[2]);
+//                        Log.e(TAG + "registrationddddd_ids", String.valueOf(item));
+//
+//                        String string = item;
+//
+//
+//
+//                        String jsonString = registration_ids.toString();
+
+//                        String str = Arrays.toString(new String[]{jsonString});
+//                        StringBuilder builder = new StringBuilder();
+//                        for(String s : new String[]{jsonString}) {
+//                            builder.append(s);
+//                        }
+//                        String str3 = builder.toString();
+//                        String strs = null;
+//
+//
+//
+//                        strs = String.join(",", jsonString);
+//                        Log.e(TAG + "jsonArray", strs);
+//
+//                        Log.e(TAG + "jsonArray", String.valueOf(str3));
+                    //    Log.e(TAG + "jsonArray", String.valueOf(jsonString));
+
+
+
+
+
 
 
                     }
@@ -366,10 +413,7 @@ public class AddNoteActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
                 if (timeMili == 123456789 || noteEditText.equals("")) {
-
                     Toast.makeText(AddNoteActivity.this, "בבקשה תמלא את כל השורות", Toast.LENGTH_LONG).show();
 
                 } else {
@@ -397,6 +441,17 @@ public class AddNoteActivity extends AppCompatActivity {
                             stringObjectHashMap.put(current_uid, firebaseUserModel.getName());
 
                             registration_ids.put(listItemPushString);
+
+//                            JSONObject jsnobject = null;
+//                            try {
+//                                String stringJson = jsnobject.getString(listItemPushString);
+//                                localData.set_Registration_ids_static(stringJson);
+//
+//                            } catch (JSONException e) {
+//                                e.printStackTrace();
+//                            }
+
+
                             hideKeyboard();
 //                            pushNotification();
 //                            if (boolSwitch.equals(true)){
@@ -407,10 +462,11 @@ public class AddNoteActivity extends AppCompatActivity {
                         }
 
                     }
-                    if (registration_ids != null){
+                    if (registration_ids != null) {
                         pushNotification();
+                        localData.set_Registration_ids_static(String.valueOf(registration_ids));
 
-                        if (boolSwitch.equals(true)){
+                        if (boolSwitch.equals(true)) {
                             NotificationScheduler.setReminder(AddNoteActivity.this, AlarmReceiver.class, localData.get_hour(), localData.get_min());
 
                         }
@@ -439,10 +495,7 @@ public class AddNoteActivity extends AppCompatActivity {
                     prefs.edit().putString("time_calendar", calendar).apply();
 
 
-
-
-
-                     NotificationScheduler.setReminder(getBaseContext(), AlarmReceiver.class, localData.get_hour(), localData.get_min());
+                    NotificationScheduler.setReminder(getBaseContext(), AlarmReceiver.class, localData.get_hour(), localData.get_min());
 
                     setResult(Activity.RESULT_OK, returnIntent);
                     finish();
@@ -502,14 +555,14 @@ public class AddNoteActivity extends AppCompatActivity {
                     if (!key.equals(firebaseUserModel.getChat())) {
 
                         //if (!key.equals(current_uid)) {
-                            String name = ds.child("name").getValue().toString();
-                            String token = ds.child("device_token").getValue().toString();
+                        String name = ds.child("name").getValue().toString();
+                        String token = ds.child("device_token").getValue().toString();
 
 
-                            contactsArray.add(name);
-                            keyArray.add(key);
-                            tokenArray.add(token);
-                       // } else { }
+                        contactsArray.add(name);
+                        keyArray.add(key);
+                        tokenArray.add(token);
+                        // } else { }
                     }
                 }
 
@@ -535,9 +588,12 @@ public class AddNoteActivity extends AppCompatActivity {
 
     }
 
-    public void pushNotification(){
+    public void pushNotification() {
 
         if (registration_ids.length() > 0) {
+
+
+            String body = noteEditText.getText().toString();
 
 
             String url = "https://fcm.googleapis.com/fcm/send";
@@ -554,8 +610,8 @@ public class AddNoteActivity extends AppCompatActivity {
                 params.put("registration_ids", registration_ids);
 
                 JSONObject notificationObject = new JSONObject();
-                notificationObject.put("body", localData.getBodyPush());
-                notificationObject.put("title", localData.getTitlePush());
+                notificationObject.put("body", body);
+                notificationObject.put("title", firebaseUserModel.getName());
 
                 params.put("notification", notificationObject);
 

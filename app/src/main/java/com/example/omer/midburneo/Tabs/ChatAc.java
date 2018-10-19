@@ -1,6 +1,7 @@
 package com.example.omer.midburneo.Tabs;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
@@ -24,6 +25,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -84,6 +86,7 @@ public class ChatAc extends AppCompatActivity {
     public DBHelper dbHelper;
     private DatabaseReference mUserDatabase;
     public SQLiteDatabase db;
+    public int numBtn = 1;
 
 
     private List<Friend> personUtilsList = new ArrayList<>();
@@ -227,26 +230,8 @@ public class ChatAc extends AppCompatActivity {
                         get_status = ds.child(FeedReaderContract.FeedEntry.STATUS).getValue(String.class);
                         get_email = ds.child(FeedReaderContract.FeedEntry.EMAIL).getValue(String.class);
                         get_admin = ds.child(FeedReaderContract.FeedEntry.ADMIN).getValue(String.class);
-                        //get_chatRooms = ds.child(FeedReaderContract.FeedEntry.CHAT_ROOMS).getValue(String.class);
 
 
-//                                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
-//                                    @Override
-//                                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
-//                                        if (!task.isSuccessful()) {
-//                                            Log.w(TAG, "getInstanceId failed", task.getException());
-//                                            return;
-//                                        }
-//
-//                                        // Get new Instance ID token
-//                                        String token = task.getResult().getToken();
-//
-//                                        // Log and toast
-//                                        String msg = getString(R.string.msg_token_fmt, token);
-//                                        Log.d(TAG, msg);
-//                                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-//                                    }
-//                                });
                         // #### Check if exsist ChatRooms Uid Between Users in the camp
                         Boolean CheckUidEx;
                         String getMyKeyMsg = UUID.randomUUID().toString();
@@ -276,43 +261,17 @@ public class ChatAc extends AppCompatActivity {
 
                                 } else {
 
-                                    Log.e("ddddddd",
-                                            "1");
 
-                                    if (get_role.equals("default")) {
-                                        get_role = "קבוצה רשמית";
-                                    }
-                                    String camps = firebaseUserModel.getCamp();
-                                    String chat = firebaseUserModel.getChat();
-                                    ContentValues data = new ContentValues();
-                                    data.put(FeedReaderContract.FeedEntry.ADMIN, get_admin);
-                                    data.put(FeedReaderContract.FeedEntry.CAMPS, camps);
-                                    data.put(FeedReaderContract.FeedEntry.CHAT, chat);
-                                    data.put(FeedReaderContract.FeedEntry.EMAIL, get_email);
-                                    data.put(FeedReaderContract.FeedEntry.IMAGE, get_image);
-                                    data.put(FeedReaderContract.FeedEntry.NAME, getNameReceiver);
-                                    data.put(FeedReaderContract.FeedEntry.STATUS, get_status);
-                                    data.put(FeedReaderContract.FeedEntry.ROLE, get_role);
-                                    data.put(FeedReaderContract.FeedEntry.PHONE, get_phone);
-                                    data.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID, get_device);
-                                    data.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN, get_token);
-                                    data.put(FeedReaderContract.FeedEntry.CHAT_ROOMS, getMyKeyMsg);
-                                    db.update(TABLE_NAME, data, "_id=" + countSqLiteUpdate, null);
-                                }
-                            } else {
-                                if (check.equals(false)) {
-                                    Log.e("ddddddd",
-                                            "2");
-                                    if (!current_uid.equals(getUidUsers)) {
-                                        dbHelper.SaveDBSqliteUser(getNameReceiver, firebaseUserModel.getCamp(), getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
-                                    }
+                                    Boolean CheckUid = ds.child(getUidUsers).exists();
+                                    if (CheckUid.equals(false)) {
 
-                                } else {
+                                        // todo cancel from sqlLite
 
 
-                                    if (!current_uid.equals(getUidUsers)) {
+                                    }else {
+
                                         if (get_role.equals("default")) {
-                                            get_role = "אין תפקיד";
+                                            get_role = "קבוצה רשמית";
                                         }
                                         String camps = firebaseUserModel.getCamp();
                                         String chat = firebaseUserModel.getChat();
@@ -330,9 +289,51 @@ public class ChatAc extends AppCompatActivity {
                                         data.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN, get_token);
                                         data.put(FeedReaderContract.FeedEntry.CHAT_ROOMS, getMyKeyMsg);
                                         db.update(TABLE_NAME, data, "_id=" + countSqLiteUpdate, null);
+                                    }
 
-                                        Log.e("ddddddd",
-                                                "3");
+
+                                }
+                            } else {
+                                if (check.equals(false)) {
+                                    Log.e("ddddddd",
+                                            "2");
+                                    if (!current_uid.equals(getUidUsers)) {
+                                        dbHelper.SaveDBSqliteUser(getNameReceiver, firebaseUserModel.getCamp(), getUidUsers, get_image, get_lastmsg, get_phone, get_device, get_token, getMyKeyMsg);
+                                    }
+
+                                } else {
+
+
+                                    if (!current_uid.equals(getUidUsers)) {
+                                        if (get_role.equals("default")) {
+                                            get_role = "אין תפקיד";
+                                        }
+
+                                        try {
+                                            String camps = firebaseUserModel.getCamp();
+                                            String chat = firebaseUserModel.getChat();
+                                            ContentValues data = new ContentValues();
+                                            data.put(FeedReaderContract.FeedEntry.ADMIN, get_admin);
+                                            data.put(FeedReaderContract.FeedEntry.CAMPS, camps);
+                                            data.put(FeedReaderContract.FeedEntry.CHAT, chat);
+                                            data.put(FeedReaderContract.FeedEntry.EMAIL, get_email);
+                                            data.put(FeedReaderContract.FeedEntry.IMAGE, get_image);
+                                            data.put(FeedReaderContract.FeedEntry.NAME, getNameReceiver);
+                                            data.put(FeedReaderContract.FeedEntry.STATUS, get_status);
+                                            data.put(FeedReaderContract.FeedEntry.ROLE, get_role);
+                                            data.put(FeedReaderContract.FeedEntry.PHONE, get_phone);
+                                            data.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_ID, get_device);
+                                            data.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN, get_token);
+                                            data.put(FeedReaderContract.FeedEntry.CHAT_ROOMS, getMyKeyMsg);
+                                            db.update(TABLE_NAME, data, "_id=" + countSqLiteUpdate, null);
+
+                                            Log.e("ddddddd",
+                                                    "3");
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+
                                     }
 
                                 }
@@ -403,26 +404,26 @@ public class ChatAc extends AppCompatActivity {
 
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onStart() {
         super.onStart();
         etSearchUser.setVisibility(View.GONE);
 
 
+
+
         imageButtonSearchUser.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                int numBtn = 1;
-                if (numBtn == 1){
+                if (numBtn == 1) {
                     etSearchUser.setVisibility(View.VISIBLE);
-
                     numBtn = 2;
-                }else {
+                } else {
                     etSearchUser.setVisibility(View.GONE);
                     numBtn = 1;
                 }
-
             }
         });
     }

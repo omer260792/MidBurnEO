@@ -64,8 +64,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="scalingPercent" value="76" />
-                                                <entry key="trimmed" value="true" />
+                                                <entry key="scalingPercent" value="114" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -75,22 +74,19 @@
                                   </option>
                                   <option name="values">
                                     <map>
-                                      <entry key="backgroundColor" value="00ecff" />
-                                      <entry key="backgroundLayerName" value="ic_launcher_background" />
-                                      <entry key="foregroundImage" value="$USER_HOME$/Desktop/מדיברן/music-player-play.png" />
-                                      <entry key="foregroundLayerName" value="ic_play" />
+                                      <entry key="backgroundAssetType" value="COLOR" />
+                                      <entry key="backgroundColor" value="aabb69" />
+                                      <entry key="backgroundLayerName" value="ic_midburn_apps" />
+                                      <entry key="foregroundImage" value="$USER_HOME$/Desktop/מדיברן/ככככ.png" />
+                                      <entry key="foregroundLayerName" value="ic_midburn_app" />
                                       <entry key="legacyIconShape" value="CIRCLE" />
                                       <entry key="outputName" value="ic_play_record" />
+                                      <entry key="webIconShape" value="CIRCLE" />
                                     </map>
                                   </option>
                                 </PersistentState>
                               </value>
                             </entry>
-                          </map>
-                        </option>
-                        <option name="values">
-                          <map>
-                            <entry key="outputIconType" value="ACTIONBAR" />
                           </map>
                         </option>
                       </PersistentState>

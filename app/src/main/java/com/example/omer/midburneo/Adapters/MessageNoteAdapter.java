@@ -63,7 +63,7 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
     private static final String TAG = "MessageNoteAdapter";
 
     private Context context;
-    private final List<MessageNote> MessageNoteList;
+    private List<MessageNote> MessageNoteList;
     public String senderString, uidMsgString, time, current_uid, checkBool, countString;
     private int countMsg;
 
@@ -168,7 +168,6 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-
                     MessageNote messageNote = (MessageNote) itemView.getTag();
 
                     senderString = messageNote.getUid();
@@ -176,13 +175,12 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
                     if (current_uid.equals(senderString)) {
 
                         checkBool = messageNote.getDateBool();
-
                         uidMsgString = messageNote.getUidMsg();
                         countMsg = Integer.parseInt(messageNote.getCount());
                         time = messageNote.getTime();
                         countString = messageNote.getCount();
 
-                        if (checkBool.equals("true")) {
+                        if (checkBool.equals("false")) {
 
                             int btnDrawable = android.R.drawable.checkbox_on_background;
                             checkBox.setButtonDrawable(btnDrawable);
@@ -201,52 +199,19 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             context.startActivity(intent);
 
-                        }else {
-                            Toast.makeText(context, "רק מפרסם המטלה יכול לשנות סטטוס", Toast.LENGTH_SHORT).show();
-
                         }
-
                         checkBox.isChecked();
 
-//                                if (isChecked) {
-//                                    if (current_uid.equals(senderString)) {
-//                                        int btnDrawable = android.R.drawable.checkbox_on_background;
-//                                        checkBox.setButtonDrawable(btnDrawable);
-//                                        //relativeLayout.setBackgroundColor(R.color.red);
-//
-//
-//
-//
-//                                    }else {
-//                                        Toast.makeText(context, "רק מפרסם המטלה יכול לשנות סטטוס", Toast.LENGTH_LONG).show();
-//
-//                                    }
-//
-//                                } else {
-//                                    if (current_uid.equals(senderString)) {
-//
-//                                        //checkBox clicked and unchecked
-//                                        int btnDrawable = android.R.drawable.checkbox_off_background;
-//                                        checkBox.setButtonDrawable(btnDrawable);
-//                                        relativeLayout.setBackgroundColor(R.color.colorAccent);
-//                                    }else {
-//                                        Toast.makeText(context, "רק מפרסם המטלה יכול לשנות סטטוס", Toast.LENGTH_LONG).show();
-//
-//                                    }
-//                                }
                     } else {
                         Toast.makeText(context, "רק מפרסם המטלה יכול לשנות סטטוס", Toast.LENGTH_LONG).show();
 
                     }
-
                 }
             });
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
-
 
 
                 }
@@ -257,32 +222,18 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
                 @Override
                 public boolean onLongClick(View v) {
 
+                    MessageNote messageNote = (MessageNote) v.getTag();
 
-                    AlertDialog alertDialog = new AlertDialog.Builder(context).create();
-                    alertDialog.setTitle("עריכת הודעה");
-                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "מחק הודעה ", new DialogInterface.OnClickListener() {
+                    String user = messageNote.getUid();
+                    uidMsgString = messageNote.getUidMsg();
 
-                        public void onClick(DialogInterface dialog, int id) {
-
-
-                            dbHelper = new DBHelper(context);
-
-                            dbHelper.deleteRawFromTable(countMsg, time, TABLE_NAME_NOTE,FeedReaderContract.FeedEntry.TIME);
-                            Intent intent = new Intent(context, NotesAc.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            context.startActivity(intent);
-
-                        }
-                    });
-
-
-                    if (current_uid.equals(senderString)) {
-
-                        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "מחק לכולם", new DialogInterface.OnClickListener() {
+                    if (user.equals(current_uid)) {
+                        AlertDialog alertDialog = new AlertDialog.Builder(context).create();
+                        alertDialog.setTitle("עריכת הודעה");
+                        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "מחק הודעה ", new DialogInterface.OnClickListener() {
 
                             public void onClick(DialogInterface dialog, int id) {
 
-                                deleteRawFormFireBase();
 
                                 dbHelper = new DBHelper(context);
 
@@ -293,27 +244,55 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
 
                             }
                         });
+
+
+                        if (current_uid.equals(user)) {
+
+                            alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "מחק לכולם", new DialogInterface.OnClickListener() {
+
+                                public void onClick(DialogInterface dialog, int id) {
+
+                                    deleteRawFormFireBase();
+
+                                    dbHelper = new DBHelper(context);
+
+                                    dbHelper.deleteRawFromTable(countMsg, time, TABLE_NAME_NOTE, FeedReaderContract.FeedEntry.TIME);
+                                    Intent intent = new Intent(context, NotesAc.class);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    context.startActivity(intent);
+
+                                }
+                            });
+                        }
+                        if (current_uid.equals(user)) {
+
+                            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "החזר משימה", new DialogInterface.OnClickListener() {
+
+                                public void onClick(DialogInterface dialog, int id) {
+
+                                    mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getChat()).child("Note").child(uidMsgString);
+
+                                    Map<String, Object> mapCampsUpdates = new HashMap<>();
+                                    mapCampsUpdates.put("dateBool", "false");
+
+                                    mUserDatabase.updateChildren(mapCampsUpdates);
+
+
+                                    Intent i = new Intent(context, NotesAc.class);
+                                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    context.startActivity(i);
+
+
+                                }
+                            });
+                        }
+
+                        alertDialog.show();
+
+                    } else {
+                        Toast.makeText(context, "רק מפרסם המטלה יכול לשנות סטטוס", Toast.LENGTH_SHORT).show();
+
                     }
-                    if (current_uid.equals(senderString)) {
-
-                        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "החזר משימה", new DialogInterface.OnClickListener() {
-
-                            public void onClick(DialogInterface dialog, int id) {
-
-
-                                mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Camps").child(firebaseUserModel.getChat()).child("Note").child(uidMsgString);
-
-                                Map<String, Object> mapCampsUpdates = new HashMap<>();
-                                mapCampsUpdates.put("dateBool", "false");
-
-                                mUserDatabase.updateChildren(mapCampsUpdates);
-
-
-                            }
-                        });
-                    }
-
-                    alertDialog.show();
 
 
                     return true;
@@ -341,7 +320,6 @@ public class MessageNoteAdapter extends RecyclerView.Adapter<MessageNoteAdapter.
 
     private void deleteRawFormFireBase() {
 
-//
         mUserDatabase = FirebaseDatabase.getInstance().getReference()
                 .child("Camps").child(firebaseUserModel.getChat()).child("Note").child(uidMsgString);
         mUserDatabase.addListenerForSingleValueEvent(new ValueEventListener() {

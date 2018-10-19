@@ -339,7 +339,9 @@ public class ProfileAc extends AppCompatActivity {
 
 
         FirebaseAuth.getInstance().signOut();
-        startActivity(new Intent(ProfileAc.this, LoginAc.class));
+        Intent i = new Intent(ProfileAc.this, LoginAc.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(i);
         finish();
     }
 

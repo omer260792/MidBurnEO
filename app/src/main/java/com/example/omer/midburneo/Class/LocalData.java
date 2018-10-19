@@ -4,6 +4,8 @@ package com.example.omer.midburneo.Class;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import org.json.JSONArray;
+
 import static com.example.omer.midburneo.RegisterAc.SHPRF;
 
 
@@ -19,6 +21,8 @@ public class LocalData {
     private static final String min = "min";
     private static final String titlePush = "titlePush";
     private static final String bodyPush = "bodyPush";
+    private static final String registration_ids_static = "jsonArray";
+
 
     public LocalData(Context context) {
         this.appSharedPrefs = context.getSharedPreferences(SHPRF, Context.MODE_PRIVATE);
@@ -81,5 +85,16 @@ public class LocalData {
         prefsEditor.commit();
 
     }
+
+    public String getRegistration_ids_static() {
+        return appSharedPrefs.getString(registration_ids_static, "pushJsonArray");
+    }
+
+    public void set_Registration_ids_static(String jsonArray) {
+        prefsEditor.putString(registration_ids_static, jsonArray);
+        prefsEditor.commit();
+
+    }
+
 
 }

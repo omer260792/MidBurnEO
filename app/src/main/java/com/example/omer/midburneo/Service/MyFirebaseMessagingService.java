@@ -27,10 +27,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void onMessageReceived(RemoteMessage remoteMessage) {
         Log.d(TAG, "From: " + remoteMessage.getFrom());
         Log.d(TAG, "From: " + remoteMessage.getSentTime());
-        Log.d(TAG, "From: " + remoteMessage.getNotification().getTitle());
-        Log.d(TAG, "From: " + remoteMessage.getNotification().getBodyLocalizationKey());
-        Log.d(TAG, "From: " + remoteMessage.getNotification().getTitleLocalizationArgs());
-        Log.d(TAG, "From: " + remoteMessage.getNotification().getTag());
+
         Log.d(TAG, "Notification Message Body: " + remoteMessage.getNotification().getBody());
 
         //Calling method to show notification
@@ -50,6 +47,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .setContentText(messageBody)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
+                .setSubText("MidCamp")
                 .setContentIntent(pendingIntent);
 
         NotificationManager notificationManager =

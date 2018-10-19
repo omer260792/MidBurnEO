@@ -114,7 +114,6 @@ public class AdminAc extends AppCompatActivity {
 
                 if (!status.equals("") && !camp.equals("")) {
 
-
                     if (!stringUrl.equals("default")) {
 
                         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(firebaseUserModel.getChat());
@@ -351,11 +350,7 @@ public class AdminAc extends AppCompatActivity {
                     public void onSuccess(Uri uri) {
 
                         stringUrl = String.valueOf(uri);
-
-
                         mprogress.dismiss();
-
-
                     }
                 });
             }

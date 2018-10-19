@@ -127,83 +127,6 @@ public class EquipmentEditAc extends AppCompatActivity {
         }
 
 
-        addBtnfirendEditEquip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                stringObjectHashMapEquipment.put(current_uid, firebaseUserModel.getName());
-
-                num = 2;
-                android.support.v7.app.AlertDialog.Builder mBuilder = new android.support.v7.app.AlertDialog.Builder(EquipmentEditAc.this);
-                mBuilder.setTitle("סמן חברים");
-                mBuilder.setMultiChoiceItems(listItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int position, boolean isChecked) {
-
-                        if (isChecked) {
-                            mUserItems.add(position);
-
-
-                        } else {
-                            mUserItems.remove((Integer.valueOf(position)));
-                        }
-                    }
-                });
-
-                mBuilder.setCancelable(false);
-                mBuilder.setPositiveButton("אישור", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int which) {
-                        String item = "";
-
-                        for (int i = 0; i < mUserItems.size(); i++) {
-
-                            String listItemString = listItems[mUserItems.get(i)];
-                            String listItemKeyString = listItemsKey[mUserItems.get(i)];
-
-                            stringObjectHashMapEquipment.put(listItemKeyString, listItemString);
-
-                            item = item + listItems[mUserItems.get(i)];
-
-                            if (i != mUserItems.size() - 1) {
-                                item = item + ", ";
-                            }
-                        }
-
-
-                        //  mItemSelected.setText(item);
-                    }
-                });
-
-                mBuilder.setNegativeButton("חזור", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                });
-
-                mBuilder.setNeutralButton("בחר הכל", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int which) {
-                        for (int i = 0; i < checkedItems.length; i++) {
-                            checkedItems[i] = true;
-
-                            // Todo not dismiss
-//                            mUserItems.size();
-
-                            //   mItemSelected.setText("");
-                        }
-                    }
-                });
-
-                android.support.v7.app.AlertDialog mDialog = mBuilder.create();
-                mDialog.show();
-
-
-            }
-        });
-
-
     }
 
     public void SaveDataToFireBaseEquipment() {
@@ -221,7 +144,7 @@ public class EquipmentEditAc extends AppCompatActivity {
         stringObjectHashMap.put("time", timePre);
         stringObjectHashMap.put("sender", current_uid);
 
-        if (num == 2){
+        if (num == 2) {
             stringObjectHashMap.put(FeedReaderContract.FeedEntry.TAG_USER, stringObjectHashMapEquipment);
 
         }
@@ -460,13 +383,13 @@ public class EquipmentEditAc extends AppCompatActivity {
 
                     if (!key.equals(firebaseUserModel.getChat())) {
 
-                        if (!key.equals(current_uid)){
+                        if (!key.equals(current_uid)) {
                             String name = ds.child("name").getValue().toString();
 
 
                             contactsArray.add(name);
                             keyArray.add(key);
-                        }else {
+                        } else {
 
                         }
 
@@ -496,5 +419,79 @@ public class EquipmentEditAc extends AppCompatActivity {
 
     }
 
+    public void getUserListEquip(View view) {
+
+        Toast.makeText(EquipmentEditAc.this, "error", Toast.LENGTH_LONG).show();
+
+
+        stringObjectHashMapEquipment.put(current_uid, firebaseUserModel.getName());
+
+        android.support.v7.app.AlertDialog.Builder mBuilder = new android.support.v7.app.AlertDialog.Builder(EquipmentEditAc.this);
+        mBuilder.setTitle("סמן חברים");
+        mBuilder.setMultiChoiceItems(listItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int position, boolean isChecked) {
+
+                if (isChecked) {
+                    mUserItems.add(position);
+
+
+                } else {
+                    mUserItems.remove((Integer.valueOf(position)));
+                }
+            }
+        });
+
+        mBuilder.setCancelable(false);
+        mBuilder.setPositiveButton("אישור", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                String item = "";
+                num = 2;
+
+                for (int i = 0; i < mUserItems.size(); i++) {
+
+                    String listItemString = listItems[mUserItems.get(i)];
+                    String listItemKeyString = listItemsKey[mUserItems.get(i)];
+
+                    stringObjectHashMapEquipment.put(listItemKeyString, listItemString);
+
+                    item = item + listItems[mUserItems.get(i)];
+
+                    if (i != mUserItems.size() - 1) {
+                        item = item + ", ";
+                    }
+                }
+
+
+                //  mItemSelected.setText(item);
+            }
+        });
+
+        mBuilder.setNegativeButton("חזור", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+
+        mBuilder.setNeutralButton("בחר הכל", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                for (int i = 0; i < checkedItems.length; i++) {
+                    checkedItems[i] = true;
+
+                    // Todo not dismiss
+//                            mUserItems.size();
+
+                    //   mItemSelected.setText("");
+                }
+            }
+        });
+
+        android.support.v7.app.AlertDialog mDialog = mBuilder.create();
+        mDialog.show();
+
+    }
 }
 

@@ -86,6 +86,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
 import static com.example.omer.midburneo.RegisterAc.CAMERA;
 import static com.example.omer.midburneo.RegisterAc.GALLERY;
 import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
@@ -181,7 +182,6 @@ public class ChatListAc extends AppCompatActivity {
         tokenUserIntent = getIntent().getStringExtra("tokenUidFriend");
         chatRoomsUserIntent = getIntent().getStringExtra("chatRoomsUidFriend");
 
-        Toast.makeText(this,tokenUserIntent,Toast.LENGTH_SHORT).show();
 
         current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
@@ -217,7 +217,6 @@ public class ChatListAc extends AppCompatActivity {
             public void onClick(View v) {
 
 
-
                 if (numCheck == 1) {
 
 
@@ -250,28 +249,28 @@ public class ChatListAc extends AppCompatActivity {
 //                    public void run() {
 
 
-                        AlertDialog.Builder builder;
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            builder = new AlertDialog.Builder(ChatListAc.this, android.R.style.Theme_Material_Dialog_Alert);
-                        } else {
-                            builder = new AlertDialog.Builder(ChatListAc.this);
-                        }
-                        builder.setTitle("עריכת מצלמה")
-                                .setMessage("!בחר תמונה")
-                                .setNegativeButton("חזור", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
+                AlertDialog.Builder builder;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    builder = new AlertDialog.Builder(ChatListAc.this, android.R.style.Theme_Material_Dialog_Alert);
+                } else {
+                    builder = new AlertDialog.Builder(ChatListAc.this);
+                }
+                builder.setTitle("עריכת מצלמה")
+                        .setMessage("!בחר תמונה")
+                        .setNegativeButton("חזור", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
 
-                                    }
-                                })
-                                .setPositiveButton("גלרייה", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
+                            }
+                        })
+                        .setPositiveButton("גלרייה", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
 
-                                        gallery();
-                                    }
-                                })
-                                .setIcon(android.R.drawable.ic_dialog_info)
-                                .show();
+                                gallery();
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_info)
+                        .show();
 
 //                    }
 //                }, 500);   //
@@ -377,7 +376,7 @@ public class ChatListAc extends AppCompatActivity {
                             if (!device.equals("default") && !token.equals("default")) {
 
                                 registration_ids.put(token);
-                                Log.e(TAG+"1",registration_ids.toString());
+                                Log.e(TAG + "1", registration_ids.toString());
                             }
 
 
@@ -387,7 +386,7 @@ public class ChatListAc extends AppCompatActivity {
                             if (!device.equals(current_device) && !token.isEmpty()) {
 
                                 registration_ids.put(token);
-                                Log.e(TAG,registration_ids.toString());
+                                Log.e(TAG, registration_ids.toString());
 
                             }
                         } else {
@@ -443,8 +442,6 @@ public class ChatListAc extends AppCompatActivity {
             public void onClick(View v) {
 
 
-
-
                 if (checkPermission()) {
 
                     AudioSavePathInDevice =
@@ -477,19 +474,12 @@ public class ChatListAc extends AppCompatActivity {
                 }
 
 
-
-
-
-
             }
         });
 
         buttonStopPop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
-
 
 
                 if (numStop == 1) {
@@ -524,8 +514,6 @@ public class ChatListAc extends AppCompatActivity {
                     buttonPlayPop.setVisibility(View.VISIBLE);
                     sendRecordBtn.setVisibility(View.VISIBLE);
                 }
-
-
 
 
             }
@@ -568,18 +556,17 @@ public class ChatListAc extends AppCompatActivity {
                     mediaPlayer.prepare();
 
 
-
-                if (AudioSavePathInDevice != null) {
-                    long currentDateTime = System.currentTimeMillis();
-                    String time = String.valueOf(currentDateTime);
-                    uploadAudio(AudioSavePathInDevice,time);
-                    cardView.setVisibility(v.GONE);
+                    if (AudioSavePathInDevice != null) {
+                        long currentDateTime = System.currentTimeMillis();
+                        String time = String.valueOf(currentDateTime);
+                        uploadAudio(AudioSavePathInDevice, time);
+                        cardView.setVisibility(v.GONE);
 
                         mediaPlayer.stop();
                         mediaPlayer.release();
                         MediaRecorderReady();
 
-                }
+                    }
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -620,7 +607,7 @@ public class ChatListAc extends AppCompatActivity {
             FirebaseMessageModel firebaseMessageModel = messages.get(counter);
 
             MessageCell messageCell = new MessageCell(firebaseMessageModel.getSenderName(), firebaseMessageModel.getText(),
-                    getDate(firebaseMessageModel.getCreatedDateLong()), firebaseMessageModel.getSenderId().equals(current_uid), firebaseMessageModel.getImage(), firebaseMessageModel.getSenderId(),firebaseMessageModel.getRecord());
+                    getDate(firebaseMessageModel.getCreatedDateLong()), firebaseMessageModel.getSenderId().equals(current_uid), firebaseMessageModel.getImage(), firebaseMessageModel.getSenderId(), firebaseMessageModel.getRecord());
 
             messageCells[counter] = messageCell;
         }
@@ -634,8 +621,6 @@ public class ChatListAc extends AppCompatActivity {
     }
 
 
-
-
     public void sendMsgWithNotification() {
 
         final String wishMessage = textComment.getText().toString().trim();
@@ -645,9 +630,9 @@ public class ChatListAc extends AppCompatActivity {
 
         }
 
-        if (urlPathString == null){
+        if (urlPathString == null) {
             AudioSavePathInDevice = "default";
-        }else {
+        } else {
             AudioSavePathInDevice = String.valueOf(urlPathString);
 
         }
@@ -742,7 +727,7 @@ public class ChatListAc extends AppCompatActivity {
                                 public void onSuccess(int statusCode, cz.msebera.android.httpclient.Header[] headers, String responseString) {
                                     Dialog.dismiss();
                                     AudioSavePathInDevice = null;
-                                    resultUri  = null;
+                                    resultUri = null;
                                     mediaPlayer = new MediaPlayer();
                                     Log.i(TAG, String.valueOf(statusCode));
                                     Log.i(TAG, responseString);
@@ -778,52 +763,73 @@ public class ChatListAc extends AppCompatActivity {
 
     public void CheckUserIfOnline() {
 
-
-        if (!deviceUserIntent.equals("default")){
-
-            mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(uidUserIntent);
-            mUserDatabase.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                    String time = dataSnapshot.child("time").getValue().toString();
-                    String onilne = dataSnapshot.child("online").getValue().toString();
-
-                    if (!onilne.equals("default")) {
-                        DateFormat getTimeDmY = new SimpleDateFormat("dd:MM:yyyy:HH:mm");
-                        long timeMilLong = Long.parseLong(time);
+        try {
 
 
-                        String realTime = getTimeDmY.format(timeMilLong);
+            if (!deviceUserIntent.equals("default")) {
 
-                        if (onilne.equals("true")) {
-                            tvTimeUser.setText("מחובר");
-                        } else {
-                            tvTimeUser.setText("last seen:" + realTime);
+                mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(uidUserIntent);
+                mUserDatabase.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                        }
-                    } else {
-                        tvTimeUser.setText("");
+                       boolean check =  dataSnapshot.child("time").exists();
+                       if (check){
+                           String time = dataSnapshot.child("time").getValue().toString();
+                           String onilne = dataSnapshot.child("online").getValue().toString();
+
+                           if (!onilne.equals("default")) {
+                               DateFormat getTimeDmY = new SimpleDateFormat("dd:MM:yyyy:HH:mm");
+                               long timeMilLong = Long.parseLong(time);
+
+
+                               String realTime = getTimeDmY.format(timeMilLong);
+
+                               if (onilne.equals("true")) {
+                                   tvTimeUser.setText("מחובר");
+                               } else {
+                                   tvTimeUser.setText("last seen:" + realTime);
+
+                               }
+                           } else {
+                               tvTimeUser.setText("");
+
+                           }
+
+                       }else {
+                           db = dbHelper.getWritableDatabase();
+
+                           Toast.makeText(ChatListAc.this, "משתמש לא קיים", Toast.LENGTH_LONG).show();
+                           db.delete(TABLE_NAME,  "_id=" + countUserIntent, null);
+                           db.close();
+                           Intent i = new Intent(ChatListAc.this,ChatAc.class);
+                           i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                           startActivity(i);
+
+                       }
+
+
+
+
 
                     }
 
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                }
+                    }
+                });
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
+            } else {
+                tvTimeUser.setText("");
 
-                }
-            });
-
-        }else {
-            tvTimeUser.setText("");
-
+            }
+        } catch (NullPointerException e) {
+            e.printStackTrace();
         }
 
 
     }
-
 
 
     private void uploadAudio(String mFileName, String time) {
@@ -831,8 +837,8 @@ public class ChatListAc extends AppCompatActivity {
         progressDialog.show();
         String getMyKeyMsg = UUID.randomUUID().toString();
 
-        filePathRecord = mImageStorage.child("Audio").child(time+".3gp");
-         urlPathString = "Audio/"+time+".3gp";
+        filePathRecord = mImageStorage.child("Audio").child(time + ".3gp");
+        urlPathString = "Audio/" + time + ".3gp";
 
         recordUri = Uri.fromFile(new File(mFileName));
         filePathRecord.putFile(recordUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
@@ -936,8 +942,6 @@ public class ChatListAc extends AppCompatActivity {
         random = new Random();
 
     }
-
-
 
 
     public void MediaRecorderReady() {

@@ -137,7 +137,6 @@ public class AddGroupAc extends AppCompatActivity {
 
                         for (int i = 0; i < mUserItems.size(); i++) {
 
-                           // listItemString = listItems[mUserItems.get(i)];
                             listItemKeyString = listItemsKey[mUserItems.get(i)];
 
 //                            Boolean key = stringObjectHashMapAddGroup.get(listItemKeyString).equals(listItemKeyString);
@@ -248,7 +247,6 @@ public class AddGroupAc extends AppCompatActivity {
 
                 stringObjectHashMapAddGroup.put(current_uid, firebaseUserModel.getName());
 
-                num = 2;
                 android.support.v7.app.AlertDialog.Builder mBuilder = new android.support.v7.app.AlertDialog.Builder(AddGroupAc.this);
                 mBuilder.setTitle("סמן חברים");
                 mBuilder.setMultiChoiceItems(listItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
@@ -272,6 +270,7 @@ public class AddGroupAc extends AppCompatActivity {
                         String item = "";
 
                         for (int i = 0; i < mUserItems.size(); i++) {
+                            num = 2;
 
                             listItemString = listItems[mUserItems.get(i)];
                             listItemKeyString = listItemsKey[mUserItems.get(i)];

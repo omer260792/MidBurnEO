@@ -73,9 +73,11 @@ public class CampsAc extends AppCompatActivity {
 
         getDataSpinner();
 
-        spinner.setOnItemSelectedListener(new ItemSelectedListener());
 
         try {
+
+            spinner.setOnItemSelectedListener(new ItemSelectedListener());
+
             Field popup = Spinner.class.getDeclaredField("mPopup");
             popup.setAccessible(true);
 
@@ -176,6 +178,7 @@ public class CampsAc extends AppCompatActivity {
 
     public class ItemSelectedListener implements AdapterView.OnItemSelectedListener {
 
+
         //get strings of first item
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
             if (camp_name.equals(spinner.getSelectedItem().toString())) {
@@ -257,7 +260,7 @@ public class CampsAc extends AppCompatActivity {
 
         Map<String, Object> mapUserUpdates = new HashMap<>();
         mapUserUpdates.put("camps", get_name_camp);
-        mapUserUpdates.put("chat", current_uid_camp);
+        mapUserUpdates.put("chat", uid_camp);
         mapUserUpdates.put("number", lastCountString);
 
 
