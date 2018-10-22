@@ -3,6 +3,7 @@ package com.example.omer.midburneo.Tabs;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,6 +12,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,9 +20,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.LoginAc;
 import com.example.omer.midburneo.PermissionManager;
 import com.example.omer.midburneo.R;
+import com.example.omer.midburneo.Utils.UtilHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -36,6 +40,9 @@ import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -88,7 +95,9 @@ public class ProfileAc extends AppCompatActivity {
         editTxtRole.setText(firebaseUserModel.getRole());
         editTxtStatus.setText(firebaseUserModel.getStatus());
 
-        Picasso.get().load(firebaseUserModel.getImage()).error(R.drawable.admin_btn_logo).into(imageView);
+
+
+        Picasso.get().load(firebaseUserModel.getImage()).error(R.drawable.midburn_logo).into(imageView);
 
 
         signOutBtn.setOnClickListener(new View.OnClickListener() {
@@ -111,47 +120,6 @@ public class ProfileAc extends AppCompatActivity {
 
     }
 
-//    @Override
-//    protected void onStart() {
-//        super.onStart();
-//
-//        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
-//
-//        mUserDatabase.addValueEventListener(new ValueEventListener() {
-//            @SuppressLint("CommitPrefEdits")
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//
-//                name = dataSnapshot.child("name").getValue().toString();
-//                image = dataSnapshot.child("image").getValue().toString();
-//                role = dataSnapshot.child("role").getValue().toString();
-//                status = dataSnapshot.child("status").getValue().toString();
-//
-//                txtViewName.setText(name);
-//                editTxtRole.setText(role);
-//                editTxtStatus.setText(status);
-//
-//                if (image.equals("default") || image == null) {
-//                    Picasso.get().load(R.drawable.cmv_arrow).error(R.drawable.admin_btn_logo).into(imageView);
-//
-//                } else {
-//                    Picasso.get().load(image).error(R.drawable.admin_btn_logo).into(imageView);
-//
-//                    prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
-//                    prefs.edit().putString("image", image).apply();
-//
-//
-//                }
-//
-//
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-//    }
 
     public void changePic(View view) {
 
@@ -213,8 +181,7 @@ public class ProfileAc extends AppCompatActivity {
                 Uri resultUri = result.getUri();
 
 
-                Picasso.get().load(resultUri).error(R.drawable.admin_btn_logo).into(imageView);
-
+                Picasso.get().load(resultUri).error(R.drawable.midburn_logo).into(imageView);
 
                 String imageS = String.valueOf(resultUri);
                 firebaseUserModel.setImage(imageS);
@@ -226,6 +193,13 @@ public class ProfileAc extends AppCompatActivity {
                 mProgressDialog.setCanceledOnTouchOutside(false);
                 mProgressDialog.show();
 
+
+                File file = UtilHelper.getTempFile(ProfileAc.this, String.valueOf(resultUri));
+                File file1 = UtilHelper.getPrivateAlbumStorageDir(ProfileAc.this,"name");
+
+                firebaseUserModel.setImage(String.valueOf(file));
+               // firebaseUserModel.setImage(String.valueOf(file1));
+                prefs.edit().putString(FeedReaderContract.FeedEntry.IMAGE, String.valueOf(resultUri)).apply();
 
                 filrpath = mImageStorage.child("profile_images").child(resultUri.getLastPathSegment());//(random() + ".jpg")
 
@@ -241,6 +215,8 @@ public class ProfileAc extends AppCompatActivity {
                                 @Override
                                 public void onSuccess(Uri uri) {
                                     stringUrl = String.valueOf(uri);
+
+
 
 
                                     mProgressDialog.dismiss();
@@ -305,38 +281,25 @@ public class ProfileAc extends AppCompatActivity {
 
             } else {
                 Toast.makeText(ProfileAc.this, "תעלה תמונה שוב", Toast.LENGTH_LONG).show();
-
             }
-
         } else {
             Toast.makeText(ProfileAc.this, "מלא פרטים חסרים", Toast.LENGTH_LONG).show();
-
         }
-
-
     }
 
     public void SignOutProfile() {
 
-
-
         prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
-
-
         prefs.edit().putString("email", "default").apply();
 
         long currentDateTime = System.currentTimeMillis();
         String timeString = String.valueOf(currentDateTime);
 
-
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
-
         Map<String, Object> mapCampsUpdates = new HashMap<>();
         mapCampsUpdates.put("time", timeString);
         mapCampsUpdates.put("online", "false");
-
         mUserDatabase.updateChildren(mapCampsUpdates);
-
 
         FirebaseAuth.getInstance().signOut();
         Intent i = new Intent(ProfileAc.this, LoginAc.class);
@@ -382,6 +345,8 @@ public class ProfileAc extends AppCompatActivity {
 
         alertDialog.show();
     }
+
+
 }
 
 

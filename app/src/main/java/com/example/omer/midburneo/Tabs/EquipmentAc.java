@@ -48,6 +48,7 @@ import static com.example.omer.midburneo.DataBase.DBEquipment.DATABASE_NAME_EQUI
 import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
 import static com.example.omer.midburneo.Tabs.EquipmentEditAc.directory_path;
 
+import static com.example.omer.midburneo.Tabs.EquipmentEditAc.directory_path_sdk_kikat_down;
 import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 public class EquipmentAc extends AppCompatActivity {
@@ -90,6 +91,7 @@ public class EquipmentAc extends AppCompatActivity {
 
         getRawCountSql();
 
+        PermissionManager.check(EquipmentAc.this, Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
 
 
             String test = etSearchEquipment.getText().toString() + "";
@@ -359,10 +361,15 @@ public class EquipmentAc extends AppCompatActivity {
 
     public void getExcelSettings() {
 
-        PermissionManager.check(EquipmentAc.this, Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
 
-        File file = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOCUMENTS), "/" + firebaseUserModel.getCamp() + ".xls"); //    "/users.xls"
+        File file = null; //    "/users.xls"
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            file = new File(Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOWNLOADS), "/" + firebaseUserModel.getCamp() + ".xls");
+        }else {
+            file = new File(Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOCUMENTS), "/" + firebaseUserModel.getCamp() + ".xls");
+        }
         if (!file.exists()) {
 
             try {
@@ -370,7 +377,6 @@ public class EquipmentAc extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            SQLiteToExcel();
 
             Toast.makeText(EquipmentAc.this,
                     filePathString, //ADD THIS
@@ -378,8 +384,10 @@ public class EquipmentAc extends AppCompatActivity {
 
         } else {
             Toast.makeText(EquipmentAc.this,
-                    filePathString, //ADD THIS
+                    "הקובץ נוצר", //ADD THIS
                     Toast.LENGTH_SHORT).show();
+            SQLiteToExcel();
+
 
         }
 
@@ -399,15 +407,11 @@ public class EquipmentAc extends AppCompatActivity {
         if (id == R.id.item_equipment) {
             current_admin = firebaseUserModel.getAdmin();
 
-            if (current_admin.equals("admin")) {
                 Intent i = new Intent(EquipmentAc.this, EquipmentEditAc.class);
                 i.putExtra("UidEquipment", current_uid);
                 i.putExtra("nameSenderEquipment", firebaseUserModel.getName());
                 startActivity(i);
-            } else {
-                Toast.makeText(EquipmentAc.this, "אתה לא מנהל",
-                        Toast.LENGTH_SHORT).show();
-            }
+
 
 
             return true;
@@ -427,9 +431,16 @@ public class EquipmentAc extends AppCompatActivity {
 
     public void SQLiteToExcel() {
 
+        SQLiteToExcel sqLiteToExcel;
 
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            sqLiteToExcel = new SQLiteToExcel(getApplicationContext(), DATABASE_NAME_EQUIPMENT, directory_path_sdk_kikat_down);
+
+        }else {
+            sqLiteToExcel = new SQLiteToExcel(getApplicationContext(), DATABASE_NAME_EQUIPMENT, directory_path);
+
+        }
         dbEquipment.open();
-        SQLiteToExcel sqLiteToExcel = new SQLiteToExcel(getApplicationContext(), DATABASE_NAME_EQUIPMENT, directory_path);
 
         sqLiteToExcel.exportAllTables(firebaseUserModel.getCamp() + ".xls", new SQLiteToExcel.ExportListener() {
             @Override
@@ -441,7 +452,7 @@ public class EquipmentAc extends AppCompatActivity {
             public void onCompleted(String filePath) {
                 filePathString = "הצליח ליצור קובץ אקסל";
 
-
+                ExcelToSQLite();
                 Log.e("Successfully Exported", filePath);
             }
 

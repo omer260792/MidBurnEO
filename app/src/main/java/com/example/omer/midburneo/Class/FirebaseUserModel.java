@@ -37,7 +37,7 @@ public class FirebaseUserModel {
         String SHPRF = "User";
         String image = "";
         String role = "";
-        String deviceId;
+        String deviceId = "";
         String admin = "";
         String number = "";
         String camp = "";
@@ -47,6 +47,7 @@ public class FirebaseUserModel {
         String name = "";
         String time = "";
         String email = "";
+        String uid = "";
 
         image = firebaseUserModel.getImage();
         role = firebaseUserModel.getRole();
@@ -60,6 +61,7 @@ public class FirebaseUserModel {
         name = firebaseUserModel.getName();
         time = firebaseUserModel.getTime();
         email = firebaseUserModel.getEmail();
+        uid = firebaseUserModel.getUidReceiver();
 
 
         prefs = context.getSharedPreferences(SHPRF, MODE_PRIVATE);
@@ -76,6 +78,7 @@ public class FirebaseUserModel {
         prefs.edit().putString(FeedReaderContract.FeedEntry.NAME, name).apply();
         prefs.edit().putString(FeedReaderContract.FeedEntry.TIME, time).apply();
         prefs.edit().putString(FeedReaderContract.FeedEntry.EMAIL, email).apply();
+        prefs.edit().putString(FeedReaderContract.FeedEntry.UID, uid).apply();
 
         return true;
     }

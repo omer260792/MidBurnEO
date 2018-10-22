@@ -39,7 +39,7 @@ public class FragmentMain extends Fragment {
     public DBHelper dbHelper;
     public SQLiteDatabase db;
 
-    public String  getUid, date;
+    public String getUid, date;
 
     View view;
 
@@ -59,7 +59,7 @@ public class FragmentMain extends Fragment {
 
 
         getNoteMsg();
-
+        Log.e("1", "SSDDDDDDD");
 
         return view;
     }
@@ -68,13 +68,11 @@ public class FragmentMain extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.e("2", "SSDDDDDDD");
+
 
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
 
     public void getNoteMsg() {
 
@@ -82,16 +80,17 @@ public class FragmentMain extends Fragment {
         dbHelper = new DBHelper(getContext());
 
         try {
-            messageNoteList.addAll(dbHelper.getAllNote("false",dbHelper));
+            messageNoteList.addAll(dbHelper.getAllNote("false"));
             mAdapterNote = new MessageNoteAdapter(getContext(), messageNoteList);
             recyclerViewNote.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerViewNote.setAdapter(mAdapterNote);
-            mAdapterNote.notifyDataSetChanged();            Log.e("sssdddds","SSssss");
+            mAdapterNote.notifyDataSetChanged();
 
+            Log.e("sssdddds", "SSssss");
 
 
         } catch (Exception e) {
-            Log.e("ssss","SSssss");
+            Log.e("ssss", "SSssss");
 
             e.printStackTrace();
             e.getStackTrace();

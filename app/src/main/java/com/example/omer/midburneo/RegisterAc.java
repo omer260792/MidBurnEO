@@ -25,6 +25,8 @@ import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.FirebaseUserModel;
 import com.example.omer.midburneo.Class.User;
 import com.example.omer.midburneo.DataBase.DBHelper;
+import com.example.omer.midburneo.Tabs.ProfileAc;
+import com.example.omer.midburneo.Utils.UtilHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -41,6 +43,7 @@ import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,7 +70,7 @@ public class RegisterAc extends AppCompatActivity {
     public static String SHPRF = "User";
     private FirebaseUserModel firebaseUserModel;
 
-    public static final int CAMERA = 1, GALLERY = 2, WRITE_STORAGE = 3, REQUEST_PHONE_CALL = 4, REQUEST_PHONE_RECORD =5;
+    public static final int CAMERA = 1, GALLERY = 2, WRITE_STORAGE = 3, REQUEST_PHONE_CALL = 4, REQUEST_PHONE_RECORD = 5;
     User user = User.getInstance();
 
 
@@ -86,7 +89,7 @@ public class RegisterAc extends AppCompatActivity {
         imageView = findViewById(R.id.buttonImageRegister);
 
         mImageStorage = FirebaseStorage.getInstance().getReference();
-       // filePath = FirebaseStorage.getInstance().getReference();
+        // filePath = FirebaseStorage.getInstance().getReference();
 
         currentDeviceId = Settings.Secure.getString(getBaseContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
@@ -115,9 +118,6 @@ public class RegisterAc extends AppCompatActivity {
         currentToken = FirebaseInstanceId.getInstance().getToken();
         firebaseUserModel.setDeviceToken(currentToken);
         firebaseUserModel.setDeviceId(currentDeviceId);
-
-
-
 
 
         long currentDateTime = System.currentTimeMillis();
@@ -175,7 +175,6 @@ public class RegisterAc extends AppCompatActivity {
                                 userMap.put(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN, currentToken);
 
                                 mUserDatabase.setValue(userMap);
-
 
 
                             }
@@ -255,10 +254,12 @@ public class RegisterAc extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 resultUri = result.getUri();
+
                 Picasso.get().load(resultUri).error(R.drawable.admin_btn_logo).into(imageView);
 
 
                 filePath = mImageStorage.child("profile_images").child(resultUri.getLastPathSegment());
+                File file = UtilHelper.getTempFile(RegisterAc.this, String.valueOf(resultUri));
 
 
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {

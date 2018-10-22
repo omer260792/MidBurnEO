@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
@@ -86,11 +87,10 @@ public class NotesAc extends AppCompatActivity {
     }
 
     public void UpdateDateFromFireBaseToSQLiteNote() {
-        fragmentHistory = new FragmentHistory();
-        fragmentMain = new FragmentMain();
 
+//
 
-
+        Log.e(TAG, "UpdateDateFromFireBaseToSQLiteNote");
 
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
         DatabaseReference discussionRoomsRef = rootRef.child("Camps").child(firebaseUserModel.getChat()).child("Note");
@@ -128,7 +128,12 @@ public class NotesAc extends AppCompatActivity {
                     }
 
 
-                    fragmentMain.getNoteMsg();
+                    fragmentHistory = new FragmentHistory();
+                    fragmentMain = new FragmentMain();
+                    Log.e("33333","3333");
+
+
+
 
                 }
 
@@ -136,7 +141,10 @@ public class NotesAc extends AppCompatActivity {
                 public void onCancelled(@NonNull DatabaseError databaseError) {
 
                 }
+
+
             });
+
         } else {
             discussionRoomsRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -145,7 +153,6 @@ public class NotesAc extends AppCompatActivity {
 
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         long FBCount = dataSnapshot.getChildrenCount();
-
 
                         getUid = snapshot.getKey().toString();
 
@@ -158,23 +165,27 @@ public class NotesAc extends AppCompatActivity {
 
                         Boolean check = query(getDate, FeedReaderContract.FeedEntry.DATE);
                         if (check.equals(false)) {
+                            Log.e("ggggg", "2222");
 
                             Boolean tagUserGroup = snapshot.child(FeedReaderContract.FeedEntry.TAG_USER).exists();
                             if (tagUserGroup.equals(false)) {
                                 dbHelper.SaveDBSqliteToNote(getTitle, getContent, getDate, getDateEnd, getBool, getSender, current_uid, getUid);
 
-                            }else {
+
+                            } else {
                                 Boolean tagUser = snapshot.child(FeedReaderContract.FeedEntry.TAG_USER).child(current_uid).exists();
                                 if (tagUser.equals(true)) {
                                     dbHelper.SaveDBSqliteToNote(getTitle, getContent, getDate, getDateEnd, getBool, getSender, current_uid, getUid);
 
 
                                 }
+                                Log.e("ggggg", "2222");
+
                             }
 
                         } else {
 
-                            try{
+                            try {
                                 ContentValues data = new ContentValues();
                                 data.put("title", getTitle);
                                 data.put("content", getContent);
@@ -182,14 +193,16 @@ public class NotesAc extends AppCompatActivity {
                                 data.put("date_end", getDateEnd);
                                 data.put("date_bool", getBool);
                                 db.update(TABLE_NAME_NOTE, data, "_id=" + countSqLiteUpdate, null);
-                                Log.e("ggggg","try");
+                                Log.e("ggggg", "try");
 
 
-                            }catch (Exception e){
+                            } catch (Exception e) {
                                 e.printStackTrace();
-                                Log.e("ggggg","catch");
+                                Log.e("ggggg", "catch");
                             }
                         }
+
+
                     }
                 }
 
@@ -199,10 +212,10 @@ public class NotesAc extends AppCompatActivity {
                 }
             });
 
+            Log.e(TAG, "סוף");
+
+
         }
-
-
-
 
 
     }
@@ -215,6 +228,8 @@ public class NotesAc extends AppCompatActivity {
         long count = cursor.getCount();
 
         countSqlLite = (int) count;
+        Log.e("countSqlLite", String.valueOf(countSqlLite));
+
         cursor.close();
 
         return countSqlLite;
@@ -286,5 +301,7 @@ public class NotesAc extends AppCompatActivity {
 
         return true;
     }
+
+
 }
 

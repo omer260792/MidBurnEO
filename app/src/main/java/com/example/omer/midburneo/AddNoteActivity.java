@@ -33,9 +33,11 @@ import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.LocalData;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.Tabs.ChatListAc;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.api.client.util.DateTime;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -138,11 +140,13 @@ public class AddNoteActivity extends AppCompatActivity {
 
         noteEditText = (EditText) findViewById(R.id.noteEditText);
 
-        String currentTimeIntent = getIntent().getStringExtra("currentDate");
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
 
         getNameUserFromFireBase();
 
-        ////4444444444444444444
         localData = new LocalData(getApplicationContext());
         myClipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 //
@@ -220,10 +224,17 @@ public class AddNoteActivity extends AppCompatActivity {
                 int month = c.get(Calendar.MONTH);
                 int day = c.get(Calendar.DAY_OF_MONTH);
 
+
+
                 mDatePickerDialog = new DatePickerDialog(AddNoteActivity.this, new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
 
+
+
+                     //   currentTimeIntent.equals()
+                        long time = c.getTimeInMillis();
+                        long currentTimelong = System.currentTimeMillis();
 
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             c.set(Calendar.YEAR, view.getYear());
@@ -231,11 +242,27 @@ public class AddNoteActivity extends AppCompatActivity {
                             c.set(Calendar.DAY_OF_MONTH, view.getDayOfMonth());
 
 
+                            if (time < currentTimelong){
+                                Toast.makeText(AddNoteActivity.this, "1", Toast.LENGTH_LONG).show();
+
+                            }else {
+                                Toast.makeText(AddNoteActivity.this, "2", Toast.LENGTH_LONG).show();
+
+                            }
+
+
                         } else {
                             c.set(Calendar.YEAR, view.getYear());
                             c.set(Calendar.MONTH, view.getMonth());
                             c.set(Calendar.DAY_OF_MONTH, view.getDayOfMonth());
 
+                            if (time < currentTimelong){
+                                Toast.makeText(AddNoteActivity.this, "11", Toast.LENGTH_LONG).show();
+
+                            }else {
+                                Toast.makeText(AddNoteActivity.this, "22", Toast.LENGTH_LONG).show();
+
+                            }
                         }
                     }
                 }, year, month, day);
@@ -327,20 +354,9 @@ public class AddNoteActivity extends AppCompatActivity {
 
                             registration_ids.put(listItemPushString);
 
-                          //  String[] stringArrayList = listItemPushString;
-
-
                             ary = new String[]{listItemPushString};
 
-                            // JSONArray jsonArray = jsnobject.getJSONArray("locations");
-//                            for (int i = 0; i < jsonArray.length(); i++) {
-//                                JSONObject explrObject = jsonArray.getJSONObject(i);
-//                            }
-
-
                             Log.e(TAG + "registration_ids", ary[0]);
-                         //   Log.e(TAG + "registration_ids", ary[1]);
-
 
                             item = item + listItems[mUserItems.get(i)];
 
@@ -348,40 +364,6 @@ public class AddNoteActivity extends AppCompatActivity {
                                 item = item + ", ";
                             }
                         }
-//
-//                        String [] stringArray="My Name is ABC".split(" ");
-//                        Log.e(TAG + "registrationddddd_ids", stringArray[3]);
-//                        Log.e(TAG + "registrationddddd_ids", stringArray[2]);
-//                        Log.e(TAG + "registrationddddd_ids", String.valueOf(item));
-//
-//                        String string = item;
-//
-//
-//
-//                        String jsonString = registration_ids.toString();
-
-//                        String str = Arrays.toString(new String[]{jsonString});
-//                        StringBuilder builder = new StringBuilder();
-//                        for(String s : new String[]{jsonString}) {
-//                            builder.append(s);
-//                        }
-//                        String str3 = builder.toString();
-//                        String strs = null;
-//
-//
-//
-//                        strs = String.join(",", jsonString);
-//                        Log.e(TAG + "jsonArray", strs);
-//
-//                        Log.e(TAG + "jsonArray", String.valueOf(str3));
-                    //    Log.e(TAG + "jsonArray", String.valueOf(jsonString));
-
-
-
-
-
-
-
                     }
                 });
 
@@ -442,15 +424,6 @@ public class AddNoteActivity extends AppCompatActivity {
 
                             registration_ids.put(listItemPushString);
 
-//                            JSONObject jsnobject = null;
-//                            try {
-//                                String stringJson = jsnobject.getString(listItemPushString);
-//                                localData.set_Registration_ids_static(stringJson);
-//
-//                            } catch (JSONException e) {
-//                                e.printStackTrace();
-//                            }
-
 
                             hideKeyboard();
 //                            pushNotification();
@@ -475,7 +448,7 @@ public class AddNoteActivity extends AppCompatActivity {
 
                     Intent returnIntent = new Intent();
                     MyEventDay myEventDay = new MyEventDay(c,
-                            R.drawable.ic_send, noteEditText.getText().toString());
+                            R.drawable.midburn_logo, noteEditText.getText().toString());
 
 
                     returnIntent.putExtra(ScheduleAc.RESULT, myEventDay);
@@ -489,10 +462,6 @@ public class AddNoteActivity extends AppCompatActivity {
 
                     SaveInFireBase(msg, current_uid, calendar, get_msg_uid, timeMilliString, firebaseUserModel.getName(), imgPre);
                     db.SaveDBSqliteToCalendar(msg, current_uid, calendar, get_msg_uid, timeMilliString, firebaseUserModel.getName(), imgLocalPath);
-
-
-                    prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
-                    prefs.edit().putString("time_calendar", calendar).apply();
 
 
                     NotificationScheduler.setReminder(getBaseContext(), AlarmReceiver.class, localData.get_hour(), localData.get_min());
@@ -776,6 +745,50 @@ public class AddNoteActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.i(TAG, "Exception while hiding keyboard");
         }
+    }
+
+    public void setMailForm(){
+
+
+//        Event event = new Event()
+//                .setSummary("Google I/O 2015")
+//                .setLocation("800 Howard St., San Francisco, CA 94103")
+//                .setDescription("A chance to hear more about Google's developer products.");
+//
+//        DateTime startDateTime = new DateTime("2015-05-28T09:00:00-07:00");
+//        EventDateTime start = new EventDateTime()
+//                .setDateTime(startDateTime)
+//                .setTimeZone("America/Los_Angeles");
+//        event.setStart(start);
+//
+//        DateTime endDateTime = new DateTime("2015-05-28T17:00:00-07:00");
+//        EventDateTime end = new EventDateTime()
+//                .setDateTime(endDateTime)
+//                .setTimeZone("America/Los_Angeles");
+//        event.setEnd(end);
+//
+//        String[] recurrence = new String[] {"RRULE:FREQ=DAILY;COUNT=2"};
+//        event.setRecurrence(Arrays.asList(recurrence));
+//
+//        EventAttendee[] attendees = new EventAttendee[] {
+//                new EventAttendee().setEmail("lpage@example.com"),
+//                new EventAttendee().setEmail("sbrin@example.com"),
+//        };
+//        event.setAttendees(Arrays.asList(attendees));
+//
+//        EventReminder[] reminderOverrides = new EventReminder[] {
+//                new EventReminder().setMethod("email").setMinutes(24 * 60),
+//                new EventReminder().setMethod("popup").setMinutes(10),
+//        };
+//        Event.Reminders reminders = new Event.Reminders()
+//                .setUseDefault(false)
+//                .setOverrides(Arrays.asList(reminderOverrides));
+//        event.setReminders(reminders);
+//
+//        String calendarId = "primary";
+//        event = service.events().insert(calendarId, event).execute();
+//        System.out.printf("Event created: %s\n", event.getHtmlLink());
+
     }
 
 

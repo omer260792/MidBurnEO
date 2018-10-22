@@ -6,12 +6,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.os.Build;
+import android.os.Handler;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -22,6 +22,7 @@ import com.applandeo.materialcalendarview.listeners.OnDayClickListener;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.DataBase.DBHelper;
 
+import com.example.omer.midburneo.Tabs.MainPageAc;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -38,7 +39,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_CALENDAR;
 import static com.example.omer.midburneo.RegisterAc.prefs;
 import static com.example.omer.midburneo.Tabs.MainPageAc.SHPRF;
@@ -50,8 +50,8 @@ public class ScheduleAc extends AppCompatActivity {
     private static final int ADD_NOTE = 44;
     private CalendarView mCalendarView;
     private ArrayList<EventDay> mEventDays = new ArrayList<>();
-    public DBHelper dbHelper;
-    public SQLiteDatabase db;
+    private DBHelper dbHelper;
+    private SQLiteDatabase db;
     public String msg, sender, time, msgUid, current_uid, current_time, current_camp, current_admin, uid_msg, msg_sender, setTime, count, name_sender, image;
     public Calendar calendar;
     public MyEventDay myEventDay;
@@ -79,7 +79,27 @@ public class ScheduleAc extends AppCompatActivity {
             try {
                 getCalendarPickerView();
 
-                UpdateSqliteFromFireBaseCalendar();
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+
+                        if (countSqlLite == 0) {
+
+
+                            getCalnderFromFireBase();
+
+                        } else {
+
+
+                            getCalnderFromFireBase();
+
+                        }
+
+                    }
+                }, 2000);   //
+
+
+
 
             } catch (NullPointerException e) {
 
@@ -92,13 +112,9 @@ public class ScheduleAc extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if (firebaseUserModel.getAdmin().equals("admin")) {
                     addNote();
 
-                } else {
-                    Toast.makeText(ScheduleAc.this, "אתה לא מנהל",
-                            Toast.LENGTH_SHORT).show();
-                }
+
 
             }
         });
@@ -158,6 +174,7 @@ public class ScheduleAc extends AppCompatActivity {
 
 
     public long getRawCountSql() {
+
         db = dbHelper.getReadableDatabase();
 
         String countQuery = "SELECT  * FROM " + TABLE_NAME_CALENDAR;
@@ -172,10 +189,6 @@ public class ScheduleAc extends AppCompatActivity {
     }
 
     public void UpdateSqliteFromFireBaseCalendar() {
-        getRawCountSql();
-
-        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-        discussionRoomsRef = rootRef.child("Camps").child(firebaseUserModel.getCamp()).child("Calendar");
 
         if (countSqlLite == 0) {
 
@@ -188,11 +201,9 @@ public class ScheduleAc extends AppCompatActivity {
             getCalnderFromFireBase();
 
         }
-
     }
 
     public void getCalendarPickerView() {
-        dbHelper = new DBHelper(getApplicationContext());
 
         db = dbHelper.getReadableDatabase();
 
@@ -245,7 +256,7 @@ public class ScheduleAc extends AppCompatActivity {
                 //String realTime = sdf.format(time);
                 cal1.setTimeInMillis(currentDateTime);
 
-                myEventDay = new MyEventDay(cal, R.drawable.ic_send, msg);
+                myEventDay = new MyEventDay(cal, R.drawable.midcamp_logo, msg);
 
                 try {
                     mCalendarView.setDate(cal1);
@@ -255,6 +266,7 @@ public class ScheduleAc extends AppCompatActivity {
                 }
                 mEventDays.add(myEventDay);
 
+
                 //mEventDays.add(myEventDay);
                 mCalendarView.setEvents(mEventDays);
 
@@ -262,6 +274,7 @@ public class ScheduleAc extends AppCompatActivity {
             } while (cursor.moveToNext());
 
         }
+
         db.close();
     }
 
@@ -365,7 +378,6 @@ public class ScheduleAc extends AppCompatActivity {
 
     private Boolean query(String selectionArgss, String selectio) {
 
-
         String[] projection = {
                 BaseColumns._ID,
                 FeedReaderContract.FeedEntry.MESSAGE,
@@ -392,6 +404,8 @@ public class ScheduleAc extends AppCompatActivity {
             cursor.close();
             return false;
         }
+        cursor.close();
+
         return true;
     }
 

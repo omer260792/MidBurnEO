@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.provider.BaseColumns;
 import android.util.Log;
 
@@ -77,7 +78,8 @@ public class DBHelper extends SQLiteOpenHelper {
                     FeedReaderContract.FeedEntry.NAME + " TEXT," +
                     FeedReaderContract.FeedEntry.TIME + " TEXT," +
                     FeedReaderContract.FeedEntry.MESSAGE_UID + " TEXT," +
-                    FeedReaderContract.FeedEntry.STATUS + " TEXT)";
+                    FeedReaderContract.FeedEntry.IMAGE + " TEXT," +
+                    FeedReaderContract.FeedEntry.RECORD + " TEXT)";
 
 
     public String SQL_CREATE_ENTRIES_USERS_CALENDAR =
@@ -114,9 +116,6 @@ public class DBHelper extends SQLiteOpenHelper {
                     FeedReaderContract.FeedEntry.MESSAGE_UID + " TEXT)";
 
 
-    private String SQL_DELETE_ENTRIES_CALENDAR =
-            "DROP TABLE IF EXISTS " + TABLE_NAME_MESSAGE;
-
     public DBHelper open() throws SQLException {
         db = this.getWritableDatabase();
         return this;
@@ -135,8 +134,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(SQL_CREATE_ENTRIES_USERS);
         db.execSQL(SQL_CREATE_ENTRIES_USERS_MESSAGE);
+        db.execSQL(SQL_CREATE_ENTRIES_USERS);
         db.execSQL(SQL_CREATE_ENTRIES_USERS_CALENDAR);
         db.execSQL(SQL_CREATE_ENTRIES_USERS_EQUIPMENT);
         db.execSQL(SQL_CREATE_ENTRIES_USERS_NOTE);
@@ -149,7 +148,6 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL(SQL_DELETE_ENTRIES);
-        db.execSQL(SQL_DELETE_ENTRIES_CALENDAR);
         //db.execSQL(SQL_DELETE_ENTRIESs);
         // onCreate(db);
         Log.e(TAG, "DB_onUpgrade");
@@ -301,10 +299,13 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
-    public List<MessageNote> getAllNote(String bool, DBHelper dbHelper) {
+    public List<MessageNote> getAllNote(String bool) {
         List<MessageNote> msgNoteList = new ArrayList<>();
 
-        db = dbHelper.getReadableDatabase();
+        db = this.getReadableDatabase();
+
+        Log.e(TAG,"33ffff33");
+
 
         try {
             String selectQuery = "SELECT  * FROM " + TABLE_NAME_NOTE;
@@ -340,6 +341,8 @@ public class DBHelper extends SQLiteOpenHelper {
                         String uid = messageNote.setUid(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.UID)));
                         String msgUid = messageNote.setUidMsg(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry.MESSAGE_UID)));
                         String uidcount = messageNote.setCount(cursor.getString(cursor.getColumnIndex(FeedReaderContract.FeedEntry._ID)));
+
+                        Log.e(TAG,"getallnote");
 
                         msgNoteList.add(messageNote);
                     }
@@ -394,7 +397,7 @@ public class DBHelper extends SQLiteOpenHelper {
                         String timeSets = calendar.setTime(time);
 
                         calendarList.add(calendar);
-                        }
+                    }
 
                 } while (cursor.moveToNext());
             }
@@ -443,11 +446,72 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
+    public void SaveDBSqliteToMessage(String msg, String msg_receiver, String msg_sender, String name, String time, String msg_uid, String image, String record, String table) {
+        TABLE_NAME_MESSAGE = table;
+
+        db = this.getWritableDatabase();
+        this.onCreate(SQL_CREATE_ENTRIES_USERS_MESSAGE);
+
+//        String[] projection = {
+//                BaseColumns._ID,
+//                FeedReaderContract.FeedEntry.MESSAGE,
+//                FeedReaderContract.FeedEntry.MESSAGE_RECEIVER,
+//                FeedReaderContract.FeedEntry.MESSAGE_SENDER,
+//                FeedReaderContract.FeedEntry.NAME,
+//                FeedReaderContract.FeedEntry.TIME,
+//                FeedReaderContract.FeedEntry.MESSAGE_UID,
+//                FeedReaderContract.FeedEntry.IMAGE,
+//                FeedReaderContract.FeedEntry.RECORD
+//
+//        };
+//
+//        String selection = FeedReaderContract.FeedEntry.TIME + " = ?";
+//        String[] selectionArgs = {time};
+//
+//        SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
+//        builder.setTables(TABLE_NAME_MESSAGE);
+//
+//
+//        try {
+//
+//            Cursor cursor = builder.query(this.getReadableDatabase(),
+//                    projection, selection, selectionArgs, null, null, null);
+//            if (cursor == null){
+//                this.onCreate(SQL_CREATE_ENTRIES_USERS_MESSAGE);
+//
+//            }
+//
+//            if (!cursor.moveToFirst()) {
+
+
+                ContentValues values = new ContentValues();
+                values.put(FeedReaderContract.FeedEntry.MESSAGE, msg);
+                values.put(FeedReaderContract.FeedEntry.MESSAGE_RECEIVER, msg_receiver);
+                values.put(FeedReaderContract.FeedEntry.MESSAGE_SENDER, msg_sender);
+                values.put(FeedReaderContract.FeedEntry.NAME, name);
+                values.put(FeedReaderContract.FeedEntry.TIME, time);
+                values.put(FeedReaderContract.FeedEntry.MESSAGE_UID, msg_uid);
+                values.put(FeedReaderContract.FeedEntry.IMAGE, image);
+                values.put(FeedReaderContract.FeedEntry.RECORD, record);
+
+
+                long newRowId = db.insert(TABLE_NAME_MESSAGE, null, values);
+//            }
+//
+//        }catch (Exception e){
+//        }
+//        e.printStackTrace();
+//
+
+        db.close();
+    }
+
+    private void onCreate(String sql_create_entries_users_message) {
+    }
 
 
     public void SaveDBSqliteToCalendar(String msg, String msg_sender, String time, String uid_msg, String setTime, String name, String image) {
 
-        SQLiteDatabase db;
 
         db = this.getWritableDatabase();
 
@@ -513,7 +577,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 " AND " + key + " = '" + time + "'";
         db.execSQL(query);
     }
-
 
 
 }

@@ -104,16 +104,6 @@ public class MessagesListAdapter extends ArrayAdapter<MessageCell> {
         filePath = FirebaseStorage.getInstance().getReference();
 
 
-        if (!record.equals("dafault")) {
-
-
-
-        }
-
-
-        // /String omer = firebaseMessageModel.getStatus();
-//        Log.e(sender,omer);
-
         if (VIEW_TYPE == 0) {
 
             if (image.equals("default")) {

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+
     package="com.example.omer.midburneo">
 
 
@@ -16,7 +17,11 @@
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
 
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
 
     <uses-feature
         android:name="android.hardware.camera2"
@@ -24,16 +29,22 @@
 
 
     <application
+
+        android:name=".MyFirebaseApp"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_midburn_app"
+        android:icon="@mipmap/ic_midcamp_logo_big"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_midburn_app"
+        android:roundIcon="@drawable/midcamp_logo_app"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:windowSoftInputMode="stateAlwaysHidden">
+
+
         <activity
             android:name=".LoginAc"
-            android:label="@string/app_name">
-
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -71,8 +82,9 @@
 
         <activity
             android:name=".Tabs.AdminAc"
-            android:label="עריכת מחנה נושא">
-            >
+            android:label="עריכת מחנה נושא"
+            android:theme="@style/AppThemeBack">
+
 
             <intent-filter>
                 <action android:name="AdminAc" />
@@ -82,7 +94,8 @@
 
         <activity
             android:name=".Tabs.MainPageAc"
-            android:label="עמוד ראשי">
+            android:label="עמוד ראשי"
+            android:theme="@style/AppThemeBack">
 
             <intent-filter>
                 <action android:name="MainPageAc" />
@@ -92,7 +105,8 @@
 
         <activity
             android:name=".ScheduleAc"
-            android:label="לוח פגישות">
+            android:label="לוח פגישות"
+            android:theme="@style/AppThemeBack">
             <intent-filter>
                 <action android:name="ScheduleAc" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -102,7 +116,8 @@
 
         <activity
             android:name=".Tabs.ChatAc"
-            android:label="אנשי קשר בקמפ">
+            android:label="אנשי קשר בקמפ"
+            android:theme="@style/AppThemeBack">
             <intent-filter>
                 <action android:name="ChatAc" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -111,7 +126,9 @@
 
         <activity
             android:name=".Tabs.EquipmentAc"
-            android:label="רשימת ציוד">
+            android:label="רשימת ציוד"
+            android:theme="@style/AppThemeBack"
+            android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
                 <action android:name="AdminAc" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -120,9 +137,10 @@
 
         <activity
             android:name=".Tabs.NotesAc"
-            android:label="רשימת מטלות">
+            android:label="רשימת מטלות"
+            android:theme="@style/AppThemeBack"
+            android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="AdminAc" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -131,15 +149,15 @@
             android:name=".Tabs.ChatListAc"
             android:label="צ'אט">
             <intent-filter>
-                <action android:name="AdminAc" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity
             android:name=".Tabs.ProfileAc"
-            android:label="פרופיל">
+            android:label="פרופיל"
+            android:theme="@style/AppThemeBack">
             <intent-filter>
-                <action android:name="AdminAc" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -151,38 +169,54 @@
 
         <activity
             android:name=".AddNoteActivity"
-            android:label="הוסך פגישה" />
+            android:label="הוסך פגישה"
+
+            android:theme="@style/AppThemeBack" />
 
         <activity
             android:name=".NotePreviewActivity"
-            android:label="דף הפגישה" />
+            android:label="דף הפגישה"
+
+            android:theme="@style/AppThemeBack" />
         <activity
             android:name=".Tabs.EquipmentPreviewAc"
-            android:label="דף הציוד" />
+            android:label="דף הציוד"
+
+            android:theme="@style/AppThemeBack" />
 
         <activity
             android:name=".Tabs.EquipmentEditAc"
-            android:label="ציוד לעריכה" />
+            android:label="ציוד לעריכה"
+
+            android:theme="@style/AppThemeBack" />
 
         <activity
             android:name=".Utils.UtilHelper"
-            android:label="Standard calendar" />
+            android:label="Standard calendar"
+
+            android:theme="@style/AppThemeBack" />
 
         <activity
             android:name=".Utils.PopUpUser"
-            android:label="" />
+            android:label=""
+
+            android:theme="@style/AppThemeBack" />
         <activity
             android:name=".Tabs.NoteEditAc"
-            android:label="עריכת מטילה" />
+            android:label="עריכת מטילה"
+
+            android:theme="@style/AppThemeBack" />
 
 
         <activity
             android:name=".Tabs.AddGroupAc"
-            android:label="הוסף קבוצה">
+            android:label="הוסף קבוצה"
+            android:theme="@style/AppThemeBack">
 
         </activity>
 
-        <receiver android:name=".AlarmReceiver"
+        <receiver
+            android:name=".AlarmReceiver"
             android:enabled="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -190,27 +224,52 @@
         </receiver>
 
 
-        <service android:name=".Service.MyFirebaseInstanceIdService">
+        <service android:name=".Service.MyFirebaseInstanceIdService"
+            tools:ignore="InnerclassSeparator">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-        <service android:name=".Service.MyFirebaseMessagingService">
+        <service android:name=".Service.MyFirebaseMessagingService"
+            tools:ignore="InnerclassSeparator">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
 
+
+        <!--<meta-data-->
+            <!--android:name="firebase_analytics_collection_enabled"-->
+            <!--android:value="false" />-->
         <meta-data
-            android:name="firebase_messaging_auto_init_enabled"
-            android:value="false" />
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="default_notification_channel_id" />
+
+
+        <meta-data
+        android:name="com.google.firebase.messaging.default_notification_icon"
+        android:resource="@drawable/ic_midcamp_push" />
+
+        <meta-data
+            android:name="com.google.android.gms.vision"
+            android:value="@integer/google_play_services_version" />
+
+        <meta-data
+        android:name="com.google.firebase.messaging.default_notification_color"
+        android:resource="@color/colorAccent" />
+
+
         <meta-data
             android:name="firebase_analytics_collection_enabled"
             android:value="false" />
         <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="default_notification_channel_id" />
+            android:name="firebase_messaging_auto_init_enabled"
+            android:value="false" />
+        <!--<meta-data-->
+        <!--android:name="com.google.android.gms.API_KEY"-->
+        <!--android:value="AIzaSyA3fgRTh6PzQw5zp7WypwS5EQ7AnDFGiAQ" />-->
+
 
     </application>
 

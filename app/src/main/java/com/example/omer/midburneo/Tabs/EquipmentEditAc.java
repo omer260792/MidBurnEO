@@ -62,7 +62,7 @@ public class EquipmentEditAc extends AppCompatActivity {
 
     private Button addEquipmentBtnPre, addBtnfirendEditEquip;
     private EditText etNameProdPre, etContentPre, etMountPre;
-    private ImageView imagePre;
+    private ImageView imagePreEquip;
     private String nameProdPre, contentPre, mountPre, timePre, current_uid, get_msg_uid;
     private String imgPre = "default";
     private String imgLocalPath = "default";
@@ -83,6 +83,9 @@ public class EquipmentEditAc extends AppCompatActivity {
     Map<String, Object> stringObjectHashMapEquipment = new HashMap<>();
 
 
+    public static String directory_path_sdk_kikat_down = Environment.getExternalStoragePublicDirectory(
+            Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
+
     public static String directory_path = Environment.getExternalStoragePublicDirectory(
             Environment.DIRECTORY_DOCUMENTS).getAbsolutePath();
 
@@ -96,7 +99,7 @@ public class EquipmentEditAc extends AppCompatActivity {
         etNameProdPre = findViewById(R.id.etNameProdEditEquip);
         etContentPre = findViewById(R.id.etContetEditEquip);
         etMountPre = findViewById(R.id.etMountEditEquip);
-        imagePre = findViewById(R.id.imageEditEquip);
+        imagePreEquip = findViewById(R.id.imageEditEquip);
         addBtnfirendEditEquip = findViewById(R.id.addBtnfirendEditEquip);
 
         mprogress = new ProgressDialog(this);
@@ -236,7 +239,7 @@ public class EquipmentEditAc extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 resultUri = result.getUri();
-                Picasso.get().load(resultUri).error(R.drawable.admin_btn_logo).into(imagePre);
+                Picasso.get().load(resultUri).error(R.drawable.midburn_logo).into(imagePreEquip);
                 imgLocalPath = String.valueOf(resultUri);
 
                 filePath = mImageStorage.child("profile_images").child(resultUri.getLastPathSegment());

@@ -47,6 +47,7 @@ public final class FeedReaderContract {
         public static final String PHONE = "phone";
         public static final String TIME__SET = "timeSet";
         public static final String GROUP = "group";
+        public static final String RECORD = "record";
 
 
         public static final String CURRENT_DEVICE_ID = "device_id";

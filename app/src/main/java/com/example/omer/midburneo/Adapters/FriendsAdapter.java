@@ -20,7 +20,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.example.omer.midburneo.Class.Equipment;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.Friend;
 import com.example.omer.midburneo.DataBase.DBHelper;
@@ -36,7 +35,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +42,6 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
-import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
 import static com.example.omer.midburneo.Tabs.ChatAc.callPhoneChatAc;
 import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
@@ -54,13 +51,13 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     private Context context;
     private List<Friend> personUtils;
     public String current_uid, urlString, chatRoomsString, deviceID;
-    public int countString;
+    public int countString, countLastMsg;
     private FirebaseUser mCurrentUser;
     private DatabaseReference mUserDatabase;
     private DBHelper dbHelper;
 
 
-    public FriendsAdapter(Context context, List <Friend>personUtils) {
+    public FriendsAdapter(Context context, List<Friend> personUtils) {
         this.context = context;
         this.personUtils = personUtils;
 
@@ -82,14 +79,32 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
         current_uid = mCurrentUser.getUid();
 
-
         Friend friend = personUtils.get(position);
 
         chatRoomsString = friend.getChatRoom();
         countString = Integer.parseInt(friend.getUidCount());
         deviceID = friend.getDevice();
+
+        if (friend.getLastMsg().equals("default")){
+            countLastMsg = 0;
+        }else{
+            countLastMsg = Integer.parseInt(friend.getLastMsg());
+
+        }
+
         holder.pName.setText(friend.getName());
-        holder.pLastMsg.setText(friend.getRole());
+        holder.pRoll.setText(friend.getRole());
+
+      ///  holder.pLastmsg.setText(friend.getLastMsg());
+
+        if (countLastMsg == 0){
+            holder.pLastmsg.setText("");
+
+        }else {
+            holder.pLastmsg.setText(friend.getLastMsg());
+
+        }
+
 
 
         urlString = friend.getImage();
@@ -112,7 +127,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        public TextView pName, pLastMsg;
+        public TextView pName, pRoll, pLastmsg;
         public ImageView pImage;
 
         public TextView txtclose, tvCampPopUp, tvNamePopUp, tvRolePopUp;
@@ -126,8 +141,9 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
             super(itemView);
 
             pName = itemView.findViewById(R.id.nameFriendClass);
-            pLastMsg = itemView.findViewById(R.id.lastMsgFriendClass);
+            pRoll = itemView.findViewById(R.id.rollFriendClass);
             pImage = itemView.findViewById(R.id.imageFriendClass);
+            pLastmsg = itemView.findViewById(R.id.lastMsgFriendClass);
 
 
             myDialog = new Dialog(context);
@@ -152,7 +168,9 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                     intent.putExtra("deviceUidFriend", friend.getDevice());
                     intent.putExtra("tokenUidFriend", friend.getToken());
                     intent.putExtra("chatRoomsUidFriend", friend.getChatRoom());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     context.startActivity(intent);
+
 
                 }
             });
@@ -202,7 +220,6 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
                                         dbHelper.deleteRawFromTable(count, ChatRooms, TABLE_NAME, nameColums);
                                         Log.e("ff", "64cfe10c-4999-437e-a495-32511d89f94b");
-                                        dbHelper.getAllMsg();
                                         Intent i = new Intent(context, ChatAc.class);
                                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                         context.startActivity(i);

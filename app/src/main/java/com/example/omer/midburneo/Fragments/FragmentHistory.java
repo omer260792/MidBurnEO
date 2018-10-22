@@ -78,7 +78,7 @@ public class FragmentHistory extends Fragment {
         dbHelper = new DBHelper(getContext());
 
         try {
-            messageNoteList.addAll(dbHelper.getAllNote("true",dbHelper));
+            messageNoteList.addAll(dbHelper.getAllNote("true"));
             mAdapterNote = new MessageNoteAdapter(getContext(), messageNoteList);
             recyclerViewNote.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerViewNote.setAdapter(mAdapterNote);

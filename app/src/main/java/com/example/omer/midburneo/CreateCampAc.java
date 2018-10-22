@@ -64,6 +64,7 @@ public class CreateCampAc extends AppCompatActivity {
     private StorageReference mImageStorage, filePath;
 
     public String num = "1";
+    public String numcount = "1";
 
 
     public SQLiteDatabase db;
@@ -100,25 +101,30 @@ public class CreateCampAc extends AppCompatActivity {
 
                     database = FirebaseDatabase.getInstance();
 
-                    DatabaseReference mUserDatabase1 = database.getReference().child("Camps");
+                    DatabaseReference mUserDatabase1 = database.getReference().child("Camps").child("AllCamps");
 
                     mUserDatabase1.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
 
+                            for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()){
 
-                            try {
-                                name = dataSnapshot.child(camp_name).getValue().toString();
+                                Boolean check = dataSnapshot1.child(camp_name).exists();
+                                if (check){
 
-                            } catch (Exception e) {
-                                e.printStackTrace();
+
+                                }else {
+
+                                        numcount = "2";
+                                }
+
+
+
                             }
-
-                            if (camp_name.equals(name)) {
+                            if (numcount.equals("1")){
                                 Toast.makeText(CreateCampAc.this, "The name allready exist", Toast.LENGTH_LONG).show();
 
-                            } else {
-
+                            }else {
                                 SaveDBFireBase();
 
                                 prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
@@ -129,8 +135,19 @@ public class CreateCampAc extends AppCompatActivity {
                                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                 finish();
 
-
                             }
+
+
+
+
+
+
+
+
+
+
+
+
                         }
 
                         @Override

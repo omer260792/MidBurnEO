@@ -1,11 +1,12 @@
 package com.example.omer.midburneo.Tabs;
 
 
-import android.nfc.Tag;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.ContentValues;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AlertDialog;
-//import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -37,13 +38,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.omer.midburneo.Adapters.MessagesListAdapter;
-import com.example.omer.midburneo.CampsAc;
 import com.example.omer.midburneo.Class.FeedReaderContract;
 import com.example.omer.midburneo.Class.FirebaseMessageModel;
+import com.example.omer.midburneo.Class.FirebaseUserModel;
 import com.example.omer.midburneo.Class.MessageCell;
 import com.example.omer.midburneo.DataBase.DBHelper;
 import com.example.omer.midburneo.PermissionManager;
 import com.example.omer.midburneo.R;
+import com.example.omer.midburneo.Service.MyFirebaseMessagingService;
+import com.example.omer.midburneo.Utils.UtilHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -53,6 +56,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.RemoteMessage;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -64,12 +68,14 @@ import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 
-import org.apache.poi.ss.formula.functions.T;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -87,14 +93,17 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME;
+import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_MESSAGE;
+import static com.example.omer.midburneo.DataBase.DBHelper.DATABASE_NAME;
 import static com.example.omer.midburneo.RegisterAc.CAMERA;
 import static com.example.omer.midburneo.RegisterAc.GALLERY;
 import static com.example.omer.midburneo.RegisterAc.WRITE_STORAGE;
+import static com.example.omer.midburneo.Tabs.MainPageAc.SHPRF;
 import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
 
 public class ChatListAc extends AppCompatActivity {
-    private static final String TAG = "ChattingActivity";
+    private static final String TAG = "ChatListAc";
 
 
     ListView listView;
@@ -107,7 +116,7 @@ public class ChatListAc extends AppCompatActivity {
     List<FirebaseMessageModel> messages = new ArrayList<FirebaseMessageModel>();
 
     FirebaseDatabase database;
-    DatabaseReference messagesRef;
+    private DatabaseReference messagesRef;
     DatabaseReference usersRef;
     private DatabaseReference mUserDatabase;
     public SharedPreferences prefs;
@@ -116,25 +125,26 @@ public class ChatListAc extends AppCompatActivity {
     private Uri resultUri, recordUri;
     private StorageReference mImageStorage, filePath, filePathRecord;
 
-    private MediaRecorder mRecorder;
     private ProgressDialog progressDialog;
-    private boolean permissionToRecordAccepted = false;
-
 
     public String nameUserIntent, campUserIntent, uidUserIntent, chatRoomsUserIntent, imageUserIntent, statusUserIntent, deviceUserIntent,
-            tokenUserIntent, countUserIntent, timeUserIntent, onilneUserIntent, current_uid, current_name, current_device, table;
+            tokenUserIntent, countUserIntent, timeUserIntent, onilneUserIntent, current_uid, current_name, current_device, table, wishMessage;
     public String stringUrl = "stringUrl";
     public String urlPathString = null;
     public String uidMsg;
     public int num = 1;
     public int numStop = 1;
-    public int numCencel = 1;
+    public int numTotal = 1;
+    private int number = 1;
+    private int numberFromPush = 1;
+    private Boolean isConnected;
+    public static String roomPush, uidPush, namePush, devicePush;
+
 
     JSONArray registration_ids = new JSONArray();
 
     ///record
 
-    private Dialog myDialog;
     private Button buttonRecordPop, buttonStopPop, buttonPlayPop, sendRecordBtn;
 
     private String AudioSavePathInDevice = null;
@@ -145,6 +155,9 @@ public class ChatListAc extends AppCompatActivity {
     MediaPlayer mediaPlayer;
     public CardView cardView;
     private int numCheck = 1;
+    private int numPermisionChat = 1;
+
+    public static String nameGroupSql;
 
 
     @Override
@@ -152,6 +165,9 @@ public class ChatListAc extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tab_chatting);
 
+
+        isConnected = UtilHelper.checkInternetConnection(this);
+        numPermisionChat = 2;
 
         listView = (ListView) findViewById(R.id.chattingList);
         textComment = (EditText) findViewById(R.id.comment_text);
@@ -189,27 +205,57 @@ public class ChatListAc extends AppCompatActivity {
         filePath = FirebaseStorage.getInstance().getReference();
         database = FirebaseDatabase.getInstance();
 
-        usersRef = database.getReference("Users");
-        messagesRef = database.getReference("ChatRooms").child(chatRoomsUserIntent);
 
         progressDialog = new ProgressDialog(this);
         dbHelper = new DBHelper(getApplicationContext());
 
 
+        usersRef = database.getReference("Users");
+        usersRef.orderByChild("chat").equalTo(firebaseUserModel.getChat());
+
+        if (chatRoomsUserIntent == null) {
+
+            chatRoomsUserIntent = roomPush;
+            nameUserIntent = namePush;
+            uidUserIntent = uidPush;
+            deviceUserIntent = devicePush;
+            Log.e(TAG + 1, nameUserIntent);
+            Log.e(TAG + 2, chatRoomsUserIntent);
+            FirebaseUserModel.getSPToFirebaseUserModel(firebaseUserModel, getApplicationContext());
+            DATABASE_NAME = firebaseUserModel.getChat();
+            TABLE_NAME_MESSAGE = firebaseUserModel.getUidReceiver();
+            dbHelper = new DBHelper(getApplicationContext());
+
+
+        } else {
+
+        }
+
+        if (imageUserIntent == null || imageUserIntent.equals("default")) {
+            Picasso.get().load(R.drawable.midcamp_logo).error(R.drawable.midburn_logo).into(imageUser);
+        } else {
+            Picasso.get().load(imageUserIntent).error(R.drawable.midcamp_logo).into(imageUser);
+        }
+
+
+        messagesRef = database.getReference("ChatRooms").child(chatRoomsUserIntent);
         tvNameUser.setText(nameUserIntent);
 
 
         btnSend.setEnabled(false);
         btnSend.setColorFilter(getResources().getColor(android.R.color.darker_gray));
 
-
-        if (imageUserIntent == null || imageUserIntent == "default") {
-            Picasso.get().load(R.drawable.midburn_logo).error(R.drawable.midburn_logo).into(imageUser);
-        } else {
-            Picasso.get().load(imageUserIntent).error(R.drawable.midburn_logo).into(imageUser);
-        }
-
         CheckUserIfOnline();
+//        Handler handler = new Handler();
+//        handler.postDelayed(new Runnable() {
+//            public void run() {
+//
+//
+//                CheckUserIfOnline();
+//
+//
+//            }
+//        }, 2000);   //
 
 
         mRecordButton.setOnClickListener(new View.OnClickListener() {
@@ -316,6 +362,7 @@ public class ChatListAc extends AppCompatActivity {
                 messages.clear();
 
 
+                // count sqlite messages == ount firebase on server
                 for (com.google.firebase.database.DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
 
                     FirebaseMessageModel firebaseMessageModel = postSnapshot.getValue(FirebaseMessageModel.class);
@@ -333,7 +380,21 @@ public class ChatListAc extends AppCompatActivity {
                     firebaseMessageModel.setId(postSnapshot.getKey());
 
                     messages.add(firebaseMessageModel);
+                    numTotal = number++;
+
+
                 }
+                String count = String.valueOf(numTotal);
+
+                //save count of massage SharedPreferences
+                if (numPermisionChat == 2) {
+                    prefs = getSharedPreferences(SHPRF, MODE_PRIVATE);
+                    prefs.edit().putString(chatRoomsUserIntent, count).apply();
+                }
+
+
+                numTotal = 0;
+                number = 1;
 
                 updateListView();
 
@@ -370,13 +431,13 @@ public class ChatListAc extends AppCompatActivity {
                         String token = postSnapshot.child(FeedReaderContract.FeedEntry.CURRENT_DEVICE_TOKEN).getValue().toString();
 
 
-                        if (firebaseUserModel.getCamp().equals(nameUserIntent)) {
+                        if (firebaseUserModel.getChat().equals(uidUserIntent)) {
 
 
-                            if (!device.equals("default") && !token.equals("default")) {
+                            if (!current_uid.equals(getUid)) {
 
                                 registration_ids.put(token);
-                                Log.e(TAG + "1", registration_ids.toString());
+                                Log.e(TAG, "push camp" + registration_ids.toString());
                             }
 
 
@@ -387,9 +448,13 @@ public class ChatListAc extends AppCompatActivity {
 
                                 registration_ids.put(token);
                                 Log.e(TAG, registration_ids.toString());
+                                Log.e(TAG, "omer" + registration_ids.toString());
 
                             }
+
+
                         } else {
+                            Log.e(TAG, "all camps" + registration_ids.toString());
 
                         }
 
@@ -417,9 +482,17 @@ public class ChatListAc extends AppCompatActivity {
             }
         };
 
-        usersRef.addValueEventListener(userValueEventListener);
 
-        ///////record
+//        Handler handlers = new Handler();
+//        handlers.postDelayed(new Runnable() {
+//            public void run() {
+//
+//                usersRef.addListenerForSingleValueEvent(userValueEventListener);
+//
+//
+//            }
+//        }, 2000);   //
+        usersRef.addListenerForSingleValueEvent(userValueEventListener);
 
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -430,10 +503,11 @@ public class ChatListAc extends AppCompatActivity {
 
                 messagesRef.addValueEventListener(commentValueEventListener);
 
+
             }
         });
 
-        //Value event listener for realtime data update
+
         messagesRef.addValueEventListener(commentValueEventListener);
 
 
@@ -585,6 +659,23 @@ public class ChatListAc extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+
+        if (countUserIntent != null){
+            db = dbHelper.getWritableDatabase();
+            ContentValues data = new ContentValues();
+            data.put(FeedReaderContract.FeedEntry.LASTMSG, 0);
+            Log.e("ssssss", countUserIntent);
+            db.update(TABLE_NAME, data, "_id=" + countUserIntent, null);
+        }
+
+
+
+    }
+
     public void hideKeyboard() {
         try {
             InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -610,6 +701,7 @@ public class ChatListAc extends AppCompatActivity {
                     getDate(firebaseMessageModel.getCreatedDateLong()), firebaseMessageModel.getSenderId().equals(current_uid), firebaseMessageModel.getImage(), firebaseMessageModel.getSenderId(), firebaseMessageModel.getRecord());
 
             messageCells[counter] = messageCell;
+
         }
         MessagesListAdapter adapter = new MessagesListAdapter(this, messageCells);
 
@@ -623,7 +715,7 @@ public class ChatListAc extends AppCompatActivity {
 
     public void sendMsgWithNotification() {
 
-        final String wishMessage = textComment.getText().toString().trim();
+        wishMessage = textComment.getText().toString().trim();
 
         if (resultUri == null) {
             resultUri = Uri.parse("default");
@@ -648,6 +740,7 @@ public class ChatListAc extends AppCompatActivity {
         firebaseMessageModel.setStatus("false");
         firebaseMessageModel.setRecord(AudioSavePathInDevice);
 
+
         updateListView();
 
 
@@ -656,15 +749,91 @@ public class ChatListAc extends AppCompatActivity {
         Dialog.setCancelable(false);
         Dialog.show();
 
+        if (isConnected) {
+
+        } else {
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                public void run() {
+
+                    textComment.setText("");
+                    Dialog.dismiss();
+                    Toast.makeText(ChatListAc.this, "אין תקשורת", Toast.LENGTH_LONG).show();
+
+                }
+            }, 5000);   //
+        }
+
+
         final DatabaseReference newRef = messagesRef.push();
         newRef.setValue(firebaseMessageModel, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
 
+
+                Dialog.dismiss();
+
                 uidMsg = databaseReference.getKey();
 
                 if (!stringUrl.equals("stringUrl")) {
                     loadimageFirebase(uidMsg, chatRoomsUserIntent);
+
+                }
+
+                if (AudioSavePathInDevice.equals("default")) {
+
+                    if (resultUri.equals("default")) {
+                        try {
+                            wishMessage = URLEncoder.encode(wishMessage, "UTF-8");
+                            Log.e("eeeefffffe", wishMessage);
+
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                        Log.e("noTry", wishMessage);
+
+
+                    } else {
+                        if (wishMessage.equals("")) {
+                            wishMessage = "picture";
+
+                        }else {
+                            try {
+                                wishMessage = URLEncoder.encode(wishMessage, "UTF-8");
+                                Log.e("dddddd", wishMessage);
+
+                            } catch (UnsupportedEncodingException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        Log.e("noTry3", wishMessage);
+
+                    }
+                } else {
+                    Log.e("noTry4", wishMessage);
+
+                    if (wishMessage.equals("")) {
+                        Log.e("noTry5", wishMessage);
+                        wishMessage = "record";
+
+
+
+                    } else {
+                        Log.e("noTry6", wishMessage);
+
+
+                            try {
+                                wishMessage = URLEncoder.encode(wishMessage, "UTF-8");
+
+                                Log.e("eeeffffffffffee", wishMessage);
+                            } catch (UnsupportedEncodingException e) {
+                                e.printStackTrace();
+                            }
+
+
+
+                    }
 
                 }
 
@@ -674,20 +843,8 @@ public class ChatListAc extends AppCompatActivity {
                 } else {
                     textComment.setText("");
 
-                    long currentDateTime = System.currentTimeMillis();
 
-                    String time = String.valueOf(currentDateTime);
-                    if (nameUserIntent.equals(firebaseUserModel.getCamp())) {
 
-                        table = current_uid;
-
-                    } else {
-                        table = uidUserIntent;
-
-                    }
-                    String status = "false";
-                    // need to find uid msg
-                    //     dbHelper.SaveDBSqliteMsgUser(wishMessage, uidUserIntent, current_uid, current_name, time, time, status, table);
 
                     if (registration_ids.length() > 0) {
 
@@ -695,10 +852,25 @@ public class ChatListAc extends AppCompatActivity {
                         String url = "https://fcm.googleapis.com/fcm/send";
                         AsyncHttpClient client = new AsyncHttpClient();
 
-                        client.addHeader(HttpHeaders.AUTHORIZATION, "key=AIzaSyDV08bsa0Cdtnzt4EJkm29qsvs-3giVFbc");
+                        client.addHeader(HttpHeaders.AUTHORIZATION, "key=AIzaSyDYqZFXvM8I1cEDncsWQjffMLm6Uq55UoI");
                         client.addHeader(HttpHeaders.CONTENT_TYPE, RequestParams.APPLICATION_JSON);
 
                         try {
+                            String nameString;
+
+                            if (uidUserIntent.equals(firebaseUserModel.getChat())) {
+                                nameString =  firebaseUserModel.getCamp();
+
+                                Log.e("dddd",nameString);
+
+                            } else {
+                                nameString = firebaseUserModel.getName();
+                                Log.e("dddd",nameString);
+
+                            }
+
+                            String name =URLEncoder.encode(firebaseUserModel.getName(), "UTF-8");
+                            String namegroup =URLEncoder.encode(nameString, "UTF-8");
 
 
                             JSONObject params = new JSONObject();
@@ -707,9 +879,19 @@ public class ChatListAc extends AppCompatActivity {
 
                             JSONObject notificationObject = new JSONObject();
                             notificationObject.put("body", wishMessage);
-                            notificationObject.put("title", firebaseUserModel.getName());
+                            notificationObject.put("title", namegroup);
+
+                            JSONObject notificationObjectData = new JSONObject();
+                            notificationObjectData.put("Room", chatRoomsUserIntent);
+                            notificationObjectData.put("uidSender", current_uid);
+                            notificationObjectData.put("deviceId", deviceUserIntent);
+                            notificationObjectData.put("name", name);
+                            notificationObjectData.put("msg", wishMessage);
+                            notificationObjectData.put("chat", firebaseUserModel.getChat());
 
                             params.put("notification", notificationObject);
+                            params.put("data", notificationObjectData);
+
 
                             StringEntity entity = new StringEntity(params.toString());
 
@@ -720,6 +902,8 @@ public class ChatListAc extends AppCompatActivity {
 
                                     Log.i(TAG, String.valueOf(statusCode));
                                     Log.i(TAG, responseString);
+                                    Log.i(TAG, String.valueOf(throwable));
+                                    Log.i(TAG, String.valueOf(headers));
 
                                 }
 
@@ -729,8 +913,12 @@ public class ChatListAc extends AppCompatActivity {
                                     AudioSavePathInDevice = null;
                                     resultUri = null;
                                     mediaPlayer = new MediaPlayer();
-                                    Log.i(TAG, String.valueOf(statusCode));
-                                    Log.i(TAG, responseString);
+
+
+                                    Log.i(TAG + 1, responseString);
+                                    Log.i(TAG + 2, String.valueOf(statusCode));
+                                    Log.i(TAG + 3, String.valueOf(headers.length));
+                                    Log.i(TAG + 3, String.valueOf(headers.clone()));
 
                                 }
                             });
@@ -741,9 +929,10 @@ public class ChatListAc extends AppCompatActivity {
                     }
 
                 }
-                Dialog.dismiss();
 
             }
+
+
         });
         num = 2;
 
@@ -764,8 +953,6 @@ public class ChatListAc extends AppCompatActivity {
     public void CheckUserIfOnline() {
 
         try {
-
-
             if (!deviceUserIntent.equals("default")) {
 
                 mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(uidUserIntent);
@@ -773,43 +960,49 @@ public class ChatListAc extends AppCompatActivity {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                       boolean check =  dataSnapshot.child("time").exists();
-                       if (check){
-                           String time = dataSnapshot.child("time").getValue().toString();
-                           String onilne = dataSnapshot.child("online").getValue().toString();
+                        boolean check = dataSnapshot.child("time").exists();
+                        if (check) {
+                            String time = dataSnapshot.child("time").getValue().toString();
+                            String onilne = dataSnapshot.child("online").getValue().toString();
+                            String image = dataSnapshot.child("image").getValue().toString();
 
-                           if (!onilne.equals("default")) {
-                               DateFormat getTimeDmY = new SimpleDateFormat("dd:MM:yyyy:HH:mm");
-                               long timeMilLong = Long.parseLong(time);
+                            //check if image exsists after push
+                            if (numberFromPush == 2 && image.equals("default")) {
+                                Picasso.get().load(image).error(R.drawable.midburn_logo).into(imageUser);
 
+                            }
 
-                               String realTime = getTimeDmY.format(timeMilLong);
-
-                               if (onilne.equals("true")) {
-                                   tvTimeUser.setText("מחובר");
-                               } else {
-                                   tvTimeUser.setText("last seen:" + realTime);
-
-                               }
-                           } else {
-                               tvTimeUser.setText("");
-
-                           }
-
-                       }else {
-                           db = dbHelper.getWritableDatabase();
-
-                           Toast.makeText(ChatListAc.this, "משתמש לא קיים", Toast.LENGTH_LONG).show();
-                           db.delete(TABLE_NAME,  "_id=" + countUserIntent, null);
-                           db.close();
-                           Intent i = new Intent(ChatListAc.this,ChatAc.class);
-                           i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                           startActivity(i);
-
-                       }
+                            if (!onilne.equals("default")) {
+                                DateFormat getTimeDmY = new SimpleDateFormat("dd:MM:yyyy:HH:mm");
+                                long timeMilLong = Long.parseLong(time);
 
 
+                                String realTime = getTimeDmY.format(timeMilLong);
 
+                                if (onilne.equals("true")) {
+                                    tvTimeUser.setText("מחובר");
+                                } else {
+                                    tvTimeUser.setText("last seen:" + realTime);
+
+                                }
+                            } else {
+                                tvTimeUser.setText("");
+
+                            }
+
+                            Log.e("fffffffffff", String.valueOf(check));
+
+
+                        } else {
+                            db = dbHelper.getWritableDatabase();
+
+                            db.delete(TABLE_NAME, "_id=" + countUserIntent, null);
+                            db.close();
+                            Intent i = new Intent(ChatListAc.this, ChatAc.class);
+                            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(i);
+
+                        }
 
 
                     }
@@ -968,28 +1161,6 @@ public class ChatListAc extends AppCompatActivity {
         ActivityCompat.requestPermissions(ChatListAc.this, new
                 String[]{WRITE_EXTERNAL_STORAGE, RECORD_AUDIO}, RequestPermissionCode);
     }
-//
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode,
-//                                           String permissions[], int[] grantResults) {
-//        switch (requestCode) {
-//            case RequestPermissionCode:
-//                if (grantResults.length > 0) {
-//                    boolean StoragePermission = grantResults[0] ==
-//                            PackageManager.PERMISSION_GRANTED;
-//                    boolean RecordPermission = grantResults[1] ==
-//                            PackageManager.PERMISSION_GRANTED;
-//
-//                    if (StoragePermission && RecordPermission) {
-//                        Toast.makeText(ChatListAc.this, "Permission Granted",
-//                                Toast.LENGTH_LONG).show();
-//                    } else {
-//                        Toast.makeText(ChatListAc.this, "Permission", Toast.LENGTH_LONG).show();
-//                    }
-//                }
-//                break;
-//        }
-//    }
 
     public boolean checkPermission() {
         int result = ContextCompat.checkSelfPermission(getApplicationContext(),
@@ -998,6 +1169,24 @@ public class ChatListAc extends AppCompatActivity {
                 RECORD_AUDIO);
         return result == PackageManager.PERMISSION_GRANTED &&
                 result1 == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public static boolean getDataRemoteFromPush(RemoteMessage remoteMessage) {
+
+
+        roomPush = remoteMessage.getData().get("Room");
+        uidPush = remoteMessage.getData().get("uidSender");
+        devicePush = remoteMessage.getData().get("deviceId");
+        try {
+            String name = remoteMessage.getNotification().getTitle();
+
+            namePush=  URLDecoder.decode(name,"UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+
+        return true;
     }
 
 

@@ -6,10 +6,12 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
+
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -17,7 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.Toast;
+
 
 import com.example.omer.midburneo.Adapters.ImageAdapter;
 import com.example.omer.midburneo.Class.FirebaseUserModel;
@@ -28,7 +30,6 @@ import com.example.omer.midburneo.ScheduleAc;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -52,7 +53,7 @@ import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABL
 // ToDo save database to sqlite  -- ChatListAc
 // ToDo save record path in stroge device directory  -- ChatListAc
 // ToDo arranging folders in storage  -- ChatListAc
-// ToDo jsonArray to string and string to jsonArray  -- All Project
+// ToDo permission excel app  -- All Project
 
 public class MainPageAc extends AppCompatActivity {
 
@@ -62,16 +63,17 @@ public class MainPageAc extends AppCompatActivity {
     public static String SHPRF = "User";
 
     private DatabaseReference mUserDatabase;
-    private FirebaseUser mCurrentUser;
+    private DatabaseReference mCurrentUser;
     private FirebaseAuth mAuth;
-    private ProgressDialog mprogress;
 
-    public String current_uid, current_image, current_name, image, current_camp, current_admin, timeString, tokenUser;
+    public String current_uid, current_name, image, current_camp, current_admin, timeString, tokenUser;
     public String current_uid_camp = "";
     public static FirebaseUserModel firebaseUserModel;
     private boolean isConnected;
     private DBHelper dbHelper;
     public SQLiteDatabase db;
+    private ProgressDialog mprogress;
+
 
     static User user = User.getInstance();
     public static final String setImgUrlDefault = "https://firebasestorage.googleapis.com/v0/b/midburneo-6d072.appspot.com/o/profile_images%2Fcropped5081028198796683166.jpg?alt=media&token=8c49a7b9-2ee5-4ea6-b7c2-52199ef167f8";
@@ -87,6 +89,7 @@ public class MainPageAc extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
+
         mprogress = new ProgressDialog(MainPageAc.this);
         mprogress.setMessage("מוריד מידע");
         mprogress.show();
@@ -99,26 +102,25 @@ public class MainPageAc extends AppCompatActivity {
         if (isConnected) {
             Log.e(TAG, "internet connection" + "=" + String.valueOf(isConnected));
 
+            if (firebaseUserModel.getChat() != null) {
+                FirebaseUserModel.getSPToFirebaseUserModel(firebaseUserModel, getApplicationContext());
+                DATABASE_NAME = firebaseUserModel.getChat();
 
+            }
             current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            TABLE_NAME_MESSAGE = current_uid;
-            DATABASE_NAME = current_uid;
             mAuth = FirebaseAuth.getInstance();
+
 
             getUserDBFromFireBase();
             UpdateUserOnline();
-
 
         } else {
             Log.e(TAG, "internet connection" + "=" + String.valueOf(isConnected));
 
             FirebaseUserModel.getSPToFirebaseUserModel(firebaseUserModel, getApplicationContext());
-            mprogress.dismiss();
+            DATABASE_NAME = firebaseUserModel.getChat();
+            TABLE_NAME_MESSAGE = firebaseUserModel.getUidReceiver();
             dbHelper = new DBHelper(getApplicationContext());
-
-            db = dbHelper.getWritableDatabase();
-            db = dbHelper.getReadableDatabase();
-            dbHelper.onCreate(db);
 
         }
 
@@ -136,14 +138,6 @@ public class MainPageAc extends AppCompatActivity {
                     case 0:
                         current_admin = firebaseUserModel.getAdmin();
                         startActivity(new Intent(MainPageAc.this, AdminAc.class));
-
-//
-//                        if (current_admin.equals("admin")) {
-//
-//                        } else {
-//                            Toast.makeText(MainPageAc.this, "אתה לא מנהל",
-//                                    Toast.LENGTH_SHORT).show();
-//                        }
 
                         break;
                     case 1:
@@ -175,12 +169,13 @@ public class MainPageAc extends AppCompatActivity {
     public void getUserDBFromFireBase() {
 
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+
         mUserDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                String uid = dataSnapshot.getKey();
 
-                current_image = dataSnapshot.child("image").getValue().toString();
                 current_admin = dataSnapshot.child("admin").getValue().toString();
                 current_name = dataSnapshot.child("name").getValue().toString();
                 current_camp = dataSnapshot.child("camps").getValue().toString();
@@ -194,19 +189,9 @@ public class MainPageAc extends AppCompatActivity {
                 String email = dataSnapshot.child("email").getValue().toString();
 
 
-                if (current_image.equals("default")) {
-                    image = setImgUrlDefault;
-
-                } else {
-                    image = current_image;
-
-                }
-
-
                 firebaseUserModel.setName(current_name);
                 firebaseUserModel.setDeviceId(deviceUserIntent);
                 firebaseUserModel.setDeviceToken(tokenUser);
-                firebaseUserModel.setImage(image);
                 firebaseUserModel.setRole(role);
                 firebaseUserModel.setDeviceId(deviceUserIntent);
                 firebaseUserModel.setAdmin(current_admin);
@@ -217,34 +202,14 @@ public class MainPageAc extends AppCompatActivity {
                 firebaseUserModel.setStatus("status");
                 firebaseUserModel.setTime(time);
                 firebaseUserModel.setEmail(email);
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    // Create channel to show notifications.
-                    String channelId  = getString(R.string.notifications_admin_channel_descripti);
-                    String channelName = getString(R.string.notifications_admin_channel_name);
-                    NotificationManager notificationManager =
-                            getSystemService(NotificationManager.class);
-                    notificationManager.createNotificationChannel(new NotificationChannel(channelId,
-                            channelName, NotificationManager.IMPORTANCE_LOW));
-
-
-
-
-                }
-
-                if (getIntent().getExtras() != null) {
-                    for (String key : getIntent().getExtras().keySet()) {
-                        Object value = getIntent().getExtras().get(key);
-                        Log.i(TAG, "Key: " + key + " Value: " + value);
-                    }
-                }
-
+                firebaseUserModel.setUidReceiver(uid);
+                DATABASE_NAME = firebaseUserModel.getChat();
 
                 UpdateUserOnline();
 
-                mprogress.dismiss();
 
                 FirebaseUserModel.saveDataInSharedPre(firebaseUserModel, getApplicationContext());
+
 
             }
 
@@ -269,6 +234,7 @@ public class MainPageAc extends AppCompatActivity {
                             tokenUser = task.getResult().getToken();
 
                             mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+                            mUserDatabase.keepSynced(true);
 
                             Map<String, Object> mapCampsUpdates = new HashMap<>();
                             mapCampsUpdates.put("online", "true");
@@ -276,6 +242,7 @@ public class MainPageAc extends AppCompatActivity {
 
                             mUserDatabase.updateChildren(mapCampsUpdates);
 
+                            mprogress.dismiss();
                         } else {
                             Log.w(TAG, "getInstanceId failed", task.getException());
 
@@ -290,9 +257,10 @@ public class MainPageAc extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
 
-
         if (isConnected) {
             mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+            mUserDatabase.keepSynced(true);
+
             current_uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
             long currentDateTime = System.currentTimeMillis();
             timeString = String.valueOf(currentDateTime);
@@ -304,17 +272,16 @@ public class MainPageAc extends AppCompatActivity {
     @Override
     protected void onDestroy() {
 
+        if (isConnected) {
 
-        Map<String, Object> mapCampsUpdates = new HashMap<>();
-        mapCampsUpdates.put("time", timeString);
-        mapCampsUpdates.put("online", "false");
+            Map<String, Object> mapCampsUpdates = new HashMap<>();
+            mapCampsUpdates.put("time", timeString);
+            mapCampsUpdates.put("online", "false");
 
+            mUserDatabase.updateChildren(mapCampsUpdates);
 
-        mUserDatabase.updateChildren(mapCampsUpdates);
-
-
-        super.onDestroy();
-
+            super.onDestroy();
+        }
 
     }
 

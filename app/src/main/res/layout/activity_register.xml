@@ -2,12 +2,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/white"
     android:gravity="center_horizontal">
 
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/buttonImageRegister"
-        android:background="@drawable/midburn_logo"
+        android:background="@drawable/midcamp_logo"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="60dp"
         android:onClick="onImg"
@@ -87,6 +88,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
+            android:background="@color/grey"
             android:text="הירשם"
             android:onClick="RegisterBtn"/>
 
