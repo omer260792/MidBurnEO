@@ -15,7 +15,7 @@ public class MyFirebaseApp extends Application {
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
 
         //To re-enable FCM, make a runtime call:
-      //  FirebaseMessaging.getInstance().setAutoInitEnabled(true);
+        FirebaseMessaging.getInstance().setAutoInitEnabled(true);
 
     }
 }

@@ -44,7 +44,6 @@
         android:id="@+id/etSearchUser"
         android:layout_width="match_parent"
         android:paddingRight="10dp"
-        android:hint="....חפש שם"
         android:textSize="16dp"
         android:layout_height="40dp"
         android:layout_margin="10dp" />

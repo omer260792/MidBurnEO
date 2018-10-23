@@ -97,7 +97,7 @@ public class ProfileAc extends AppCompatActivity {
 
 
 
-        Picasso.get().load(firebaseUserModel.getImage()).error(R.drawable.midburn_logo).into(imageView);
+        Picasso.get().load(firebaseUserModel.getImage()).error(R.drawable.midcamp_logo_app).into(imageView);
 
 
         signOutBtn.setOnClickListener(new View.OnClickListener() {

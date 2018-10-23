@@ -225,11 +225,26 @@ public class ChatListAc extends AppCompatActivity {
             DATABASE_NAME = firebaseUserModel.getChat();
             TABLE_NAME_MESSAGE = firebaseUserModel.getUidReceiver();
             dbHelper = new DBHelper(getApplicationContext());
+            int count = Integer.parseInt(countUserIntent);
+//            personUtilsList.get(count).setTime("0");
+//                db = dbHelper.getWritableDatabase();
+//                ContentValues data = new ContentValues();
+//                data.put(FeedReaderContract.FeedEntry.LASTMSG, 0);
+//                Log.e("ssssss", countUserIntent);
+//                db.update(TABLE_NAME, data, "_id=" + countUserIntent, null);
+//
+//
 
 
         } else {
 
         }
+
+        final ProgressDialog Dialog = new ProgressDialog(this);
+        Dialog.setMessage("Please wait..");
+        Dialog.setCancelable(false);
+        Dialog.show();
+
 
         if (imageUserIntent == null || imageUserIntent.equals("default")) {
             Picasso.get().load(R.drawable.midcamp_logo).error(R.drawable.midburn_logo).into(imageUser);
@@ -246,17 +261,6 @@ public class ChatListAc extends AppCompatActivity {
         btnSend.setColorFilter(getResources().getColor(android.R.color.darker_gray));
 
         CheckUserIfOnline();
-//        Handler handler = new Handler();
-//        handler.postDelayed(new Runnable() {
-//            public void run() {
-//
-//
-//                CheckUserIfOnline();
-//
-//
-//            }
-//        }, 2000);   //
-
 
         mRecordButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -289,12 +293,6 @@ public class ChatListAc extends AppCompatActivity {
                 PermissionManager.check(ChatListAc.this, android.Manifest.permission.CAMERA, CAMERA);
                 PermissionManager.check(ChatListAc.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
 
-//
-//                Handler handler = new Handler();
-//                handler.postDelayed(new Runnable() {
-//                    public void run() {
-
-
                 AlertDialog.Builder builder;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     builder = new AlertDialog.Builder(ChatListAc.this, android.R.style.Theme_Material_Dialog_Alert);
@@ -317,9 +315,6 @@ public class ChatListAc extends AppCompatActivity {
                         })
                         .setIcon(android.R.drawable.ic_dialog_info)
                         .show();
-
-//                    }
-//                }, 500);   //
 
 
             }
@@ -349,10 +344,6 @@ public class ChatListAc extends AppCompatActivity {
             }
         });
 
-        final ProgressDialog Dialog = new ProgressDialog(this);
-        Dialog.setMessage("Please wait..");
-        Dialog.setCancelable(false);
-        Dialog.show();
 
         final com.google.firebase.database.ValueEventListener commentValueEventListener = new com.google.firebase.database.ValueEventListener() {
 
@@ -482,16 +473,6 @@ public class ChatListAc extends AppCompatActivity {
             }
         };
 
-
-//        Handler handlers = new Handler();
-//        handlers.postDelayed(new Runnable() {
-//            public void run() {
-//
-//                usersRef.addListenerForSingleValueEvent(userValueEventListener);
-//
-//
-//            }
-//        }, 2000);   //
         usersRef.addListenerForSingleValueEvent(userValueEventListener);
 
         btnSend.setOnClickListener(new View.OnClickListener() {
@@ -659,22 +640,6 @@ public class ChatListAc extends AppCompatActivity {
 
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-
-        if (countUserIntent != null){
-            db = dbHelper.getWritableDatabase();
-            ContentValues data = new ContentValues();
-            data.put(FeedReaderContract.FeedEntry.LASTMSG, 0);
-            Log.e("ssssss", countUserIntent);
-            db.update(TABLE_NAME, data, "_id=" + countUserIntent, null);
-        }
-
-
-
-    }
 
     public void hideKeyboard() {
         try {
@@ -797,7 +762,7 @@ public class ChatListAc extends AppCompatActivity {
                         if (wishMessage.equals("")) {
                             wishMessage = "picture";
 
-                        }else {
+                        } else {
                             try {
                                 wishMessage = URLEncoder.encode(wishMessage, "UTF-8");
                                 Log.e("dddddd", wishMessage);
@@ -818,19 +783,17 @@ public class ChatListAc extends AppCompatActivity {
                         wishMessage = "record";
 
 
-
                     } else {
                         Log.e("noTry6", wishMessage);
 
 
-                            try {
-                                wishMessage = URLEncoder.encode(wishMessage, "UTF-8");
+                        try {
+                            wishMessage = URLEncoder.encode(wishMessage, "UTF-8");
 
-                                Log.e("eeeffffffffffee", wishMessage);
-                            } catch (UnsupportedEncodingException e) {
-                                e.printStackTrace();
-                            }
-
+                            Log.e("eeeffffffffffee", wishMessage);
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
 
 
                     }
@@ -842,8 +805,6 @@ public class ChatListAc extends AppCompatActivity {
                     Log.i(TAG, databaseError.toString());
                 } else {
                     textComment.setText("");
-
-
 
 
                     if (registration_ids.length() > 0) {
@@ -859,18 +820,18 @@ public class ChatListAc extends AppCompatActivity {
                             String nameString;
 
                             if (uidUserIntent.equals(firebaseUserModel.getChat())) {
-                                nameString =  firebaseUserModel.getCamp();
+                                nameString = firebaseUserModel.getCamp();
 
-                                Log.e("dddd",nameString);
+                                Log.e("dddd", nameString);
 
                             } else {
                                 nameString = firebaseUserModel.getName();
-                                Log.e("dddd",nameString);
+                                Log.e("dddd", nameString);
 
                             }
 
-                            String name =URLEncoder.encode(firebaseUserModel.getName(), "UTF-8");
-                            String namegroup =URLEncoder.encode(nameString, "UTF-8");
+                            String name = URLEncoder.encode(firebaseUserModel.getName(), "UTF-8");
+                            String namegroup = URLEncoder.encode(nameString, "UTF-8");
 
 
                             JSONObject params = new JSONObject();
@@ -1180,7 +1141,7 @@ public class ChatListAc extends AppCompatActivity {
         try {
             String name = remoteMessage.getNotification().getTitle();
 
-            namePush=  URLDecoder.decode(name,"UTF-8");
+            namePush = URLDecoder.decode(name, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }

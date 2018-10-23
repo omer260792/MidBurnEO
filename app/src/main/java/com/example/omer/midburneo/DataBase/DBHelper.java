@@ -161,6 +161,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public List<Friend> getAllFriend() {
         List<Friend> notes = new ArrayList<>();
+        ///String query = "SELECT * FROM users WHERE time BETWEEN '2019-01-05 17:00:52.503' AND '2020-02-05 17:00:55.372' ";
+
 
         String selectQuery = "SELECT  * FROM " + FeedReaderContract.FeedEntry.TABLE_NAME;
 

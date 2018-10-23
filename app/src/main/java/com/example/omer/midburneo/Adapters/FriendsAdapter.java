@@ -1,5 +1,6 @@
 package com.example.omer.midburneo.Adapters;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +37,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +54,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     private Context context;
     private List<Friend> personUtils;
     public String current_uid, urlString, chatRoomsString, deviceID;
-    public int countString, countLastMsg;
+    private int countString, countLastMsg;
     private FirebaseUser mCurrentUser;
     private DatabaseReference mUserDatabase;
     private DBHelper dbHelper;
@@ -72,6 +75,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         return viewHolder;
     }
 
+    @SuppressLint("ResourceAsColor")
     @Override
     public void onBindViewHolder(@NonNull FriendsAdapter.ViewHolder holder, int position) {
         holder.itemView.setTag(personUtils.get(position));
@@ -85,27 +89,36 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         countString = Integer.parseInt(friend.getUidCount());
         deviceID = friend.getDevice();
 
-        if (friend.getLastMsg().equals("default")){
+        countLastMsg = Integer.parseInt(friend.getLastMsg());
+
+
+
+
+
+        if (friend.getLastMsg().equals("default")) {
             countLastMsg = 0;
-        }else{
+        } else {
             countLastMsg = Integer.parseInt(friend.getLastMsg());
 
         }
 
+
+
         holder.pName.setText(friend.getName());
         holder.pRoll.setText(friend.getRole());
 
-      ///  holder.pLastmsg.setText(friend.getLastMsg());
+        ///  holder.pLastmsg.setText(friend.getLastMsg());
 
-        if (countLastMsg == 0){
+        if (countLastMsg == 0) {
             holder.pLastmsg.setText("");
 
-        }else {
+        } else {
             holder.pLastmsg.setText(friend.getLastMsg());
 
         }
-
-
+        if (countLastMsg != 0) {
+            holder.linearLayout.setBackgroundColor(R.color.staticMessageColorblue);
+        }
 
         urlString = friend.getImage();
 
@@ -133,6 +146,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         public TextView txtclose, tvCampPopUp, tvNamePopUp, tvRolePopUp;
         public Button btnCallPopUp, tvAdminPopUp, tvDeleteMsgPopUp;
         public CircleImageView imgPopUp;
+        public LinearLayout linearLayout;
 
         private Dialog myDialog;
 
@@ -144,6 +158,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
             pRoll = itemView.findViewById(R.id.rollFriendClass);
             pImage = itemView.findViewById(R.id.imageFriendClass);
             pLastmsg = itemView.findViewById(R.id.lastMsgFriendClass);
+            linearLayout = itemView.findViewById(R.id.linearLayoutUser);
 
 
             myDialog = new Dialog(context);
@@ -168,7 +183,6 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                     intent.putExtra("deviceUidFriend", friend.getDevice());
                     intent.putExtra("tokenUidFriend", friend.getToken());
                     intent.putExtra("chatRoomsUidFriend", friend.getChatRoom());
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     context.startActivity(intent);
 
 
@@ -366,8 +380,9 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
     }
 
-    public void filterList(List<Friend> filteredList) {
+    public void filterList(ArrayList<Friend> filteredList) {
         personUtils = filteredList;
         notifyDataSetChanged();
     }
+
 }

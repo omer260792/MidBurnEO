@@ -62,6 +62,7 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.View
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+
         holder.itemView.setTag(EquipmentNoteList.get(position));
 
 
@@ -125,7 +126,6 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.View
 
                     Equipment equipment = (Equipment) view.getTag();
 
-                    Toast.makeText(view.getContext(), equipment.getNameProd(), Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(context, EquipmentPreviewAc.class);
                     intent.putExtra("nameProdEquipment", equipment.getNameProd());
                     intent.putExtra("contentEquipment", equipment.getContent());
