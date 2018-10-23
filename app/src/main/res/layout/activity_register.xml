@@ -8,7 +8,7 @@
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/buttonImageRegister"
-        android:background="@drawable/midcamp_logo"
+        android:background="@drawable/midcamp_logo_app"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="60dp"
         android:onClick="onImg"

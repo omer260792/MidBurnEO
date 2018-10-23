@@ -2,6 +2,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
+    android:background="@color/white"
     android:orientation="vertical">
 
     <Button
@@ -18,7 +19,8 @@
         android:layout_height="120dp"
         android:layout_marginBottom="30dp"
         android:layout_marginTop="20dp"
-        android:onClick="onImg" />
+        android:background="@drawable/midcamp_logo_app"
+        />
 
     <GridLayout
         android:layout_width="wrap_content"

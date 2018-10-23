@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 import static com.example.omer.midburneo.Class.FeedReaderContract.FeedEntry.TABLE_NAME_EQUIPMENT;
 import static com.example.omer.midburneo.Tabs.MainPageAc.firebaseUserModel;
 
@@ -47,7 +49,8 @@ public class EquipmentPreviewAc extends AppCompatActivity {
     private Button addEquipmentBtnPre, etTimePre;
     private EditText etNameProdPre, etContentPre, etMountPre, etMountCurrentPre;
     private TextView txtclose;
-    private ImageView imagePre, pImgPop;
+    private ImageView  pImgPop;
+    private CircleImageView imagePre;
     public String nameProdPre, contentPre, mountPre, mountCurrentPre, timePre, imgPre, current_uid, get_msg_uid, timeMilliString, count, timeSetString, uid_msg;
     private DatabaseReference mUserDatabase;
     public DBHelper dbHelper;

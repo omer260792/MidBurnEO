@@ -3,8 +3,9 @@
     android:layout_width="350dp"
     android:layout_height="375dp"
     android:layout_gravity="center"
-    android:background="@color/colorPrimaryDark"
+    android:background="@color/colorPrimary"
     android:orientation="vertical"
+
     android:padding="5dp">
 
     <TextView

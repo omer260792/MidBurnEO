@@ -348,6 +348,7 @@ public class EquipmentEditAc extends AppCompatActivity {
             Intent i = new Intent(EquipmentEditAc.this, EquipmentAc.class);
             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(i);
+            finish();
 
         } else {
             Toast.makeText(EquipmentEditAc.this,

@@ -66,7 +66,8 @@ public class MainPageAc extends AppCompatActivity {
     private DatabaseReference mCurrentUser;
     private FirebaseAuth mAuth;
 
-    public String current_uid, current_name, image, current_camp, current_admin, timeString, tokenUser;
+    public String current_uid, current_name, image, current_camp, current_admin, timeString;
+    public String tokenUser = "no token";
     public String current_uid_camp = "";
     public static FirebaseUserModel firebaseUserModel;
     private boolean isConnected;
@@ -181,17 +182,18 @@ public class MainPageAc extends AppCompatActivity {
                 current_camp = dataSnapshot.child("camps").getValue().toString();
                 current_uid_camp = dataSnapshot.child("chat").getValue().toString();
                 String deviceUserIntent = dataSnapshot.child("device_id").getValue().toString();
-                tokenUser = dataSnapshot.child("device_token").getValue().toString();
+                //tokenUser = dataSnapshot.child("device_token").getValue().toString();
                 String phone = dataSnapshot.child("phone").getValue().toString();
                 String number = dataSnapshot.child("number").getValue().toString();
                 String time = dataSnapshot.child("time").getValue().toString();
                 String role = dataSnapshot.child("role").getValue().toString();
                 String email = dataSnapshot.child("email").getValue().toString();
+                String image = dataSnapshot.child("image").getValue().toString();
 
 
                 firebaseUserModel.setName(current_name);
                 firebaseUserModel.setDeviceId(deviceUserIntent);
-                firebaseUserModel.setDeviceToken(tokenUser);
+                firebaseUserModel.setImage(image);
                 firebaseUserModel.setRole(role);
                 firebaseUserModel.setDeviceId(deviceUserIntent);
                 firebaseUserModel.setAdmin(current_admin);
